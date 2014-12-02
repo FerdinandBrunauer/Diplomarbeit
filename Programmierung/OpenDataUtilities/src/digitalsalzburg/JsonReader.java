@@ -23,25 +23,33 @@ public class JsonReader {
 		return sb.toString();
 	}
 
-	public static JSONObject readJsonFromUrl(String url) throws IOException,
-			JSONException {
-		InputStream is = new URL(url).openStream();
+	public static JSONObject readJsonFromUrl(String url) {
 		try {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(is,Charset.forName("UTF-8")));
-			String jsonText = readAll(rd);
-			json = new JSONObject(jsonText);
-			return json;
-		} finally {
-			is.close();
+		InputStream is = new URL(url).openStream();
+			try {
+				BufferedReader rd = new BufferedReader(new InputStreamReader(is,Charset.forName("UTF-8")));
+				String jsonText = readAll(rd);
+				json = new JSONObject(jsonText);
+				return json;
+			}
+			catch (JSONException e){
+				return null;
+			} finally {
+				is.close();
+			}
 		}
+		catch(IOException e){
+			return null;
+		}
+		
 	}
 
 	public static String readStringFromUrl(String url) throws IOException, JSONException {
 		return readJsonFromUrl(url).get("result").toString();
 	}
 	
-	public static JSONArray readArrayFromUrl(String url) throws JSONException, IOException{
-		return readJsonFromUrl(url).getJSONArray("result");
+	public static JSONArray readArrayFromUrl(String url, String arrayName) throws JSONException, IOException{
+		return readJsonFromUrl(url).getJSONArray(arrayName);
 	}
 
 	public static void main(String[] args) throws IOException, JSONException {
