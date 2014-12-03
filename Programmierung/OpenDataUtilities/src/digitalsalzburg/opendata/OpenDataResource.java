@@ -1,12 +1,10 @@
 package digitalsalzburg.opendata;
 
-import java.util.Date;
-
 public class OpenDataResource {
 	private String id;
 	private String format;
 	private String url;
-	private Date revisionTimestamp;
+	private long revisionTimestamp;
 	
 	public OpenDataResource(String id){
 		this.id = id;
@@ -36,11 +34,11 @@ public class OpenDataResource {
 		this.url = url;
 	}
 
-	public Date getRevisionTimestamp() {
+	public long getRevisionTimestamp() {
 		return revisionTimestamp;
 	}
 
-	public void setRevisionTimestamp(Date revisionTimestamp) {
+	public void setRevisionTimestamp(long revisionTimestamp) {
 		this.revisionTimestamp = revisionTimestamp;
 	}
 	

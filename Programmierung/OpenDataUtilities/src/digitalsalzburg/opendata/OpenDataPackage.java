@@ -1,5 +1,6 @@
 package digitalsalzburg.opendata;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OpenDataPackage {
@@ -12,6 +13,9 @@ public class OpenDataPackage {
 	
 	
 	public OpenDataPackage(String id){
+		resources = new ArrayList<OpenDataResource>();
+		tags = new ArrayList<OpenDataTag>();
+		
 		this.id = id;
 	}
 
@@ -67,6 +71,10 @@ public class OpenDataPackage {
 
 	public void setTags(List<OpenDataTag> tags) {
 		this.tags = tags;
+	}
+	
+	public void addTag(OpenDataTag tag){
+		this.tags.add(tag);
 	}
 
 

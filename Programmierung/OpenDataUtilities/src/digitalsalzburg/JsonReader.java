@@ -33,12 +33,15 @@ public class JsonReader {
 				return json;
 			}
 			catch (JSONException e){
+				
+				// LOG 
 				return null;
 			} finally {
 				is.close();
 			}
 		}
 		catch(IOException e){
+			// LOG 
 			return null;
 		}
 		
