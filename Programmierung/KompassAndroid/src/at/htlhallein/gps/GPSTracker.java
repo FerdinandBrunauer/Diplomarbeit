@@ -31,6 +31,46 @@ import android.util.Log;
 public class GPSTracker extends Service implements LocationListener {
 	private final Context mContext;
 
+	
+	// XXX USAGE
+	// this.gpsTracker = new GPSTracker(this);
+			// if (this.gpsTracker.canGetLocation()) {
+			// TimerTask task = new TimerTask() {
+			// @Override
+			// public void run() {
+			// double latitude = MainActivity.this.gpsTracker.getLatitude();
+			// double longtitude = MainActivity.this.gpsTracker.getLongitude();
+			// double distanceNorth = GPSUtils.distanceBetweenPoints(latitude,
+			// longtitude, 84.05, -174.85);
+			// double distanceSouth = GPSUtils.distanceBetweenPoints(latitude,
+			// longtitude, -85.83, 65.78);
+			// final double hundred = 100.0;
+			//
+			// final String stringLatitude = "Latitude: " + String.valueOf(latitude)
+			// + "°";
+			// final String stringLongtitude = "Longtitude: " +
+			// String.valueOf(longtitude) + "°";
+			// final String stringDistanceNoth = "Distanz Nordpol: " +
+			// (Math.round(distanceNorth * hundred) / hundred) + "km";
+			// final String stringDistanceSouth = "Distanz Südpol: " +
+			// (Math.round(distanceSouth * hundred) / hundred) + "km";
+			//
+			// runOnUiThread(new Runnable() {
+			// @Override
+			// public void run() {
+			// MainActivity.this.tvLatitude.setText(stringLatitude);
+			// MainActivity.this.tvLongtitude.setText(stringLongtitude);
+			// MainActivity.this.tvDistanceNoth.setText(stringDistanceNoth);
+			// MainActivity.this.tvDistanceSouth.setText(stringDistanceSouth);
+			// }
+			// });
+			// }
+			// };
+			// new Timer().schedule(task, 1000, 1000);
+			// } else {
+			// this.gpsTracker.showSettingsAlert();
+			// }
+	
 	// flag for GPS Status
 	boolean isGPSEnabled = false;
 
