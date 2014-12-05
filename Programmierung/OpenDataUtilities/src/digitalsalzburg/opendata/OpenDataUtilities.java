@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +19,9 @@ import digitalsalzburg.JsonReader;
 public class OpenDataUtilities {
 
 	private static final String OPENDATAURL = "https://www.data.gv.at/katalog/api/3/action/";
+	private static final String PACKAGE_SHOW = "package_show?id=";
+	private static final String PACKAGE_LIST = "package_list";
+	private static final String TAG_SHOW = "tag_show?id=";
 
 	public static void main(String[] args) throws JSONException, IOException, ParseException {
 		for(List<String> t:searchForPackages(" salzburg")){
@@ -28,14 +30,18 @@ public class OpenDataUtilities {
 			}
 			System.out.println();
 		}
-		getPackageById("land-sbg_museen-land-salzburg434e9");
+		
+		System.out.println(getFileUrl("a5841caf-afe2-4f98-bb68-bd4899e8c9cb", "kmz"));
 	}
 
-	public static String[] getDataGigs(String... organisations) {
-		return null;
-	}
-
-	public static String[] getOrganisations() {
+	public static String getFileUrl(String id, String format){
+		OpenDataPackage test = getPackageById(id);
+		List<OpenDataResource> testarr = test.getResources();
+		for(OpenDataResource res:testarr){
+			if(res.getFormat().equals(format)){
+				return res.getUrl();
+			}
+		}
 		return null;
 	}
 	
@@ -46,7 +52,7 @@ public class OpenDataUtilities {
 	 */
 	public static OpenDataPackage getPackageById(String id) {
 		try{
-			JSONObject json = JsonReader.readJsonFromUrl(OPENDATAURL + "package_show?id=" + id);
+			JSONObject json = JsonReader.readJsonFromUrl(OPENDATAURL + PACKAGE_SHOW + id);
 			JSONObject temp = (JSONObject) json.get("result");
 			JSONArray resources = temp.getJSONArray("resources");
 			JSONArray tags = temp.getJSONArray("tags");
@@ -83,7 +89,7 @@ public class OpenDataUtilities {
 	 * Return a List of all Package Names
 	 */
 	public static List<String> getAllPackages() throws JSONException, IOException{
-		JSONArray jsonArray = JsonReader.readArrayFromUrl(OPENDATAURL + "package_list", "result");
+		JSONArray jsonArray = JsonReader.readArrayFromUrl(OPENDATAURL + PACKAGE_LIST, "result");
 		List<String> allPackages = new ArrayList<String>();
 		for(int i = 0; i < jsonArray.length(); i++){
 			allPackages.add(jsonArray.get(i).toString());
@@ -126,7 +132,7 @@ public class OpenDataUtilities {
 	 * Return a List of all Package names
 	 */
 	public static List<List<String>> searchForPackageName(String searchString) throws JSONException, IOException, ParseException{
-		JSONArray jsonArray = JsonReader.readArrayFromUrl(OPENDATAURL + "package_list", "result");
+		JSONArray jsonArray = JsonReader.readArrayFromUrl(OPENDATAURL + PACKAGE_LIST, "result");
 		List<List<String>> foundPackages = new ArrayList<List<String>>();
 		for(int i = 0; i < jsonArray.length(); i++){
 			if(jsonArray.get(i).toString().matches("(.*)" + searchString.trim().toLowerCase() + "(.*)")){
@@ -149,7 +155,7 @@ public class OpenDataUtilities {
 	 * @param searchString	String to look for.
 	 */
 	public static List<List<String>> searchForPackageTag(String id) throws JSONException, IOException{
-		JSONObject json = JsonReader.readJsonFromUrl(OPENDATAURL + "tag_show?id=" + id.trim());
+		JSONObject json = JsonReader.readJsonFromUrl(OPENDATAURL + TAG_SHOW + id.trim());
 		JSONObject temp = (JSONObject) json.get("result");
 		JSONArray packages = temp.getJSONArray("packages");
 		List<List<String>> foundPackages = new ArrayList<List<String>>();
@@ -170,7 +176,7 @@ public class OpenDataUtilities {
 	 * @param searchString	String to look for.
 	 */
 	public static List<List<String>> searchForPackageTag(OpenDataTag tag) throws JSONException, IOException{
-		JSONObject json = JsonReader.readJsonFromUrl(OPENDATAURL + "tag_show?id=" + tag.getId());
+		JSONObject json = JsonReader.readJsonFromUrl(OPENDATAURL + TAG_SHOW + tag.getId());
 		JSONObject temp = (JSONObject) json.get("result");
 		JSONArray packages = temp.getJSONArray("packages");
 		List<List<String>> foundPackages = new ArrayList<List<String>>();
