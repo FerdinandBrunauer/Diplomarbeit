@@ -4,7 +4,7 @@ public class OpenDataResource {
 	private String id;
 	private String format;
 	private String url;
-	private long revisionTimestamp;
+	private long creationTimestamp;
 	
 	public OpenDataResource(String id){
 		this.id = id;
@@ -34,12 +34,21 @@ public class OpenDataResource {
 		this.url = url;
 	}
 
-	public long getRevisionTimestamp() {
-		return revisionTimestamp;
+	public long getCreationTimestamp() {
+		return creationTimestamp;
 	}
 
-	public void setRevisionTimestamp(long revisionTimestamp) {
-		this.revisionTimestamp = revisionTimestamp;
+	public void setCreationTimestamp(long revisionTimestamp) {
+		this.creationTimestamp = revisionTimestamp;
+	}
+	
+	public boolean checkForUpdate(){
+		OpenDataResource res = OpenDataUtilities.getResourceById(id);
+		
+		if(res.getCreationTimestamp() > creationTimestamp){
+			return true;
+		}
+		return false;
 	}
 	
 	

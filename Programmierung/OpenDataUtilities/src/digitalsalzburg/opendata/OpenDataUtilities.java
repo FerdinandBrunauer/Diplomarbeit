@@ -21,17 +21,11 @@ public class OpenDataUtilities {
 	private static final String OPENDATAURL = "https://www.data.gv.at/katalog/api/3/action/";
 	private static final String PACKAGE_SHOW = "package_show?id=";
 	private static final String PACKAGE_LIST = "package_list";
+	private static final String RESOURCE_SHOW = "resource_show?id=";
 	private static final String TAG_SHOW = "tag_show?id=";
 
 	public static void main(String[] args) throws JSONException, IOException, ParseException {
-		for(List<String> t:searchForPackages(" salzburg")){
-			for(String s:t){
-				System.out.println(s);
-			}
-			System.out.println();
-		}
 		
-		System.out.println(getFileUrl("a5841caf-afe2-4f98-bb68-bd4899e8c9cb", "kmz"));
 	}
 
 	public static String getFileUrl(String id, String format){
@@ -67,7 +61,7 @@ public class OpenDataUtilities {
 				OpenDataResource resource = new OpenDataResource(resourceObject.getString("id"));
 				resource.setFormat(resourceObject.getString("format"));
 				resource.setUrl(resourceObject.getString("url"));
-				resource.setRevisionTimestamp(getTimestampFromDate("yyyy-MM-dd;HH:mm:ss.S",resourceObject.getString("revision_timestamp").replaceAll("T",";")));
+				resource.setCreationTimestamp(getTimestampFromDate("yyyy-MM-dd;HH:mm:ss.S",resourceObject.getString("created").replaceAll("T",";")));
 				odPackage.addResource(resource);
 			}
 			
@@ -83,6 +77,22 @@ public class OpenDataUtilities {
 			return null;
 		}
 		
+	}
+	
+	public static OpenDataResource getResourceById(String id){
+		try{
+			JSONObject json = JsonReader.readJsonFromUrl(OPENDATAURL + RESOURCE_SHOW + id);
+			JSONObject jsonResource = (JSONObject) json.get("result");
+	
+			OpenDataResource resource = new OpenDataResource(id);
+			resource.setFormat(jsonResource.getString("format"));
+			resource.setUrl(jsonResource.getString("url"));
+			resource.setCreationTimestamp(getTimestampFromDate("yyyy-MM-dd;HH:mm:ss.S",jsonResource.getString("created").replaceAll("T",";")));
+			
+			return resource;
+		}catch(Exception e){
+			return null;
+		}
 	}
 	
 	/*
