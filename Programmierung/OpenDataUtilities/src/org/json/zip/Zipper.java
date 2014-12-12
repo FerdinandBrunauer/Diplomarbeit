@@ -268,7 +268,8 @@ public class Zipper extends JSONzip {
      *            or String, or Boolean, or JSONObject.NULL, or null.
      * @throws JSONException
      */
-    private void writeJSON(Object value) throws JSONException {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	private void writeJSON(Object value) throws JSONException {
         if (JSONObject.NULL.equals(value)) {
             write(zipNull, 3);
         } else if (Boolean.FALSE.equals(value)) {
