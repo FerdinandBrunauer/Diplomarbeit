@@ -3,28 +3,13 @@ package digitalsalzburg.localstorage;
 import java.io.File;
 import java.io.IOException;
 
-import org.omg.SendingContext.RunTime;
-
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
 public class KmzReader {
-	
-	private static boolean isAdded = false;
 
 	public static File getKmlFile(File kmzFile) throws IOException {
-		
-		if (!isAdded){
-			Runtime.getRuntime().addShutdownHook(new Thread(){
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-					super.run();
-				}
-			});
-			isAdded = true;
-		}
-		
+
 		try {
 			String tempFolderPath = "TEMP_" + System.currentTimeMillis();
 			ZipFile zipFile = new ZipFile(kmzFile.getAbsolutePath());
@@ -35,7 +20,7 @@ public class KmzReader {
 			zipFile.extractAll(tempFolderPath);
 
 			File[] tempFolderFiles = tempFolder.listFiles();
-//			tempFolder.deleteOnExit();
+			// tempFolder.deleteOnExit();
 
 			String kmlFilePath = null;
 
@@ -50,7 +35,10 @@ public class KmzReader {
 			}
 
 			if (kmlFilePath != null) {
-				return new File(kmlFilePath);
+				File file = new File(kmlFilePath);
+				tempFolder.deleteOnExit();
+				file.deleteOnExit();
+				return file;
 			} else {
 				throw new NullPointerException("No kml-file found!");
 			}
