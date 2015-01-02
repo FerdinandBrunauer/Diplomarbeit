@@ -1,0 +1,47 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:key="Datenpunkte"
+        android:title="@string/Datenpunkte">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="NFC_verwenden"
+            android:title="@string/NFCverwenden" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="QR_verwenden"
+            android:title="@string/QRverwenden" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="GPS_verwenden"
+            android:title="@string/GPSverwenden" />
+        <ListPreference
+            android:dependency="GPS_verwenden"
+            android:entries="@array/BlickfeldtoleranzwerteEntries"
+            android:entryValues="@array/BlickfeldtoleranzwerteValues"
+            android:key="Blickfeldtoleranz"
+            android:title="@string/Blickfeldtoleranz" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="WLAN-Hotspot"
+        android:title="@string/WLANhotspot">
+        <EditTextPreference
+            android:defaultValue="Datenbrille"
+            android:key="WLAN-Name"
+            android:title="@string/WLANname" />
+        <EditTextPreference
+            android:defaultValue="Passwort1!"
+            android:key="WLAN-Passwort"
+            android:password="true"
+            android:title="@string/WLANpasswort" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="Anzeigedaten"
+        android:title="@string/Anzeigedaten">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="Museen"
+            android:title="@string/Museen" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
