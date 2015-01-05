@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Datenbrille Client</string>
+    <string name="settings">Einstellungen</string>
+    <string name="preference_category_wifi_group">WIFI</string>
+    <string name="preference_wifi_name">Hotspot-Name</string>
+    <string name="preference_wifi_password">Hotspot-Passwort</string>
+    <string name="preferences_default_WIFI_NAME">Datenbrille</string>
+    <string name="preferences_default_WIFI_PASSWORD">Passwort1!</string>
+
+</resources>
