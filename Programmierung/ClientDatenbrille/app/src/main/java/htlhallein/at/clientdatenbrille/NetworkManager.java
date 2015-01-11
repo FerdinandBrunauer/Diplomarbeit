@@ -1,27 +1,33 @@
 package htlhallein.at.clientdatenbrille;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.webkit.WebView;
-import android.widget.Toast;
 
+import java.math.BigInteger;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.net.UnknownHostException;
+import java.nio.ByteOrder;
 import java.util.List;
 
 public class NetworkManager extends Thread {
 
     private WebView webView;
+    private String html = "";
 
     private Context context;
-    private WifiConfiguration wifiConfiguration;
+    private Activity activity;
     private WifiManager wifiManager;
+    private IP deviceIP;
+    private int wifiNetId = -1;
     private String WifiName = "Datenbrille";
     private String WifiPassword = "Passwort1!";
+    private int timeout = 100;
 
     private boolean shouldClose = false;
     private boolean preferencesChanged = false;
@@ -29,10 +35,10 @@ public class NetworkManager extends Thread {
     //----------------------------------------------------------------------------------------------
     //  Constructor
     //----------------------------------------------------------------------------------------------
-    public NetworkManager(Context context, WebView webView) {
+    public NetworkManager(Context context, Activity activity, WebView webView) {
         this.context = context;
+        this.activity = activity;
         this.webView = webView;
-        this.wifiConfiguration = new WifiConfiguration();
         this.wifiManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
@@ -44,18 +50,6 @@ public class NetworkManager extends Thread {
             this.WifiPassword = preferences.getString("preference_wifi_password", this.WifiPassword);
         } catch (Exception e) {
         }
-
-        this.wifiConfiguration.SSID = String.format("\"%s\"", this.WifiName);
-        this.wifiConfiguration.preSharedKey = String.format("\"%s\"", this.WifiPassword);
-        this.wifiManager.addNetwork(this.wifiConfiguration);
-    }
-
-    private static String intToIP(int ipAddress) {
-        String ret = String.format("%d.%d.%d.%d", (ipAddress & 0xff),
-                (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff),
-                (ipAddress >> 24 & 0xff));
-
-        return ret;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -64,77 +58,114 @@ public class NetworkManager extends Thread {
     @Override
     public void run() {
         while (!this.shouldClose) {
-            // ist den wlan überhaupt aktiviert??
-            if (!this.wifiManager.isWifiEnabled()) {
-                // wenn nein, aktivieren
-                this.wifiManager.setWifiEnabled(true);
-                makeToast("WIFI activated");
+            if (this.wifiManager.isWifiEnabled()) {
+                makeLog("WIFI already enabled");
             } else {
-                makeToast("WIFI already enabled");
+                this.wifiManager.setWifiEnabled(true);
+                makeLog("WIFI enabled");
             }
 
-            // wenn jemand in den einstellungen etwas geändert hat, schließen wir die Verbindung zu
-            // dem jeweiligen Hotspot, sofern eine Verbindung noch existiert
-            if (this.preferencesChanged && !this.shouldClose) {
-                preferencesChanged = false;
-                // Neues bekanntes Netzwerk anlegen
-                this.wifiConfiguration.SSID = String.format("\"%s\"", this.WifiName);
-                this.wifiConfiguration.preSharedKey = String.format("\"%s\"", this.WifiPassword);
-                this.wifiManager.addNetwork(this.wifiConfiguration);
-                // Von derzeitigem Netzwerk trennen
-                this.wifiManager.disconnect();
-                makeToast("ADDED Configuration");
-            }
+            if ((this.preferencesChanged || (this.wifiNetId == -1)) && this.wifiManager.isWifiEnabled() && !this.shouldClose) {
+                WifiConfiguration wifiConfiguration = new WifiConfiguration();
+                wifiConfiguration.SSID = "\"" + this.WifiName + "\"";
+                wifiConfiguration.preSharedKey = "\"" + this.WifiPassword + "\"";
+                wifiConfiguration.status = WifiConfiguration.Status.ENABLED;
 
-            // Wir versuchen in Erfahrung zu bringen, ob wir überhaupt mit einem Netzwerk verbunden
-            // sind, wenn ja, ob es das richtige ist
-            String connectedNetworkSSID = this.wifiManager.getConnectionInfo().getSSID();
-            boolean connectedToTheRightNetwork = (connectedNetworkSSID.compareTo(this.WifiName) == 0);
-            if (!connectedToTheRightNetwork && !this.shouldClose) {
-                // disconnect
-                this.wifiManager.disconnect();
+                this.wifiNetId = -1;
 
-                // and connect
-                List<WifiConfiguration> savedWifiConfigurations = this.wifiManager.getConfiguredNetworks();
-                for (WifiConfiguration aktualWifiConfiguration : savedWifiConfigurations) {
-                    if (aktualWifiConfiguration.SSID != null) {
-                        if (aktualWifiConfiguration.SSID.compareTo(String.format("\"%s\"", this.WifiName)) == 0) {
-                            // es ist das richtige
-
-                            // verfügbar machen
-                            this.wifiManager.enableNetwork(aktualWifiConfiguration.networkId, true);
-                            // verbinden
-                            this.wifiManager.reconnect();
-
-                            makeToast("Verbunden!");
-
-                            // wir brauchen die anderen netzwerke nicht mehr zu überprüfen
-                            break;
-                        }
+                List<WifiConfiguration> wifiEntrys = this.wifiManager.getConfiguredNetworks();
+                for (WifiConfiguration actualEntry : wifiEntrys) {
+                    if (actualEntry.SSID.compareTo(wifiConfiguration.SSID) == 0) {
+                        // -------------------------------------------------------------------------
+                        // WARNING
+                        // WE CAN NOT CHANGE THE PASSWORD AND NOT READ OUT THE SAVED PASSWORD!!!!!
+                        // -------------------------------------------------------------------------
+                        this.wifiNetId = actualEntry.networkId;
+                        makeLog("WIFI Entry already exists with ID \"" + this.wifiNetId + "\"");
+                        break;
                     }
                 }
+
+                if (this.wifiNetId == -1) {
+                    this.wifiNetId = this.wifiManager.addNetwork(wifiConfiguration);
+                    makeLog("Added WIFI Entry with ID \"" + this.wifiNetId + "\"");
+                }
             }
-            if (this.shouldClose)
-                continue;
 
-            // Wenn wir nun mit einem Netzwerk verbunden sind, versuchen wir, den Server ausfindig
-            // zu machen
-            // Problem: Das Subnet ist unbekannt!
-            String mask = intToIP(this.wifiManager.getDhcpInfo().netmask);
-            makeToast("SUBNET: " + mask);
-            break;
-//            ArrayList<String> hostsInMyNetwork = scanSubNet("192.168.1.");
+            boolean connectedToRightNetwork = false;
+            if (!this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
+                WifiInfo info = this.wifiManager.getConnectionInfo();
+                makeLog("Connection INFO SSID: " + info.getSSID() + " and Network ID: \"" + info.getNetworkId() + "\"");
+                if (info.getSSID().compareTo("\"" + this.WifiName + "\"") == 0) {
+                    makeLog("Already connected to the right Network");
+                    connectedToRightNetwork = true;
+                } else {
+                    // I am guessing, that it is not the right network, but i don't really know
+                    this.wifiManager.disableNetwork(info.getNetworkId());
+                    makeLog("Disconnected from wrong Network");
+                    connectedToRightNetwork = false;
+                }
+            }
 
-            // Wenn wir den Server gefunden haben, versuchen wir, uns mit diesem zu Verbinden
+            boolean success = false;
+            if (!this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled() && !connectedToRightNetwork) {
+                success = this.wifiManager.enableNetwork(this.wifiNetId, true);
+                if (success) {
+                    makeLog("Connected to Network! Great!");
+                } else {
+                    makeLog("Not Connected to Network! Something is wrong! :(");
+                }
+            }
+            if (connectedToRightNetwork) {
+                success = true;
+            }
 
-            // Wenn die Verbindung erfolgreich war, hören wir unseren Socket ab
-            // Immer wieder schauen, ob der Server beendet werden sollte oder sich die Einstellungen
-            // geändert haben.
+            if (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
+                int phoneIPRaw = this.wifiManager.getConnectionInfo().getIpAddress();
+                String phoneIP = "";
+                try {
+                    phoneIP = rawIPToString(phoneIPRaw);
+                } catch (UnknownHostException e) {
+                    // Holy shit happened here???
+                    success = false;
+                }
+
+                int subnetRaw = this.wifiManager.getDhcpInfo().netmask;
+                String subnet = ipToString(subnetRaw);
+                makeLog("Phone IP-Adress: \"" + phoneIP + "\" and Subnetmask: \"" + subnet + "\"");
+
+                this.deviceIP = new IP(phoneIPRaw, phoneIP, subnetRaw, subnet);
+            }
+
+            if (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
+                makeLog("Starting search for Host");
+
+                int a, b, c, d;
+                a = (this.deviceIP.getSubnetRaw() & 0xff);
+                b = (this.deviceIP.getSubnetRaw() >> 8 & 0xff);
+                c = (this.deviceIP.getSubnetRaw() >> 16 & 0xff);
+                d = (this.deviceIP.getSubnetRaw() >> 24 & 0xff);
+
+
+            }
+
+            try {
+                sleep(200);
+            } catch (InterruptedException e) {
+                // Just to make sure, that the Loop don't waste too much resources
+            }
+
+            break; // TODO REMOVE
         }
     }
 
-    private void setHTML(String html) {
-        this.webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+    private void setHTML(final String html) {
+        this.activity.runOnUiThread(new Thread() {
+            @Override
+            public void run() {
+                NetworkManager.this.webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+            }
+        });
     }
 
     public void setWifiName(String name) {
@@ -147,29 +178,20 @@ public class NetworkManager extends Thread {
         this.preferencesChanged = true;
     }
 
-    private void makeToast(String text) {
-        Toast.makeText(this.context, text, Toast.LENGTH_LONG);
-        // TODO
-        // needs to run in UI Thread
+    private void makeLog(String text) {
+        this.html += "<p>" + text + "</p>";
+        this.setHTML("<html><body>" + this.html + "</body></html>");
     }
 
-    private ArrayList<String> scanSubNet(String subnet) {
-        ArrayList<String> hosts = new ArrayList<String>();
-
-        InetAddress inetAddress = null;
-        for (int i = 1; i < 10; i++) {
-            Log.d("Scan-Sub-Net", "Trying: " + subnet + String.valueOf(i));
-            try {
-                inetAddress = InetAddress.getByName(subnet + String.valueOf(i));
-                if (inetAddress.isReachable(1000)) {
-                    hosts.add(inetAddress.getHostName());
-                    Log.d("Scan-Sub-Net Hostname:", inetAddress.getHostName());
-                }
-            } catch (Exception e) {
-                // shit happens
-            }
+    private String rawIPToString(int ip) throws UnknownHostException {
+        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            ip = Integer.reverseBytes(ip);
         }
+        byte[] IPByte = BigInteger.valueOf(ip).toByteArray();
+        return InetAddress.getByAddress(IPByte).getHostAddress();
+    }
 
-        return hosts;
+    public String ipToString(int ip) {
+        return String.format("%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
     }
 }

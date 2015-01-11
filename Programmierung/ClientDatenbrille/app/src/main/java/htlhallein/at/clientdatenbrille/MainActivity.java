@@ -2,9 +2,7 @@ package htlhallein.at.clientdatenbrille;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,7 +19,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.networkManager = new NetworkManager(this, (WebView) findViewById(R.id.webView));
+        this.networkManager = new NetworkManager(this, this, (WebView) findViewById(R.id.webView));
         this.networkManager.start();
     }
 
@@ -34,7 +32,7 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
             case R.id.action_settings: {
                 Intent intent = new Intent(this, SettingsActivity.class);
                 this.startActivity(intent);
