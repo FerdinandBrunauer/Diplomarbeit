@@ -145,8 +145,28 @@ public class NetworkManager extends Thread {
                 b = (this.deviceIP.getSubnetRaw() >> 8 & 0xff);
                 c = (this.deviceIP.getSubnetRaw() >> 16 & 0xff);
                 d = (this.deviceIP.getSubnetRaw() >> 24 & 0xff);
+                int possibleA, possibleB, possibleC, possibleD;
+                possibleA = (a == 255 ? 0 : (255 - a - 1));
+                possibleB = (b == 255 ? 0 : (255 - b - 1));
+                possibleC = (c == 255 ? 0 : (255 - c - 1));
+                possibleD = (d == 255 ? 0 : (255 - d - 1));
 
+                int possibilitys = 0;
+                if (possibleA == 0) {
+                    possibilitys = 1;
+                }
+                if (possibleB != 0) {
+                    possibilitys *= possibleB;
+                }
+                if (possibleC != 0) {
+                    possibilitys *= possibleC;
+                }
+                if (possibleD != 0) {
+                    possibilitys *= possibleD;
+                }
+                makeLog("Total Possible IP's in Network: \"" + possibilitys + "\"");
 
+                // TODO get all devices and find the server
             }
 
             try {
