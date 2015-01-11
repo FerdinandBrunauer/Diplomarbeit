@@ -7,19 +7,30 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.webkit.WebView;
 
+import org.apache.commons.net.util.SubnetUtils;
+
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import htlhallein.at.clientdatenbrille.htlhallein.at.clientdatenbrille.parallel.LoopBody;
+import htlhallein.at.clientdatenbrille.htlhallein.at.clientdatenbrille.parallel.Parallel;
 
 public class NetworkManager extends Thread {
 
+    private static final int TIMEOUT = 1000;
+    private static final int PORT = 6484;
     private WebView webView;
     private String html = "";
-
     private Context context;
     private Activity activity;
     private WifiManager wifiManager;
@@ -27,8 +38,6 @@ public class NetworkManager extends Thread {
     private int wifiNetId = -1;
     private String WifiName = "Datenbrille";
     private String WifiPassword = "Passwort1!";
-    private int timeout = 100;
-
     private boolean shouldClose = false;
     private boolean preferencesChanged = false;
 
@@ -137,36 +146,32 @@ public class NetworkManager extends Thread {
                 this.deviceIP = new IP(phoneIPRaw, phoneIP, subnetRaw, subnet);
             }
 
+            final ArrayList<String> respondingHosts = new ArrayList<String>();
             if (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
                 makeLog("Starting search for Host");
+                SubnetUtils utils = new SubnetUtils(this.deviceIP.getIpAdress(), this.deviceIP.getSubnet());
+                ArrayList<String> hosts = new ArrayList<String>(Arrays.asList(utils.getInfo().getAllAddresses()));
+                makeLog("Total possible IP-Adresses: \"" + hosts.size() + "\"");
 
-                int a, b, c, d;
-                a = (this.deviceIP.getSubnetRaw() & 0xff);
-                b = (this.deviceIP.getSubnetRaw() >> 8 & 0xff);
-                c = (this.deviceIP.getSubnetRaw() >> 16 & 0xff);
-                d = (this.deviceIP.getSubnetRaw() >> 24 & 0xff);
-                int possibleA, possibleB, possibleC, possibleD;
-                possibleA = (a == 255 ? 0 : (255 - a - 1));
-                possibleB = (b == 255 ? 0 : (255 - b - 1));
-                possibleC = (c == 255 ? 0 : (255 - c - 1));
-                possibleD = (d == 255 ? 0 : (255 - d - 1));
+                Parallel.ForEach(hosts, new LoopBody<String>() {
+                    @Override
+                    public void run(String ipAdress) {
+                        Log.v("Testing IP", ipAdress);
 
-                int possibilitys = 0;
-                if (possibleA == 0) {
-                    possibilitys = 1;
-                }
-                if (possibleB != 0) {
-                    possibilitys *= possibleB;
-                }
-                if (possibleC != 0) {
-                    possibilitys *= possibleC;
-                }
-                if (possibleD != 0) {
-                    possibilitys *= possibleD;
-                }
-                makeLog("Total Possible IP's in Network: \"" + possibilitys + "\"");
+                        boolean reachable = isHostReachable(ipAdress, ReachableMode.Socket);
 
-                // TODO get all devices and find the server
+                        if (reachable) {
+                            respondingHosts.add(ipAdress);
+                        }
+                    }
+                });
+                Log.v("Testing IP", "finished");
+            }
+
+            if (!this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
+                makeLog("Total count of Reachable Hosts: \"" + respondingHosts.size() + "\"");
+
+                // TODO FIND THE RIGHT HOST, CONNECT AND OPEN THE CONNECTION
             }
 
             try {
@@ -211,7 +216,55 @@ public class NetworkManager extends Thread {
         return InetAddress.getByAddress(IPByte).getHostAddress();
     }
 
+    private boolean isHostReachable(String ipAdress, ReachableMode mode) {
+        switch (mode) {
+            case Socket: {
+                Socket socket = null;
+                try {
+                    socket = new Socket(ipAdress, PORT);
+                } catch (IOException e) {
+                    // not reachable -> i do not care
+                    return false;
+                } finally {
+                    if (socket != null) { // when there was an exception ..
+                        try {
+                            socket.close();
+                            return true;
+                        } catch (IOException e) {
+                            // nope, not responding
+                            return false;
+                        }
+                    }
+                }
+            }
+            case InetAdress: {
+                try {
+                    InetAddress address = InetAddress.getByName(ipAdress);
+                    if (address.isReachable(1000)) {
+                        // Machine is turned on and can be pinged");
+                        return true;
+                    } else if (!address.getHostAddress().equals(address.getHostName())) {
+                        // Machine is known in a DNS lookup");
+                        return false;
+                    } else {
+                        // The host address and host name are equal, meaning the host name could not be resolved");
+                        return false;
+                    }
+                } catch (IOException e) {
+                    return false;
+                }
+            }
+            default:
+                return false;
+        }
+    }
+
     public String ipToString(int ip) {
         return String.format("%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
+    }
+
+    enum ReachableMode {
+        Socket,
+        InetAdress
     }
 }
