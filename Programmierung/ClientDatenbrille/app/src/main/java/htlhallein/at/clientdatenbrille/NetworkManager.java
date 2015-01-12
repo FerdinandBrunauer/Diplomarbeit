@@ -29,6 +29,7 @@ public class NetworkManager extends Thread {
 
     private static final int TIMEOUT = 1000;
     private static final int PORT = 6484;
+
     private WebView webView;
     private String html = "";
     private Context context;
@@ -54,10 +55,12 @@ public class NetworkManager extends Thread {
         try {
             this.WifiName = preferences.getString("preference_wifi_name", this.WifiName);
         } catch (Exception e) {
+            // Maybe the Preference does not exist any more?
         }
         try {
             this.WifiPassword = preferences.getString("preference_wifi_password", this.WifiPassword);
         } catch (Exception e) {
+            // Maybe the Preference does not exist any more?
         }
     }
 
@@ -129,6 +132,30 @@ public class NetworkManager extends Thread {
                 success = true;
             }
 
+            // 15 seconds time for getting a IP-Adress
+            long startTime = System.currentTimeMillis();
+            while(success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled() ) {
+                if(this.wifiManager.getConnectionInfo().getNetworkId() != -1) {
+                    int subnetRaw = this.wifiManager.getDhcpInfo().netmask;
+                    String subnet = ipToString(subnetRaw);
+                    // WIFI - Connection established but do we have already an IP ?
+                    if(subnet.compareTo("0.0.0.0") == 0) {
+                        success = true;
+                        break;
+                    }
+                }
+
+                if((System.currentTimeMillis() - startTime) > 15000) {
+                    success = false;
+                }
+
+                try {
+                    sleep(200);
+                } catch (Exception e) {
+                    // shit happens ...
+                }
+            }
+
             if (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
                 int phoneIPRaw = this.wifiManager.getConnectionInfo().getIpAddress();
                 String phoneIP = "";
@@ -146,11 +173,11 @@ public class NetworkManager extends Thread {
                 this.deviceIP = new IP(phoneIPRaw, phoneIP, subnetRaw, subnet);
             }
 
-            final ArrayList<String> respondingHosts = new ArrayList<String>();
+            final ArrayList<String> respondingHosts = new ArrayList<>();
             if (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
                 makeLog("Starting search for Host");
                 SubnetUtils utils = new SubnetUtils(this.deviceIP.getIpAdress(), this.deviceIP.getSubnet());
-                ArrayList<String> hosts = new ArrayList<String>(Arrays.asList(utils.getInfo().getAllAddresses()));
+                ArrayList<String> hosts = new ArrayList<>(Arrays.asList(utils.getInfo().getAllAddresses()));
                 makeLog("Total possible IP-Adresses: \"" + hosts.size() + "\"");
 
                 Parallel.ForEach(hosts, new LoopBody<String>() {
@@ -168,19 +195,36 @@ public class NetworkManager extends Thread {
                 Log.v("Testing IP", "finished");
             }
 
-            if (!this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
+            Socket serverConnection = null;
+            boolean connectionEtablished = false;
+            if (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
                 makeLog("Total count of Reachable Hosts: \"" + respondingHosts.size() + "\"");
-
-                // TODO FIND THE RIGHT HOST, CONNECT AND OPEN THE CONNECTION
+                if(respondingHosts.size() > 0) {
+                    for(String host : respondingHosts) {
+                        try {
+                            serverConnection = new Socket(host, PORT);
+                            // TODO handshake
+                            connectionEtablished = true;
+                        } catch (IOException e) {
+                            connectionEtablished = false;
+                        }
+                    }
+                } else {
+                    makeLog("No Host found.");
+                }
             }
 
+            while(success && connectionEtablished && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
+                // listen and listen and listen
+            }
+
+            makeLog("Connection closed -> Reconnect starting soon");
+
             try {
-                sleep(200);
+                sleep(5000);
             } catch (InterruptedException e) {
                 // Just to make sure, that the Loop don't waste too much resources
             }
-
-            break; // TODO REMOVE
         }
     }
 
