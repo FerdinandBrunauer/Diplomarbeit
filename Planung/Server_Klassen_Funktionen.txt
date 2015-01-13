@@ -22,18 +22,6 @@ Class GPS, NFC, QR-Code
 	- Implementiert Validator
 	- Implementiert Runnable
 	
-Interface DatenPunktEventListener
-	- fireEvent
-	
-Class DatenPunktEventHandler
-	- Privates Objekt ArrayList der DatenPunktEventListener
-	- statische funktion zum Feuern eines Events
-
-Class DatenPunktEventObjekt
-	- Erbt EventObjekt
-	- Beinhaltet den HTML - Code des Datenpunktes
-	- Beinhaltet die Position des Datenpunktes
-	
 Class Server
 	- TCP-Server
 	- ArrayList der Verbindungen
@@ -42,14 +30,6 @@ Class Server
 	- fügt sich selbst als Listener zu DatenPunktEventHandler hinzu
 	- fügt sich selbst als Listener zu ScrollEventListener hinzu
 	- verwaltet WLAN-Hotspot
-	
-Class ScrollEventHandler
-	- Privates Objekt ArrayList der DatenPunktEventListener
-	- statische funktion zum Feuern eines Events
-
-Interface ScrollEventListener
-	- fireScrollUp
-	- fireScrollDown
 	
 Class MainActivity 
 	- Membervariable Server

@@ -1,4 +1,4 @@
-package at.htlhallein.serverdatenbrille;
+package at.htlhallein.activitys;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
