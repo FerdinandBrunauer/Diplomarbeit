@@ -1,0 +1,80 @@
+// ====================================================================================================	//
+// 																										//
+// 							Benötigte Klassen und deren Funktionen										//
+//																										//
+// ====================================================================================================	//
+
+Interface Validator
+	- Funktion welche die Richtigkeit der Punkte überprüft und falls zutrifft ein Event feuert
+	
+Class SuperDatenPunkt
+	- Privates Objekt einer DatenbankQueue
+	
+Class DatenbankQueue
+	- Threadsafe
+	- final statischer Datenbankname
+	- erstellen falls nicht vorhanden
+
+Interface DatenbankJob
+
+Class GPS, NFC, QR-Code
+	- Erbt SuperDatenPunkt
+	- Implementiert Validator
+	- Implementiert Runnable
+	
+Interface DatenPunktEventListener
+	- fireEvent
+	
+Class DatenPunktEventHandler
+	- Privates Objekt ArrayList der DatenPunktEventListener
+	- statische funktion zum Feuern eines Events
+
+Class DatenPunktEventObjekt
+	- Erbt EventObjekt
+	- Beinhaltet den HTML - Code des Datenpunktes
+	- Beinhaltet die Position des Datenpunktes
+	
+Class Server
+	- TCP-Server
+	- ArrayList der Verbindungen
+	- implementiert DatenPunktEventListener
+	- implementiert ScrollEventListener
+	- fügt sich selbst als Listener zu DatenPunktEventHandler hinzu
+	- fügt sich selbst als Listener zu ScrollEventListener hinzu
+	- verwaltet WLAN-Hotspot
+	
+Class ScrollEventHandler
+	- Privates Objekt ArrayList der DatenPunktEventListener
+	- statische funktion zum Feuern eines Events
+
+Interface ScrollEventListener
+	- fireScrollUp
+	- fireScrollDown
+	
+Class MainActivity 
+	- Membervariable Server
+	- Membervariable GPS-Punkt
+	- Membervariable NFC-Punkt
+	- Membervariable QR-Code-Punkt
+	- Einstellungen Funktion startet / stopt gps, nfc und qr punkte
+	- Möglichkeit um die Datenbank zu updaten
+	
+	
+// ====================================================================================================	//
+// 																										//
+// 											Datenbankentwurf											//
+//																										//
+// ====================================================================================================	//
+
+Tabelle Datenpunkt
+	- id
+	- idPackage
+	- latitude
+	- longitude
+	- htmlText
+	
+Tabelle Package
+	- idPackage
+	- kmzLink
+	- name
+	- updateTimestamp
