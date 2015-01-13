@@ -1,4 +1,4 @@
-package at.htlhallein.scroll;
+package at.htlhallein.event.scroll;
 
 /**
  * Copyright 2015 (C) HTL - Hallein

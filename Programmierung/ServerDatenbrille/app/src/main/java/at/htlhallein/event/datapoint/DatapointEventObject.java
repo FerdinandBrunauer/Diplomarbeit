@@ -1,4 +1,4 @@
-package at.htlhallein.datapoint;
+package at.htlhallein.event.datapoint;
 
 import java.util.EventObject;
 

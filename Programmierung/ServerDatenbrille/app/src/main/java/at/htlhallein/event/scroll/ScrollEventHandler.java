@@ -1,4 +1,4 @@
-package at.htlhallein.scroll;
+package at.htlhallein.event.scroll;
 
 import java.util.ArrayList;
 
@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * Author:      Ferdinand
  */
 public class ScrollEventHandler {
-    private static ArrayList<ScrollEventListener> eventListener = new ArrayList<>();
+    private static ArrayList<ScrollEventListener> eventListener = new ArrayList<ScrollEventListener>();
 
     public static void addListener(ScrollEventListener eventListener1) {
         eventListener.add(eventListener1);
@@ -20,7 +20,7 @@ public class ScrollEventHandler {
 
     public static void fireScrollEvent(ScrollEventObject eventObject) {
         for (ScrollEventListener listener : eventListener) {
-            listener.fireScrollEvent(eventObject);
+            listener.scrollEventOccurred(eventObject);
         }
     }
 }

@@ -6,6 +6,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import at.htlhallein.server.Server;
+
 /**
  * Copyright 2015 (C) HTL - Hallein
  * Created on:  13.01.2015
@@ -13,16 +15,18 @@ import android.view.MenuItem;
  */
 public class MainActivity extends ActionBarActivity {
 
+    private Server server;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        this.server = new Server();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        // menu.add(Menu.NONE, 0, 0, "Einstellungen");
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -37,8 +41,9 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
-            return true;
         }
+
+        // TODO do we have to enable or disable any datapoint?
 
         return super.onOptionsItemSelected(item);
     }

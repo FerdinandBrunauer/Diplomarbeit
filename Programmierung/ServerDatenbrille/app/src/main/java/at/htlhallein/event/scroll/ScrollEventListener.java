@@ -1,4 +1,4 @@
-package at.htlhallein.scroll;
+package at.htlhallein.event.scroll;
 
 import java.util.EventListener;
 
@@ -8,5 +8,5 @@ import java.util.EventListener;
  * Author:      Ferdinand
  */
 public interface ScrollEventListener extends EventListener {
-    public void fireScrollEvent(ScrollEventObject eventObject);
+    public void scrollEventOccurred(ScrollEventObject eventObject);
 }

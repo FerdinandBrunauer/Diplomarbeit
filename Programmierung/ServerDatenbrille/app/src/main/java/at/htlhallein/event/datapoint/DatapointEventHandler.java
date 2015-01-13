@@ -1,4 +1,4 @@
-package at.htlhallein.datapoint;
+package at.htlhallein.event.datapoint;
 
 import java.util.ArrayList;
 
@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * Author:      Ferdinand
  */
 public class DatapointEventHandler {
-    private static ArrayList<DatapointEventListener> eventListener = new ArrayList<>();
+    private static ArrayList<DatapointEventListener> eventListener = new ArrayList<DatapointEventListener>();
 
     public static void addListener(DatapointEventListener eventListener1) {
         eventListener.add(eventListener1);
@@ -20,7 +20,7 @@ public class DatapointEventHandler {
 
     public static void fireDatapointEvent(DatapointEventObject eventObject) {
         for (DatapointEventListener listener : eventListener) {
-            listener.fireDatapointEvent(eventObject);
+            listener.datapointEventOccurred(eventObject);
         }
     }
 }

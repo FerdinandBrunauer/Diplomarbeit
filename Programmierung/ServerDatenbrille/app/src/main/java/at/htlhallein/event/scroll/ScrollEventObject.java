@@ -1,4 +1,4 @@
-package at.htlhallein.scroll;
+package at.htlhallein.event.scroll;
 
 import java.util.EventObject;
 
