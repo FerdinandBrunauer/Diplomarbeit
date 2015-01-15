@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Digital Salzburg</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Einstellungen</string>
-    <string name="NFCverwenden">NFC verwenden</string>
-    <string name="GPSverwenden">GPS verwenden</string>
-    <string name="Blickfeldtoleranz">Blickfeldtoleranz</string>
-    <string name="QRverwenden">QR verwenden</string>
-    <string name="Datenpunkte">Datenpunkte</string>
-    <string name="WLANhotspot">WLAN-Hotspot</string>
-    <string name="WLANname">Name</string>
-    <string name="WLANpasswort">Passwort</string>
-    <string name="Anzeigedaten">Anzeigedaten</string>
-    <string name="Museen">Museen</string>
+    <string name="app_name">Server Datenbrille</string>
+
+    <string name="settings">Einstellungen</string>
+
+    <string name="first_tab_name">Steuerung</string>
+    <string name="second_tab_name">QR-Code</string>
+    <string name="third_tab_name">Datenpunkte</string>
+    <string name="fourth_tab_name">Einstellungen</string>
+
+    <string name="arrow_description">Pfeil für Scroll-Event</string>
 
 </resources>

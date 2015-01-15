@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="preferences_category_datapoints">Datenpunkte ??</string>
+
+    <!-- GPS -->
+    <string name="preferences_category_gps">GPS</string>
+    <string name="preferences_preference_gps_enabled">GPS ein/aus</string>
+    <bool name="preferences_preference_gps_enabled_default">true</bool>
+    <string name="preferences_preference_gps_viewangletolerance">Blickfeldtoleranz</string>
+    <string-array name="preferences_preference_gps_viewangletolerance_entries">
+        <item>1°</item>
+        <item>2°</item>
+        <item>5°</item>
+        <item>10°</item>
+        <item>15°</item>
+        <item>20°</item>
+        <item>30°</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_viewangletolerance_values">
+        <item>1</item>
+        <item>2</item>
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>30</item>
+    </string-array>
+    <string name="preferences_preference_gps_viewangletolerance_default">10</string>
+    <string name="preferences_preference_gps_viewmaxdistance">Maximale Distanz der Punkte</string>
+    <string-array name="preferences_preference_gps_viewmaxdistance_entries">
+        <item>1m</item>
+        <item>2m</item>
+        <item>5m</item>
+        <item>10m</item>
+        <item>30m</item>
+        <item>50m</item>
+        <item>100m</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_viewmaxdistance_values">
+        <item>1</item>
+        <item>2</item>
+        <item>5</item>
+        <item>10</item>
+        <item>30</item>
+        <item>50</item>
+        <item>100</item>
+    </string-array>
+    <string name="preferences_preference_gps_viewmaxdistance_default">10</string>
+    <!-- NFC -->
+    <string name="preferences_category_nfc">NFC</string>
+    <string name="preferences_preference_nfc_enabled">GPS ein/aus</string>
+    <bool name="preferences_preference_nfc_enabled_default">true</bool>
+    <!-- QR -->
+    <string name="preferences_category_qrcode">QR - Code</string>
+    <string name="preferences_preference_qrcode_enabled">GPS ein/aus</string>
+    <bool name="preferences_preference_qrcode_enabled_default">true</bool>
+
+    <string name="preferences_category_datapackages">Datenpakete</string>
+    <string name="preferences_preference_museen_enabled">Museen ein/aus</string>
+    <bool name="preferences_preferences_museen_enabled_default">true</bool>
+
+</resources>

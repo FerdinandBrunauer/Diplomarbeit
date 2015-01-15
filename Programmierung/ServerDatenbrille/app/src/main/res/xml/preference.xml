@@ -1,0 +1,42 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/preferences_category_gps">
+        <CheckBoxPreference
+            android:defaultValue="@bool/preferences_preference_gps_enabled_default"
+            android:key="@string/preferences_preference_gps_enabled"
+            android:title="@string/preferences_preference_gps_enabled" />
+        <ListPreference
+            android:defaultValue="@string/preferences_preference_gps_viewangletolerance_default"
+            android:dependency="@string/preferences_preference_gps_enabled"
+            android:entries="@array/preferences_preference_gps_viewangletolerance_entries"
+            android:entryValues="@array/preferences_preference_gps_viewangletolerance_values"
+            android:key="@string/preferences_preference_gps_viewangletolerance"
+            android:title="@string/preferences_preference_gps_viewangletolerance" />
+        <ListPreference
+            android:defaultValue="@string/preferences_preference_gps_viewmaxdistance_default"
+            android:dependency="@string/preferences_preference_gps_enabled"
+            android:entries="@array/preferences_preference_gps_viewmaxdistance_entries"
+            android:entryValues="@array/preferences_preference_gps_viewmaxdistance_values"
+            android:key="@string/preferences_preference_gps_viewmaxdistance"
+            android:title="@string/preferences_preference_gps_viewmaxdistance" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/preferences_category_nfc">
+        <CheckBoxPreference
+            android:defaultValue="@bool/preferences_preference_nfc_enabled_default"
+            android:key="@string/preferences_preference_nfc_enabled"
+            android:title="@string/preferences_preference_nfc_enabled" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/preferences_category_qrcode">
+        <CheckBoxPreference
+            android:defaultValue="@bool/preferences_preference_qrcode_enabled_default"
+            android:key="@string/preferences_preference_qrcode_enabled"
+            android:title="@string/preferences_preference_qrcode_enabled" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/preferences_category_datapackages">
+        <CheckBoxPreference
+            android:defaultValue="@bool/preferences_preferences_museen_enabled_default"
+            android:key="@string/preferences_preference_museen_enabled"
+            android:title="@string/preferences_preference_museen_enabled" />
+    </PreferenceCategory>
+</PreferenceScreen>
