@@ -12,6 +12,11 @@ public class Fragment_Third_Datapoints extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_third_datapoints, container, false);
+
+        // TODO design datapoints fragment
+        // TODO list of all Datapoints (especially the LIST!)
+        // TODO crawler logic here
+
         return rootView;
     }
 }

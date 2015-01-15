@@ -1,5 +1,7 @@
 package server;
 
+import android.net.wifi.WifiManager;
+
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -41,6 +43,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, Runn
     @Override
     public void run() {
         // TODO create WIFI Hotspot
+
         // TODO start TCP Server
     }
 

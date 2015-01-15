@@ -11,13 +11,15 @@ import android.view.MenuItem;
 
 import activity.adapter.TabsPagerAdapter;
 import htlhallein.at.serverdatenbrille.R;
+import server.Server;
 
 @SuppressWarnings("deprecation")
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 
     private ViewPager myViewPager;
-//    private TabsPagerAdapter myTabsPagerAdapter;
+//    private TabsPagerAdapter myTabsPagerAdapter; // temporarily kept as a variable in the constructor
     private ActionBar myActionBar;
+    private Server server;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             public void onPageScrollStateChanged(int state) {
             }
         });
+
+        this.server = new Server();
+        new Thread(this.server).start();
     }
 
     @Override
