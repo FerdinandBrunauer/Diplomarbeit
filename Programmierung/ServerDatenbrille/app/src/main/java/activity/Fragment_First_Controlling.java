@@ -75,4 +75,16 @@ public class Fragment_First_Controlling extends Fragment {
 
         return rootView;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.v("Controlling", "resume");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.v("Controlling", "pause");
+    }
 }

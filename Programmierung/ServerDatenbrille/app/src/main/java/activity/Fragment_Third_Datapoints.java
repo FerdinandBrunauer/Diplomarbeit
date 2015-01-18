@@ -2,6 +2,7 @@ package activity;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,5 +19,17 @@ public class Fragment_Third_Datapoints extends Fragment {
         // TODO crawler logic here
 
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.v("Datapoints", "resume");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.v("Datapoints", "pause");
     }
 }

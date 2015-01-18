@@ -16,7 +16,6 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int index) {
-
         switch (index) {
             case 0:
                 return new Fragment_First_Controlling();
