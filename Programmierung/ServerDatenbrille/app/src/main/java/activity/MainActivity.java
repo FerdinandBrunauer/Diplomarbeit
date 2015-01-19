@@ -4,10 +4,8 @@ import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -19,7 +17,7 @@ import server.Server;
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 
     private ViewPager myViewPager;
-    //    private TabsPagerAdapter myTabsPagerAdapter; // temporarily kept as a variable in the constructor
+    private TabsPagerAdapter myTabsPagerAdapter;
     private ActionBar myActionBar;
     private Server server;
 
@@ -28,13 +26,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        final TabsPagerAdapter myTabsPagerAdapter;
-
         this.myViewPager = (ViewPager) findViewById(R.id.pager);
         this.myActionBar = getActionBar();
-        myTabsPagerAdapter = new TabsPagerAdapter(getSupportFragmentManager());
+        this.myTabsPagerAdapter = new TabsPagerAdapter(getSupportFragmentManager());
 
-        this.myViewPager.setAdapter(myTabsPagerAdapter);
+        this.myViewPager.setAdapter(this.myTabsPagerAdapter);
         this.myActionBar.setHomeButtonEnabled(false);
         this.myActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
@@ -45,20 +41,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         this.myViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-                Log.v("ViewSelected", "" + position);
-
                 MainActivity.this.myActionBar.setSelectedNavigationItem(position);
-                Fragment selectedFragment = myTabsPagerAdapter.getItem(position);
-
-                int indexPause1 = position - 1;
-                int indexPause2 = position + 1;
-                int indexResume = position;
-
-                if(indexPause1 == -1)
-                    indexPause1 = 2;
-                if(indexPause2 == 3)
-                    indexPause2 = 0;
-
+                MainActivity.this.myTabsPagerAdapter.setActive(position);
             }
 
             @Override

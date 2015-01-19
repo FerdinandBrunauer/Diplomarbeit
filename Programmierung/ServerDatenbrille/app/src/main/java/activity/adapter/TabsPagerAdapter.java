@@ -10,27 +10,44 @@ import activity.Fragment_Third_Datapoints;
 
 public class TabsPagerAdapter extends FragmentPagerAdapter {
 
+    private Fragment[] fragments = {new Fragment_First_Controlling(), new Fragment_Second_QRCode(), new Fragment_Third_Datapoints()};
+
     public TabsPagerAdapter(FragmentManager fm) {
         super(fm);
     }
 
     @Override
     public Fragment getItem(int index) {
-        switch (index) {
-            case 0:
-                return new Fragment_First_Controlling();
-            case 1:
-                return new Fragment_Second_QRCode();
-            case 2:
-                return new Fragment_Third_Datapoints();
+        if((index >= 0) && (index < fragments.length)) {
+            return fragments[index];
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     @Override
     public int getCount() {
-        return 3;
+        return fragments.length;
+    }
+
+    public void setActive(int index) {
+        if((index >= 0) && (index < fragments.length)) {
+            fragments[index].onResume();
+
+            for(int i = 0; i < fragments.length; i++) {
+                if(i == index) {
+                    continue;
+                } else {
+                    setInactive(i);
+                }
+            }
+        }
+    }
+
+    public void setInactive(int index) {
+        if((index >= 0) && (index < fragments.length)) {
+            fragments[index].onPause();
+        }
     }
 
 }
