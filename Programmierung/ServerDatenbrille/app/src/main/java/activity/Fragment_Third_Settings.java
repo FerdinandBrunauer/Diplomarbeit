@@ -1,13 +1,11 @@
 package activity;
 
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 
+import activity.preference.PreferenceFragment;
 import htlhallein.at.serverdatenbrille.R;
 
-@SuppressWarnings("deprecation")
-public class SettingsActivity extends PreferenceActivity {
-
+public class Fragment_Third_Settings extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

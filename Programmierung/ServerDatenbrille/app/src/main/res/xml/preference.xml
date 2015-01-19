@@ -26,12 +26,6 @@
             android:key="@string/preferences_preference_nfc_enabled"
             android:title="@string/preferences_preference_nfc_enabled" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/preferences_category_qrcode">
-        <CheckBoxPreference
-            android:defaultValue="@bool/preferences_preference_qrcode_enabled_default"
-            android:key="@string/preferences_preference_qrcode_enabled"
-            android:title="@string/preferences_preference_qrcode_enabled" />
-    </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preferences_category_datapackages">
         <CheckBoxPreference

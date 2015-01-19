@@ -6,9 +6,8 @@
     <string name="settings">Einstellungen</string>
 
     <string name="first_tab_name">Steuerung</string>
-    <string name="second_tab_name">QR-Code</string>
-    <string name="third_tab_name">Datenpunkte</string>
-    <string name="fourth_tab_name">Einstellungen</string>
+    <string name="second_tab_name">Datenpunkte</string>
+    <string name="third_tab_name">Einstellungen</string>
 
     <string name="arrow_description">Pfeil für Scroll-Event</string>
 

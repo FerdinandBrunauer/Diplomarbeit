@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import activity.adapter.TabsPagerAdapter;
@@ -31,8 +32,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         this.myTabsPagerAdapter = new TabsPagerAdapter(getSupportFragmentManager());
 
         this.myViewPager.setAdapter(this.myTabsPagerAdapter);
-        this.myActionBar.setHomeButtonEnabled(false);
         this.myActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        this.myActionBar.setDisplayShowHomeEnabled(false);
+        this.myActionBar.setDisplayHomeAsUpEnabled(false);
+        this.myActionBar.setIcon(R.drawable.ic_launcher);
 
         this.myActionBar.addTab(this.myActionBar.newTab().setText(R.string.first_tab_name).setTabListener(this));
         this.myActionBar.addTab(this.myActionBar.newTab().setText(R.string.second_tab_name).setTabListener(this));
@@ -42,7 +45,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             @Override
             public void onPageSelected(int position) {
                 MainActivity.this.myActionBar.setSelectedNavigationItem(position);
-                MainActivity.this.myTabsPagerAdapter.setActive(position);
             }
 
             @Override
@@ -54,7 +56,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             }
         });
 
-        this.server = new Server();
+        this.server = new Server(this);
         new Thread(this.server).start();
     }
 
@@ -75,23 +77,21 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        boolean temp = super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.main_activity, menu);
-        return temp;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity_actions, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        int id = item.getItemId();
-        switch (id) {
-            case R.id.settings: {
-                Intent intent = new Intent(this, SettingsActivity.class);
-                this.startActivity(intent);
+        switch (item.getItemId()) {
+            case R.id.qr_code_action: {
+                Intent intent = new Intent(this, QRCodeActivity.class);
+                startActivity(intent);
                 return true;
             }
-            default: {
+            default:
                 return false;
-            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package server;
 
+import android.content.Context;
 import android.net.wifi.WifiManager;
 
 import java.net.Socket;
@@ -23,28 +24,82 @@ import event.scroll.ScrollEventObject;
  * Author:      Ferdinand
  */
 public class Server implements DatapointEventListener, ScrollEventListener, Runnable {
+    private Context context;
+
     private GPSDatapoint gpsDatapoint;
     private NFCDatapoint nfcDatapoint;
     private QRDatapoint qrDatapoint;
 
     private ArrayList<Socket> clients;
+    private WifiManager myWifiManager;
 
-    public Server() {
+    public Server(Context context) {
+        this.context = context;
+
         DatapointEventHandler.addListener(this);
         ScrollEventHandler.addListener(this);
 
-        this.gpsDatapoint = new GPSDatapoint(new GPSValidator());
-        this.nfcDatapoint = new NFCDatapoint(new NFC_QRValidator());
-        this.qrDatapoint = new QRDatapoint(new NFC_QRValidator());
+        gpsDatapoint = new GPSDatapoint(new GPSValidator());
+        nfcDatapoint = new NFCDatapoint(new NFC_QRValidator());
+        qrDatapoint = new QRDatapoint(new NFC_QRValidator());
 
-        this.clients = new ArrayList<Socket>();
+        clients = new ArrayList<Socket>();
+        this.myWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
     }
 
     @Override
     public void run() {
-        // TODO create WIFI Hotspot
+        if (!myWifiManager.isWifiEnabled())
+            myWifiManager.setWifiEnabled(true);
+
+//        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+//
+//        Method[] wmMethod = myWifiManager.getClass().getDeclaredMethods();
+//        boolean methodFound = false;
+//        for (Method method : wmMethod) {
+//            if (method.getName().equals("setWifiApEnabled")) {
+//                methodFound = true;
+//                WifiConfiguration myWifiConfiguration = new WifiConfiguration();
+//                myWifiConfiguration.SSID = "\"" + preferences.getString(context.getString(R.string.preferences_preference_wifihotspot_name), context.getString(R.string.preferences_preference_wifihotspot_name_default)) + "\"";
+//                myWifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+//                myWifiConfiguration.preSharedKey = "\"" + preferences.getString(context.getString(R.string.preferences_preference_wifihotspot_password), context.getString(R.string.preferences_preference_wifihotspot_password_default)) + "\"";
+//                try {
+//                    boolean apstatus = (Boolean) method.invoke(myWifiManager, myWifiConfiguration, true);
+//                    for (Method isWifiApEnabledmethod : wmMethod) {
+//                        if (isWifiApEnabledmethod.getName().equals("isWifiApEnabled")) {
+//                            while (!(Boolean) isWifiApEnabledmethod.invoke(myWifiManager)) {
+//                            }
+//                            ;
+//                            for (Method method1 : wmMethod) {
+//                                if (method1.getName().equals("getWifiApState")) {
+//                                    int apstate;
+//                                    apstate = (Integer) method1.invoke(myWifiManager);
+//                                    //                    netConfig=(WifiConfiguration)method1.invoke(wifi);
+//                                    //statusView.append("\nSSID:"+netConfig.SSID+"\nPassword:"+netConfig.preSharedKey+"\n");
+//                                }
+//                            }
+//                        }
+//                    }
+//                    if (apstatus) {
+//                        Log.v("Hotspot", "SUCCESS");
+//                    } else {
+//                        Log.v("Hotspot", "FAILED");
+//                    }
+//                } catch (IllegalArgumentException e) {
+//                    e.printStackTrace();
+//                } catch (IllegalAccessException e) {
+//                    e.printStackTrace();
+//                } catch (InvocationTargetException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+
+// TODO create WIFI Hotspot
 
         // TODO start TCP Server
+
+//        myWifiManager.setWifiEnabled(false);
     }
 
     @Override
