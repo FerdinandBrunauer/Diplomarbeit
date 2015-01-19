@@ -11,4 +11,6 @@
 
     <string name="arrow_description">Pfeil für Scroll-Event</string>
 
+    <string name="qr_code_label">QR-Code</string>
+
 </resources>
