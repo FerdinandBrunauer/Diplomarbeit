@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiConfiguration;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import java.net.Socket;
 import java.util.ArrayList;
@@ -14,7 +15,11 @@ import event.datapoint.DatapointEventObject;
 import event.scroll.ScrollEventHandler;
 import event.scroll.ScrollEventListener;
 import event.scroll.ScrollEventObject;
+import event.tcpSocket.TCPSocketEventListener;
+import event.tcpSocket.TCPSocketEventObject;
 import htlhallein.at.serverdatenbrille.R;
+import server.tcpService.State;
+import server.tcpService.TCPServer;
 import server.wifiHotspotUtils.WifiApManager;
 
 /**
@@ -22,13 +27,14 @@ import server.wifiHotspotUtils.WifiApManager;
  * Created on:  13.01.2015
  * Author:      Ferdinand
  */
-public class Server implements DatapointEventListener, ScrollEventListener, Runnable {
+public class Server implements DatapointEventListener, ScrollEventListener, TCPSocketEventListener, Runnable {
     private Context context;
 
     private SharedPreferences preferences;
 
     private ArrayList<Socket> clients;
     private WifiApManager myWifiManager;
+    private TCPServer tcpServer;
 
     public Server(Context context) {
         this.context = context;
@@ -38,21 +44,32 @@ public class Server implements DatapointEventListener, ScrollEventListener, Runn
 
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        clients = new ArrayList<Socket>();
+        clients = new ArrayList<>();
         this.myWifiManager = new WifiApManager(context);
+
+        this.tcpServer = new TCPServer();
     }
 
     @Override
     public void run() {
         enableWifiAP();
 
-        try {
-            Thread.sleep(60000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        this.tcpServer.start();
+        while(this.tcpServer.getMyState() != State.STARTED) {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                // shit happens
+            }
         }
 
-        // TODO start TCP Server
+        while (this.tcpServer.getMyState() != State.STOPPED) {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                this.tcpServer.stop();
+            }
+        }
 
         disableWifiAP();
     }
@@ -71,11 +88,27 @@ public class Server implements DatapointEventListener, ScrollEventListener, Runn
 
     @Override
     public void datapointEventOccurred(DatapointEventObject eventObject) {
-        // TODO implement sending HTML
+        Log.v("Client", "connected");
+
+        sendMessageToAllClients(eventObject.getHtmlText());
     }
 
     @Override
     public void scrollEventOccurred(ScrollEventObject eventObject) {
         // TODO implement sending Scroll
+    }
+
+    private void sendMessageToAllClients(String message) {
+        for (int i = 0; i < clients.size(); i++) {
+            if (i < clients.size()) { // Threadsafe
+                // TODO client reachable? when not then remove me
+                // TODO when client removed, then i-=1;
+            }
+        }
+    }
+
+    @Override
+    public void scrollEventOccurred(TCPSocketEventObject eventObject) {
+        this.clients.add(eventObject.getSocket());
     }
 }

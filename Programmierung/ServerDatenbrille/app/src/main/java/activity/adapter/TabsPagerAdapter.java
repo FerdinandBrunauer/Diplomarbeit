@@ -10,7 +10,7 @@ import activity.Fragment_Third_Settings;
 
 public class TabsPagerAdapter extends FragmentPagerAdapter {
 
-    private Fragment[] fragments = {new Fragment_First_Controlling(), new Fragment_Second_Datapoints(), new Fragment_Third_Settings()}; // TODO
+    private Fragment[] fragments = {new Fragment_First_Controlling(), new Fragment_Second_Datapoints(), new Fragment_Third_Settings()};
 
     public TabsPagerAdapter(FragmentManager fm) {
         super(fm);

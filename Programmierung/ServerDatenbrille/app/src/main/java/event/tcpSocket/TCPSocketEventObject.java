@@ -3,8 +3,6 @@ package event.tcpSocket;
 import java.net.Socket;
 import java.util.EventObject;
 
-import server.tcpService.TcpServer;
-
 /**
  * Copyright 2015 (C) HTL - Hallein
  * Created on:  13.01.2015
@@ -12,19 +10,15 @@ import server.tcpService.TcpServer;
  */
 public class TCPSocketEventObject extends EventObject {
 
-    private TcpServer tcpServer;
+    private Socket socket;
 
-    public TCPSocketEventObject(Object source, TcpServer server) {
+    public TCPSocketEventObject(Object source, Socket socket) {
         super(source);
-        this.tcpServer = server;
-    }
-
-    public TcpServer.State getServerState() {
-        return tcpServer.getState();
+        this.socket = socket;
     }
 
     public Socket getSocket() {
-        return tcpServer.getSocket();
+        return socket;
     }
 
 }
