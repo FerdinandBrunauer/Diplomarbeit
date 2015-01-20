@@ -11,7 +11,7 @@ import htlhallein.at.serverdatenbrille.R;
 public class Fragment_Second_Datapoints extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_third_datapoints, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_second_datapoints, container, false);
 
         // TODO design datapoints fragment
 

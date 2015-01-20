@@ -4,9 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <ExpandableListView
+        android:id="@+id/datapointList"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="QR-Code" />
+        android:layout_gravity="center_horizontal" />
 </LinearLayout>

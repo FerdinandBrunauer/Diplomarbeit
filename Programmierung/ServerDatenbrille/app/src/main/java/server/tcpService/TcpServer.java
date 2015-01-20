@@ -1,5 +1,6 @@
 package server.tcpService;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -7,41 +8,42 @@ import event.tcpSocket.TCPSocketEventHandler;
 import event.tcpSocket.TCPSocketEventObject;
 
 public class TCPServer {
+    public final static int PORT = 1234;
 
-    public final static int PORT = 4567;
+    private TcpServerState currentState = TcpServerState.STOPPED;
 
-    private Thread myIOThread;
-    private ServerSocket myTcpServer;
-
-    private State myState = State.STOPPED;
+    @SuppressWarnings("unused")
+    private TCPServer This = this; // to make it ThreadSafe
+    private Thread ioThread;
+    private ServerSocket tcpServer;
 
     public synchronized void start() {
-        if (myState == State.STOPPED) {
-            assert myIOThread == null : myIOThread;
+        if (this.currentState == TcpServerState.STOPPED) {
+            assert this.ioThread == null : this.ioThread;
             Runnable run = new Runnable() {
                 @Override
                 public void run() {
-                    runServer();
-                    myIOThread = null;
-                    myState = State.STOPPED;
+                    TCPServer.this.runServer();
+                    TCPServer.this.ioThread = null;
+                    TCPServer.this.currentState = TcpServerState.STOPPED;
                 }
             };
 
-            myIOThread = new Thread(run, this.getClass().getName());
+            this.ioThread = new Thread(run, this.getClass().getName());
 
-            this.myState = State.STARTING;
-            myIOThread.start();
+            this.currentState = TcpServerState.STARTING;
+            this.ioThread.start();
         }
     }
 
     public synchronized void stop() {
-        if (myState == State.STARTED) {
-            myState = State.STOPPING;
-            if (myTcpServer != null) {
+        if (this.currentState == TcpServerState.STARTED) {
+            this.currentState = TcpServerState.STOPPING;
+            if (this.tcpServer != null) {
                 try {
-                    this.myTcpServer.close();
-                } catch (Exception e) {
-                    // I can not do anything against that ...
+                    this.tcpServer.close();
+                } catch (IOException exc) {
+                    System.err.println("An error occurred while closing the TCP server. " + "This may have left the server in an undefined state. " + exc.getMessage());
                 }
             }
         }
@@ -49,41 +51,50 @@ public class TCPServer {
 
     protected void runServer() {
         try {
-            myTcpServer = new ServerSocket(PORT);
-            myState = State.STARTED;
+            this.tcpServer = new ServerSocket(TCPServer.PORT);
+            this.currentState = TcpServerState.STARTED;
 
-            while (myTcpServer.isClosed()) {
+            while (!this.tcpServer.isClosed()) {
                 synchronized (this) {
-                    if (myState == State.STOPPING)
-                        myTcpServer.close();
+                    if (this.currentState == TcpServerState.STOPPING)
+                        this.tcpServer.close();
                 }
 
-                if (!myTcpServer.isClosed()) {
-                    Socket client = myTcpServer.accept();
-                    TCPSocketEventObject eventObject = new TCPSocketEventObject(this, client);
-                    TCPSocketEventHandler.fireScrollEvent(eventObject);
+                if (!this.tcpServer.isClosed()) {
+                    // ////// B L O C K I N G
+                    Socket newClient = this.tcpServer.accept();
+                    // ////// B L O C K I N G
+                    TCPSocketEventObject eventObject = new TCPSocketEventObject(this, newClient);
+                    TCPSocketEventHandler.fireTCPSocketEvent(eventObject);
                 }
             }
-        } catch (Exception e) {
-            if (myState == State.STOPPING) {
-                try {
-                    myTcpServer.close();
-                } catch (Exception e1) {
-                    // I can not do anything against that ...
+
+        } catch (Exception exc) {
+            synchronized (this) {
+                if (this.currentState == TcpServerState.STOPPING) {
+                    try {
+                        this.tcpServer.close();
+                    } catch (IOException exc2) {
+                        System.err.println("An error occurred while closing the TCP server. " + "This may have left the server in an undefined state. " + exc2.getMessage());
+                    }
+                } else {
+                    System.err.println("Server closed unexpectedly: " + exc.getMessage() + exc.getMessage());
                 }
-            } // else -> closed unexpectically .. Shit happens
+            }
         } finally {
-            if (myTcpServer != null) {
+            this.currentState = TcpServerState.STOPPING;
+            if (this.tcpServer != null) {
                 try {
-                    myTcpServer.close();
-                } catch (Exception ex2) {
-                    // Error while closing TCP - Server
+                    this.tcpServer.close();
+                } catch (IOException exc2) {
+                    System.err.println("An error occurred while closing the TCP server. " + "This may have left the server in an undefined state. " + exc2.getMessage());
                 }
             }
+            this.tcpServer = null;
         }
     }
 
-    public synchronized State getMyState() {
-        return myState;
+    public TcpServerState getState() {
+        return this.currentState;
     }
 }

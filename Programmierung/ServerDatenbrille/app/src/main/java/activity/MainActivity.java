@@ -57,7 +57,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         });
 
         this.server = new Server(this);
-        new Thread(this.server).start();
+//        new Thread(this.server).start(); TODO FOR DEBUGGING DEACTIVATED
     }
 
     @Override

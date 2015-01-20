@@ -5,6 +5,6 @@ package server.tcpService;
  * Created on:  20.01.2015
  * Author:      Ferdinand
  */
-public enum State {
+public enum TcpServerState {
     STARTING, STARTED, STOPPING, STOPPED
 }

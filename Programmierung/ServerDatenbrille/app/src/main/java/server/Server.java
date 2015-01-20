@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 import event.datapoint.DatapointEventHandler;
@@ -15,11 +16,12 @@ import event.datapoint.DatapointEventObject;
 import event.scroll.ScrollEventHandler;
 import event.scroll.ScrollEventListener;
 import event.scroll.ScrollEventObject;
+import event.tcpSocket.TCPSocketEventHandler;
 import event.tcpSocket.TCPSocketEventListener;
 import event.tcpSocket.TCPSocketEventObject;
 import htlhallein.at.serverdatenbrille.R;
-import server.tcpService.State;
 import server.tcpService.TCPServer;
+import server.tcpService.TcpServerState;
 import server.wifiHotspotUtils.WifiApManager;
 
 /**
@@ -41,6 +43,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
 
         DatapointEventHandler.addListener(this);
         ScrollEventHandler.addListener(this);
+        TCPSocketEventHandler.addListener(this);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -55,7 +58,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
         enableWifiAP();
 
         this.tcpServer.start();
-        while(this.tcpServer.getMyState() != State.STARTED) {
+        while (this.tcpServer.getState() != TcpServerState.STARTED) {
             try {
                 Thread.sleep(500);
             } catch (Exception e) {
@@ -63,7 +66,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
             }
         }
 
-        while (this.tcpServer.getMyState() != State.STOPPED) {
+        while (this.tcpServer.getState() != TcpServerState.STOPPED) {
             try {
                 Thread.sleep(500);
             } catch (Exception e) {
@@ -88,8 +91,6 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
 
     @Override
     public void datapointEventOccurred(DatapointEventObject eventObject) {
-        Log.v("Client", "connected");
-
         sendMessageToAllClients(eventObject.getHtmlText());
     }
 
@@ -99,16 +100,26 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
     }
 
     private void sendMessageToAllClients(String message) {
-        for (int i = 0; i < clients.size(); i++) {
-            if (i < clients.size()) { // Threadsafe
-                // TODO client reachable? when not then remove me
-                // TODO when client removed, then i-=1;
-            }
+        Socket[] sockets = (Socket[]) clients.toArray();
+
+        for (int i = 0; i < sockets.length; i++) {
+            // TODO client reachable? when not then remove me
         }
     }
 
     @Override
-    public void scrollEventOccurred(TCPSocketEventObject eventObject) {
-        this.clients.add(eventObject.getSocket());
+    public void TCPSocketEventOccurred(TCPSocketEventObject eventObject) {
+        Log.v("Client", "connected");
+
+        Socket socket = eventObject.getSocket();
+        try {
+            socket.setKeepAlive(true);
+        } catch (SocketException e) {
+            // i cant do anything against that ...
+        }
+
+        // TODO Handshake
+
+        this.clients.add(socket);
     }
 }

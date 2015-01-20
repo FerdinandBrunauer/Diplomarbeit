@@ -18,9 +18,9 @@ public class TCPSocketEventHandler {
         eventListener.remove(eventListener1);
     }
 
-    public static void fireScrollEvent(TCPSocketEventObject eventObject) {
+    public static void fireTCPSocketEvent(TCPSocketEventObject eventObject) {
         for (TCPSocketEventListener listener : eventListener) {
-            listener.scrollEventOccurred(eventObject);
+            listener.TCPSocketEventOccurred(eventObject);
         }
     }
 }
