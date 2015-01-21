@@ -7,13 +7,13 @@ import java.net.Socket;
 import event.tcpSocket.TCPSocketEventHandler;
 import event.tcpSocket.TCPSocketEventObject;
 
-public class TCPServer {
+public class TcpServer {
     public final static int PORT = 1234;
 
     private TcpServerState currentState = TcpServerState.STOPPED;
 
     @SuppressWarnings("unused")
-    private TCPServer This = this; // to make it ThreadSafe
+    private TcpServer This = this; // to make it ThreadSafe
     private Thread ioThread;
     private ServerSocket tcpServer;
 
@@ -23,9 +23,9 @@ public class TCPServer {
             Runnable run = new Runnable() {
                 @Override
                 public void run() {
-                    TCPServer.this.runServer();
-                    TCPServer.this.ioThread = null;
-                    TCPServer.this.currentState = TcpServerState.STOPPED;
+                    TcpServer.this.runServer();
+                    TcpServer.this.ioThread = null;
+                    TcpServer.this.currentState = TcpServerState.STOPPED;
                 }
             };
 
@@ -51,7 +51,7 @@ public class TCPServer {
 
     protected void runServer() {
         try {
-            this.tcpServer = new ServerSocket(TCPServer.PORT);
+            this.tcpServer = new ServerSocket(TcpServer.PORT);
             this.currentState = TcpServerState.STARTED;
 
             while (!this.tcpServer.isClosed()) {

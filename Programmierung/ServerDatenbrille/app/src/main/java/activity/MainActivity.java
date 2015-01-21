@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import activity.adapter.TabsPagerAdapter;
+import database.DatabaseConnection;
 import htlhallein.at.serverdatenbrille.R;
 import server.Server;
 
@@ -55,6 +56,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             public void onPageScrollStateChanged(int state) {
             }
         });
+
+        // Instantiate Database
+        DatabaseConnection.getInstance(this);
 
         this.server = new Server(this);
 //        new Thread(this.server).start(); TODO FOR DEBUGGING DEACTIVATED

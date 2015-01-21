@@ -20,7 +20,7 @@ import event.tcpSocket.TCPSocketEventHandler;
 import event.tcpSocket.TCPSocketEventListener;
 import event.tcpSocket.TCPSocketEventObject;
 import htlhallein.at.serverdatenbrille.R;
-import server.tcpService.TCPServer;
+import server.tcpService.TcpServer;
 import server.tcpService.TcpServerState;
 import server.wifiHotspotUtils.WifiApManager;
 
@@ -36,7 +36,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
 
     private ArrayList<Socket> clients;
     private WifiApManager myWifiManager;
-    private TCPServer tcpServer;
+    private TcpServer tcpServer;
 
     public Server(Context context) {
         this.context = context;
@@ -50,7 +50,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
         clients = new ArrayList<>();
         this.myWifiManager = new WifiApManager(context);
 
-        this.tcpServer = new TCPServer();
+        this.tcpServer = new TcpServer();
     }
 
     @Override
