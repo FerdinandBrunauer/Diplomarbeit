@@ -5,4 +5,11 @@
         android:icon="@drawable/qr_image"
         android:showAsAction="ifRoom"
         android:title="QR-Code" />
+
+    <item
+        android:id="@+id/sync_action"
+        android:icon="@drawable/sync_image"
+        android:showAsAction="ifRoom"
+        android:title="Sync"
+    />
 </menu>

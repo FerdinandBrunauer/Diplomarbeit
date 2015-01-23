@@ -12,6 +12,7 @@ import android.view.MenuItem;
 
 import activity.adapter.TabsPagerAdapter;
 import database.DatabaseConnection;
+import database.openDataUtilities.PackageCrawler;
 import htlhallein.at.serverdatenbrille.R;
 import server.Server;
 
@@ -93,6 +94,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 Intent intent = new Intent(this, QRCodeActivity.class);
                 startActivity(intent);
                 return true;
+            }
+            case R.id.sync_action: {
+                PackageCrawler.execute();
             }
             default:
                 return false;

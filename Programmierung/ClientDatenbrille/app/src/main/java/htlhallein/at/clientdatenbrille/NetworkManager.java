@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.net.SocketFactory;
+
 import htlhallein.at.clientdatenbrille.htlhallein.at.clientdatenbrille.parallel.LoopBody;
 import htlhallein.at.clientdatenbrille.htlhallein.at.clientdatenbrille.parallel.Parallel;
 
@@ -104,32 +106,14 @@ public class NetworkManager extends Thread {
                 }
             }
 
-            boolean connectedToRightNetwork = false;
-            if (!this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
-                WifiInfo info = this.wifiManager.getConnectionInfo();
-                makeLog("Connection INFO SSID: " + info.getSSID() + " and Network ID: \"" + info.getNetworkId() + "\"");
-                if (info.getSSID().compareTo("\"" + this.WifiName + "\"") == 0) {
-                    makeLog("Already connected to the right Network");
-                    connectedToRightNetwork = true;
-                } else {
-                    // I am guessing, that it is not the right network, but i don't really know
-                    this.wifiManager.disableNetwork(info.getNetworkId());
-                    makeLog("Disconnected from wrong Network");
-                    connectedToRightNetwork = false;
-                }
-            }
-
             boolean success = false;
-            if (!this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled() && !connectedToRightNetwork) {
+            if (!this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
                 success = this.wifiManager.enableNetwork(this.wifiNetId, true);
                 if (success) {
                     makeLog("Connected to Network! Great!");
                 } else {
                     makeLog("Not Connected to Network! Something is wrong! :(");
                 }
-            }
-            if (connectedToRightNetwork) {
-                success = true;
             }
 
             // 15 seconds time for getting a IP-Adress
@@ -144,7 +128,6 @@ public class NetworkManager extends Thread {
                         break;
                     }
                 }
-
                 if((System.currentTimeMillis() - startTime) > 15000) {
                     success = false;
                 }
@@ -202,9 +185,14 @@ public class NetworkManager extends Thread {
                 if(respondingHosts.size() > 0) {
                     for(String host : respondingHosts) {
                         try {
-                            serverConnection = new Socket(host, PORT);
-                            // TODO handshake
+                            serverConnection = SocketFactory.getDefault().createSocket(host, PORT);
+                            if(serverConnection.isConnected()){
+                                makeLog("Connected to Server");
+                            }else{
+                                makeLog("Can not connect to Server");
+                            }
                             connectionEtablished = true;
+                            break;
                         } catch (IOException e) {
                             connectionEtablished = false;
                         }
