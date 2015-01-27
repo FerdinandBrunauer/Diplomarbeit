@@ -94,9 +94,9 @@ public class OpenDataUtilities {
 			}
 			return odPackage;
 		}catch(Exception e){
-			return null;
+            System.err.print(e);
 		}
-		
+        return null;
 	}
 	
 	public static OpenDataResource getResourceById(String id){

@@ -2,7 +2,9 @@ package activity;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -10,9 +12,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
+
 import activity.adapter.TabsPagerAdapter;
 import database.DatabaseConnection;
-import database.openDataUtilities.PackageCrawler;
+import database.openDataUtilities.OpenDataPackage;
+import database.openDataUtilities.OpenDataUtilities;
 import htlhallein.at.serverdatenbrille.R;
 import server.Server;
 
@@ -96,10 +101,42 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 return true;
             }
             case R.id.sync_action: {
-                PackageCrawler.execute();
+                //TODO: get packageIds from preferences
+                new PackageCrawler().execute("a5841caf-afe2-4f98-bb68-bd4899e8c9cb");
             }
             default:
                 return false;
+        }
+    }
+
+    class PackageCrawler extends AsyncTask<String,String,String> {
+        private ArrayList<OpenDataPackage> openDataPackages = new ArrayList<>();
+
+        @Override
+        protected String doInBackground(String... params) {
+            for (int i=0; i<params.length;i++) {
+                OpenDataPackage p = OpenDataUtilities.getPackageById(params[i]);
+                if(p!=null) {
+                    openDataPackages.add(p);
+                }
+            }
+
+            //TODO: add Packages to DB
+            return null;
+        }
+
+        private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+        @Override
+        protected void onPreExecute() {
+            this.dialog.setMessage("Please wait");
+            this.dialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
         }
     }
 }
