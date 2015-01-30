@@ -9,10 +9,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ProgressBar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -116,52 +116,86 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         }
     }
 
-    class PackageCrawler extends AsyncTask<String,Integer,String> {
+    class PackageCrawler extends AsyncTask<String, Integer, String> {
         private ArrayList<OpenDataPackage> openDataPackages = new ArrayList<>();
+        private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
         @Override
         protected String doInBackground(String... params) {
+            dialog.setMax(0);
+            dialog.setProgress(0);
+            dialog.setProgressNumberFormat(null);
+            dialog.setProgressPercentFormat(null);
+            dialog.setTitle(R.string.crawler_open_database);
             DatabaseConnection db = new DatabaseConnection(getApplicationContext());
-            for (int i=0; i<params.length;i++) {
+
+            dialog.setMax(params.length * 30);
+            for (int i = 0; i < params.length; i++) {
                 //TODO: check for update
-                //TODO: progressBar
+                dialog.setTitle(getString(R.string.crawler_load_packageinfo) + " (" + (i + 1) + "/" + params.length + ") ");
                 OpenDataPackage p = OpenDataUtilities.getPackageById(params[i]);
-                if(p!=null) {
+                if (p != null) {
+                    setDialogTitle(getString(R.string.crawler_add_packageinfo) + " (" + (i + 1) + "/" + params.length + ") ");
                     db.insertPackage(p);
                     //if(packageId != -1) {
-                        for (OpenDataResource res : p.getResources()) {
-                            if (res.getFormat().toUpperCase().compareTo("KMZ") == 0) {
-                                OpenDataUtilities.downloadFromUrl(res.getUrl(), res.getId() + ".kmz");
-                                try {
-                                    File kmlFile = KmzReader.getKmlFile(res.getId() + ".kmz");
-                                    ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
-                                    for (int n=0; n<placemarks.size(); n++) {
-                                        String result = OpenDataUtilities.getRequestResult(placemarks.get(n).getLink());
-                                        String parsedHtml = OpenDataUtilities.parseHTML(result);
-                                        Bitmap image = OpenDataUtilities.getPlacemarkImage(result);
+                    dialog.setMax(dialog.getMax() + (p.getResources().size() * 10));
+                    for (OpenDataResource res : p.getResources()) {
+                        if (res.getFormat().toUpperCase().compareTo("KMZ") == 0) {
+                            OpenDataUtilities.downloadFromUrl(res.getUrl(), res.getId() + ".kmz");
+                            int needSteps = 0;
+                            int stepsMade = 0;
+                            setDialogTitle(getString(R.string.crawler_unzip) + " (" + (i + 1) + "/" + params.length + ") ");
+                            try {
+                                File kmlFile = KmzReader.getKmlFile(res.getId() + ".kmz");
+                                ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
+                                needSteps = placemarks.size() * 1;
+                                dialog.setMax(dialog.getMax() + needSteps);
+                                for (int n = 0; n < placemarks.size(); n++) {
+                                    setDialogTitle(getString(R.string.crawler_add_datapoint) + " (" + (i + 1) + "/" + params.length + ")\n" + getString(R.string.craalwer_datapoint) + ": " + (n + 1) + "/" + placemarks.size());
+                                    String result = OpenDataUtilities.getRequestResult(placemarks.get(n).getLink());
+                                    String parsedHtml = OpenDataUtilities.parseHTML(result);
+                                    Bitmap image = OpenDataUtilities.getPlacemarkImage(result);
 
-                                        db.addDatapoint(
-                                                parsedHtml,
-                                                image,
-                                                placemarks.get(n).getName(),
-                                                "" + p.getId(),
-                                                "" + placemarks.get(n).getLocation().getLatitude(),
-                                                "" + placemarks.get(n).getLocation().getLongitude(),
-                                                placemarks.get(n).getLink()
-                                        );
-                                    }
-                                } catch (Exception e) {
-                                    System.err.println(e);
+                                    db.addDatapoint(
+                                            parsedHtml,
+                                            image,
+                                            placemarks.get(n).getName(),
+                                            "" + p.getId(),
+                                            "" + placemarks.get(n).getLocation().getLatitude(),
+                                            "" + placemarks.get(n).getLocation().getLongitude(),
+                                            placemarks.get(n).getLink()
+                                    );
+                                    dialog.setProgress(dialog.getProgress() + 1);
+                                    stepsMade += 1;
                                 }
+                            } catch (Exception e) {
+                                // System.err.println(e);
+                                Log.wtf("Error", "unpack KMZ-File", e);
+
+                                int removeSteps = needSteps - stepsMade;
+                                dialog.setMax(dialog.getMax() - removeSteps);
                             }
                         }
+                        dialog.setProgress(dialog.getProgress() + 10);
+                    }
                     //}
                 }
+                dialog.setProgress(dialog.getProgress() + 30);
             }
+
+            dialog.setProgress(dialog.getMax());
             return null;
         }
 
-        private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+        private void setDialogTitle(final String title) {
+            MainActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dialog.setTitle(title);
+                }
+            });
+        }
+
         @Override
         protected void onPreExecute() {
             this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);

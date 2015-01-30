@@ -6,22 +6,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Environment;
 
 import java.io.ByteArrayOutputStream;
-import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
+import database.openDataUtilities.Datapoint;
 import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataResource;
 
-/**
- * Copyright 2015 (C) HTL - Hallein
- * Created on:  13.01.2015
- * Author:      Ferdinand
- */
 public class DatabaseConnection extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = Environment.getExternalStorageDirectory() + "/datenbrille/database/datenbrille";
     private static final int DATABASE_VERSION = 3;
@@ -71,15 +65,15 @@ public class DatabaseConnection extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        db.execSQL("CREATE TABLE " + OPEN_DATA_PACKAGES_TABLE+" ("
-                + ID_OPEN_DATA_PACKAGE+ " TEXT PRIMARY KEY , "
+        db.execSQL("CREATE TABLE " + OPEN_DATA_PACKAGES_TABLE + " ("
+                + ID_OPEN_DATA_PACKAGE + " TEXT PRIMARY KEY , "
                 + NAME_OPEN_DATA_PACKAGE + " TEXT , "
                 + NOTES_OPEN_DATA_PACKAGE + " TEXT , "
                 + UPDATE_TIMESTAMP_OPEN_DATA_PACKAGE + " TEXT , "
                 + TITLE_OPEN_DATA_PACKAGE + " TEXT);");
 
-        db.execSQL("CREATE TABLE " + DATAPOINT_TABLE+" ("
-                + ID_DATAPOINT+ " INTEGER PRIMARY KEY AUTOINCREMENT , "
+        db.execSQL("CREATE TABLE " + DATAPOINT_TABLE + " ("
+                + ID_DATAPOINT + " INTEGER PRIMARY KEY AUTOINCREMENT , "
                 + ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + " TEXT , "
                 + LATITUDE_DATAPOINT + " TEXT , "
                 + LONGITUDE_DATAPOINT + " TEXT , "
@@ -100,7 +94,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void insertPackage(OpenDataPackage odPackage){
+    public void insertPackage(OpenDataPackage odPackage) {
         List<OpenDataResource> resources = odPackage.getResources();
 
         try {
@@ -118,21 +112,21 @@ public class DatabaseConnection extends SQLiteOpenHelper {
                 }
             }
             db.insert(OPEN_DATA_PACKAGES_TABLE, null, cv);
-        }catch(Exception e){
+        } catch (Exception e) {
             System.err.print(e);
         }
     }
 
-    public void addDatapoint(String html,Bitmap image,String title, String packageId,String latitude,String longitude,String weblink){
+    public void addDatapoint(String html, Bitmap image, String title, String packageId, String latitude, String longitude, String weblink) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buffer = null;
-        if(image != null) {
+        if (image != null) {
             image.compress(Bitmap.CompressFormat.PNG, 100, out);
             buffer = out.toByteArray();
         }
 
-        SQLiteDatabase db=this.getWritableDatabase();
-        ContentValues cv=new ContentValues();
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
         cv.put(DESCRIPTION_DATAPOINT, html);
         cv.put(IMAGE_DATAPOINT, buffer);
         cv.put(TITLE_DATAPOINT, title);
@@ -144,10 +138,25 @@ public class DatabaseConnection extends SQLiteOpenHelper {
         db.insert(DATAPOINT_TABLE, null, cv);
     }
 
+    public List<Datapoint> getDatapoints(Context context, int startIndex, int endIndex) {
+        List<Datapoint> datapoints = new ArrayList<>();
+
+        // TODO add return only for index between start and end
+
+        SQLiteDatabase db = getInstance(context).getReadableDatabase();
+        String[] columns = {ID_DATAPOINT, TITLE_DATAPOINT};
+        Cursor cursor = db.query(DATAPOINT_TABLE, columns, null, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            do {
+                datapoints.add(new Datapoint(cursor.getInt(0), null, null, null, null, cursor.getString(1), null, null));
+            } while (cursor.moveToNext());
+        }
+
+        return datapoints;
+    }
+
     //TODO: GET DATAPOINT BY LOCATION
-
-
-    //TODO: GET DATAPOINT LISTE
     //TODO: GET DATAPOINT
     //TODO: UPDATE FUNCTION
     //TODO: ISPACKAGEINDATABASE
