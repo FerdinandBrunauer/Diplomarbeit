@@ -138,20 +138,26 @@ public class DatabaseConnection extends SQLiteOpenHelper {
         db.insert(DATAPOINT_TABLE, null, cv);
     }
 
-    public List<Datapoint> getDatapoints(Context context, int startIndex, int endIndex) {
+    public List<Datapoint> getDatapointsEnd(Context context, int startID, int count) {
         List<Datapoint> datapoints = new ArrayList<>();
 
-        // TODO add return only for index between start and end
-
+        String sql = "SELECT " + ID_DATAPOINT + ", " + TITLE_DATAPOINT + ", " + IMAGE_DATAPOINT + " FROM " + DATAPOINT_TABLE + " WHERE " + ID_DATAPOINT + ">?" + " LIMIT ?";
         SQLiteDatabase db = getInstance(context).getReadableDatabase();
-        String[] columns = {ID_DATAPOINT, TITLE_DATAPOINT};
-        Cursor cursor = db.query(DATAPOINT_TABLE, columns, null, null, null, null, null);
+        Cursor cursor = db.rawQuery(sql, new String[]{"" + startID, "" + count});
         if (cursor != null) {
             cursor.moveToFirst();
             do {
-                datapoints.add(new Datapoint(cursor.getInt(0), null, null, null, null, cursor.getString(1), null, null));
+                datapoints.add(new Datapoint(cursor.getInt(0), null, null, null, null, cursor.getString(1), null, cursor.getBlob(2)));
             } while (cursor.moveToNext());
         }
+
+        return datapoints;
+    }
+
+    public List<Datapoint> getDatapointsBeginning(Context context, int startID, int count) {
+        List<Datapoint> datapoints = new ArrayList<>();
+
+        // TODO
 
         return datapoints;
     }

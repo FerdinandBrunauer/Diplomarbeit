@@ -1,5 +1,6 @@
 package activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,9 +13,13 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import database.DatabaseConnection;
@@ -22,9 +27,6 @@ import database.openDataUtilities.Datapoint;
 import htlhallein.at.serverdatenbrille.R;
 
 public class Fragment_Second_Datapoints extends ListFragment implements AdapterView.OnItemClickListener {
-
-    private final static int SHOW_DATAPOINTS = 100;
-
     ListViewCustomAdapter adapter;
 
     @Override
@@ -36,70 +38,37 @@ public class Fragment_Second_Datapoints extends ListFragment implements AdapterV
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        adapter = new ListViewCustomAdapter(getActivity(), DatabaseConnection.getInstance(getActivity()).getDatapoints(getActivity(), 0, SHOW_DATAPOINTS));
+        adapter = new ListViewCustomAdapter(getActivity(), getActivity(), getListView());
         setListAdapter(adapter);
         getListView().setOnItemClickListener(this);
-        getListView().setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                Log.v("Scroll", "First Visible: " + firstVisibleItem + " Count Visible: " + visibleItemCount + " Total Count" + totalItemCount);
-            }
-
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-            }
-        });
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.v("Datapoint Clicked", adapter.getItem(position).getIdDatapoint() + "");
+        // TODO show datapoint in dialog
     }
 }
 
-class ListViewCustomAdapter extends BaseAdapter {
+class ListViewCustomAdapter extends BaseAdapter implements AbsListView.OnScrollListener {
     private Context context;
-    private List<Datapoint> datapoints;
+    private Activity activity;
+    private SortedList<Datapoint> datapoints;
+    private int VISIBLE_DATAPOINTS = 50;
+    private boolean alreadyLoading = false;
 
-    public ListViewCustomAdapter(Context context) {
+    private int lastMiddleScroll = 0;
+    private int lastShouldScroll = 0;
+
+    public ListViewCustomAdapter(Context context, Activity activity, ListView listView) {
         this.context = context;
-        this.datapoints = new ArrayList<>();
-    }
+        this.activity = activity;
+        listView.setOnScrollListener(this);
+        this.datapoints = new SortedList<>();
 
-    public ListViewCustomAdapter(Context context, List<Datapoint> datapoints) {
-        this.context = context;
-        this.datapoints = datapoints;
-    }
-
-    public void clear() {
-        datapoints.clear();
-        notifyDataSetChanged();
-    }
-
-    public void addDatapoint(Datapoint datapoint, boolean ignoreNotifiyDataSet) {
-        datapoints.add(datapoint);
-        if (!ignoreNotifiyDataSet)
-            notifyDataSetChanged();
-    }
-
-    public void addDatapoint(Datapoint datapoint) {
-        addDatapoint(datapoint, false);
-    }
-
-    @Override
-    public int getCount() {
-        return datapoints.size();
-    }
-
-    @Override
-    public Datapoint getItem(int position) {
-        return datapoints.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return datapoints.indexOf(getItem(position));
+        List<Datapoint> addDatapoints = DatabaseConnection.getInstance(context).getDatapointsEnd(context, 0, VISIBLE_DATAPOINTS);
+        for (Datapoint datapoint : addDatapoints)
+            this.datapoints.add(datapoint);
     }
 
     @Override
@@ -122,5 +91,109 @@ class ListViewCustomAdapter extends BaseAdapter {
         }
 
         return convertView;
+    }
+
+    @Override
+    public int getCount() {
+        return datapoints.size();
+    }
+
+    @Override
+    public Datapoint getItem(int position) {
+        return datapoints.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return -1L;
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        Log.v("Scroll", "FirstVisibleItem: " + firstVisibleItem);
+        Log.v("Scroll", "VisibleItemCount: " + visibleItemCount);
+        Log.v("Scroll", "TotalItemCount: " + totalItemCount);
+
+        final int mitleresSichtbaresElement = firstVisibleItem + (visibleItemCount / 2);
+        final int solltengeladenseinHalf = totalItemCount / 2;
+
+        if ((mitleresSichtbaresElement == lastMiddleScroll) && (solltengeladenseinHalf == lastShouldScroll)) {
+            return;
+        } else {
+            lastMiddleScroll = mitleresSichtbaresElement;
+            lastShouldScroll = solltengeladenseinHalf;
+        }
+
+        if (!alreadyLoading) {
+            alreadyLoading = true;
+            if ((mitleresSichtbaresElement > solltengeladenseinHalf) && ((mitleresSichtbaresElement - solltengeladenseinHalf) > 5)) {
+                // Elemente an das hintere ende laden
+                Log.v("Nachladen", "ENDE");
+                new Thread() {
+                    @Override
+                    public void run() {
+                        final List<Datapoint> addDatapoints = DatabaseConnection.getInstance(context).getDatapointsEnd(context, datapoints.get(datapoints.size() - 1).getIdDatapoint(), mitleresSichtbaresElement - solltengeladenseinHalf);
+                        for (Datapoint actualDatapoint : addDatapoints) {
+                            ListViewCustomAdapter.this.datapoints.remove(0);
+                            ListViewCustomAdapter.this.datapoints.add(actualDatapoint);
+                        }
+                        ListViewCustomAdapter.this.activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ListViewCustomAdapter.this.notifyDataSetChanged();
+                            }
+                        });
+                        ListViewCustomAdapter.this.alreadyLoading = false;
+                    }
+                }.start();
+            } else if ((solltengeladenseinHalf > mitleresSichtbaresElement) && ((solltengeladenseinHalf - mitleresSichtbaresElement) > 5)) {
+                // Elemente an das vordere ende laden
+                Log.v("Nachladen", "BEGIN");
+                alreadyLoading = false;
+            } else {
+                alreadyLoading = false;
+            }
+        }
+
+        Log.v("Scroll", "==============================");
+
+        return;
+    }
+}
+
+class SortedList<E> extends AbstractList<Datapoint> {
+
+    private ArrayList<Datapoint> internalList = new ArrayList<>();
+
+    @Override
+    public boolean add(Datapoint datapoint) {
+        internalList.add(datapoint);
+        Collections.sort(internalList, new Comparator<Datapoint>() {
+            @Override
+            public int compare(Datapoint lhs, Datapoint rhs) {
+                return ((Integer) lhs.getIdDatapoint()).compareTo(rhs.getIdDatapoint());
+            }
+        });
+        return true;
+    }
+
+    @Override
+    public Datapoint get(int i) {
+        return internalList.get(i);
+    }
+
+    @Override
+    public int size() {
+        return internalList.size();
+    }
+
+    @Override
+    public Datapoint remove(int location) {
+        return internalList.remove(location);
     }
 }
