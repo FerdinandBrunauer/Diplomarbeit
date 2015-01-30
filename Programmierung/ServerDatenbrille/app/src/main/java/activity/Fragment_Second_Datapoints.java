@@ -17,8 +17,6 @@ public class Fragment_Second_Datapoints extends Fragment {
 
         // TODO list of all Datapoints (especially the LIST!)
 
-        // TODO crawler logic here
-
         return rootView;
     }
 }

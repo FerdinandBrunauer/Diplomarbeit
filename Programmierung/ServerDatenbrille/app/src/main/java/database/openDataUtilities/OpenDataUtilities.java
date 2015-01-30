@@ -15,10 +15,21 @@
  */
 
 package database.openDataUtilities;
-import android.os.AsyncTask;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.AttributeSet;
+import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,6 +39,8 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -36,6 +49,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -252,5 +266,78 @@ public class OpenDataUtilities {
             System.err.print(e);
         }
         return responseString;
+    }
+
+    public static void downloadFromUrl(String DownloadUrl, String fileName) {
+
+        try {
+            File root = android.os.Environment.getExternalStorageDirectory();
+
+            File dir = new File (root.getAbsolutePath() + "/datenbrille/download/");
+            if(dir.exists()==false) {
+                dir.mkdirs();
+            }
+
+            URL url = new URL(DownloadUrl); //you can write here any link
+            File file = new File(dir, fileName);
+
+            long startTime = System.currentTimeMillis();
+            Log.d("DownloadManager", "download begining");
+            Log.d("DownloadManager", "download url:" + url);
+            Log.d("DownloadManager", "downloaded file name:" + fileName);
+
+           /* Open a connection to that URL. */
+            URLConnection ucon = url.openConnection();
+
+           /*
+            * Define InputStreams to read from the URLConnection.
+            */
+            InputStream is = ucon.getInputStream();
+            BufferedInputStream bis = new BufferedInputStream(is);
+
+           /*
+            * Read bytes to the Buffer until there is nothing more to read(-1).
+            */
+            ByteArrayBuffer baf = new ByteArrayBuffer(5000);
+            int current = 0;
+            while ((current = bis.read()) != -1) {
+                baf.append((byte) current);
+            }
+
+
+           /* Convert the Bytes read to a String. */
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(baf.toByteArray());
+            fos.flush();
+            fos.close();
+            Log.d("DownloadManager", "download ready in" + ((System.currentTimeMillis() - startTime) / 1000) + " sec");
+
+        } catch (IOException e) {
+            Log.d("DownloadManager", "Error: " + e);
+        }
+
+    }
+
+    public static String parseHTML(String html) {
+
+        return html;
+    }
+
+    public static Bitmap getPlacemarkImage(String html) {
+        try {
+            Pattern pattern = Pattern.compile("src\\=\\\"(http[^\\[\\]\\'\"<>]+.(?:jpe?g|gif|png))\\\"\\>");
+            Matcher matcher = pattern.matcher(html);
+            while (matcher.find()) {
+                String source = matcher.group(1);
+                source.replace("src=\"","");
+                source.replace(">","");
+                URL url = new URL(source);
+                Bitmap image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                return image;
+            }
+        }catch(Exception e){
+            return null;
+        }
+        return null;
     }
 }

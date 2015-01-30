@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -11,12 +12,18 @@ import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import activity.adapter.TabsPagerAdapter;
 import database.DatabaseConnection;
+import database.KmzReader;
+import database.Placemark;
+import database.XmlParser;
 import database.openDataUtilities.OpenDataPackage;
+import database.openDataUtilities.OpenDataResource;
 import database.openDataUtilities.OpenDataUtilities;
 import htlhallein.at.serverdatenbrille.R;
 import server.Server;
@@ -109,26 +116,56 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         }
     }
 
-    class PackageCrawler extends AsyncTask<String,String,String> {
+    class PackageCrawler extends AsyncTask<String,Integer,String> {
         private ArrayList<OpenDataPackage> openDataPackages = new ArrayList<>();
 
         @Override
         protected String doInBackground(String... params) {
+            DatabaseConnection db = new DatabaseConnection(getApplicationContext());
             for (int i=0; i<params.length;i++) {
+                //TODO: check for update
+                //TODO: progressBar
                 OpenDataPackage p = OpenDataUtilities.getPackageById(params[i]);
                 if(p!=null) {
-                    openDataPackages.add(p);
+                    db.insertPackage(p);
+                    //if(packageId != -1) {
+                        for (OpenDataResource res : p.getResources()) {
+                            if (res.getFormat().toUpperCase().compareTo("KMZ") == 0) {
+                                OpenDataUtilities.downloadFromUrl(res.getUrl(), res.getId() + ".kmz");
+                                try {
+                                    File kmlFile = KmzReader.getKmlFile(res.getId() + ".kmz");
+                                    ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
+                                    for (int n=0; n<placemarks.size(); n++) {
+                                        String result = OpenDataUtilities.getRequestResult(placemarks.get(n).getLink());
+                                        String parsedHtml = OpenDataUtilities.parseHTML(result);
+                                        Bitmap image = OpenDataUtilities.getPlacemarkImage(result);
+
+                                        db.addDatapoint(
+                                                parsedHtml,
+                                                image,
+                                                placemarks.get(n).getName(),
+                                                "" + p.getId(),
+                                                "" + placemarks.get(n).getLocation().getLatitude(),
+                                                "" + placemarks.get(n).getLocation().getLongitude(),
+                                                placemarks.get(n).getLink()
+                                        );
+                                    }
+                                } catch (Exception e) {
+                                    System.err.println(e);
+                                }
+                            }
+                        }
+                    //}
                 }
             }
-
-            //TODO: add Packages to DB
             return null;
         }
 
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
         @Override
         protected void onPreExecute() {
-            this.dialog.setMessage("Please wait");
+            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            this.dialog.setTitle("Please Wait");
             this.dialog.show();
         }
 
