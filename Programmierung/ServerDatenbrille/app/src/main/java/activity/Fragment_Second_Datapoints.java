@@ -66,9 +66,13 @@ class ListViewCustomAdapter extends BaseAdapter implements AbsListView.OnScrollL
         listView.setOnScrollListener(this);
         this.datapoints = new SortedList<>();
 
-        List<Datapoint> addDatapoints = DatabaseConnection.getInstance(context).getDatapointsEnd(context, 0, VISIBLE_DATAPOINTS);
-        for (Datapoint datapoint : addDatapoints)
-            this.datapoints.add(datapoint);
+        try {
+            List<Datapoint> addDatapoints = DatabaseConnection.getInstance(context).getDatapointsEnd(context, 0, VISIBLE_DATAPOINTS);
+            for (Datapoint datapoint : addDatapoints)
+                this.datapoints.add(datapoint);
+        }catch (Exception e){
+            Log.wtf("Error", "load Datapoints from Database", e);
+        }
     }
 
     @Override

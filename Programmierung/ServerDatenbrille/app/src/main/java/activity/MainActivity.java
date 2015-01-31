@@ -120,65 +120,76 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         private ArrayList<OpenDataPackage> openDataPackages = new ArrayList<>();
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
+        private DatabaseConnection db;
+
+        private void writeToDatabase(OpenDataPackage openDataPackage,int packageNr, int packagesCount){
+            if (openDataPackage != null) {
+                setDialogTitle(getString(R.string.crawler_add_packageinfo) + " (" + (packageNr + 1) + "/" + packagesCount + ") ");
+                db.insertPackage(openDataPackage);
+                dialog.setMax(dialog.getMax() + (openDataPackage.getResources().size() * 10));
+
+                for (OpenDataResource res : openDataPackage.getResources()) {
+                    if (res.getFormat().toUpperCase().compareTo("KMZ") == 0) {
+                        OpenDataUtilities.downloadFromUrl(res.getUrl(), res.getId() + ".kmz");
+                        int needSteps = 0;
+                        int stepsMade = 0;
+                        setDialogTitle(getString(R.string.crawler_unzip) + " (" + (packageNr + 1) + "/" + packagesCount + ") ");
+                        try {
+                            File kmlFile = KmzReader.getKmlFile(res.getId() + ".kmz");
+                            ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
+                            needSteps = placemarks.size() * 1;
+                            dialog.setMax(dialog.getMax() + needSteps);
+                            for (int n = 0; n < placemarks.size(); n++) {
+                                setDialogTitle(getString(R.string.crawler_add_datapoint) + " (" + (packageNr + 1) + "/" + packagesCount + ")\n" + getString(R.string.craalwer_datapoint) + ": " + (n + 1) + "/" + placemarks.size());
+                                String result = OpenDataUtilities.getRequestResult(placemarks.get(n).getLink());
+                                String parsedHtml = OpenDataUtilities.parseHTML(result);
+                                Bitmap image = OpenDataUtilities.getPlacemarkImage(result);
+
+                                db.addDatapoint(
+                                        parsedHtml,
+                                        image,
+                                        placemarks.get(n).getName(),
+                                        "" + openDataPackage.getId(),
+                                        "" + placemarks.get(n).getLocation().getLatitude(),
+                                        "" + placemarks.get(n).getLocation().getLongitude(),
+                                        placemarks.get(n).getLink()
+                                );
+                                dialog.setProgress(dialog.getProgress() + 1);
+                                stepsMade += 1;
+                            }
+                        } catch (Exception e) {
+                            Log.wtf("Error", "unpack KMZ-File", e);
+
+                            int removeSteps = needSteps - stepsMade;
+                            dialog.setMax(dialog.getMax() - removeSteps);
+                        }
+                    }
+                    dialog.setProgress(dialog.getProgress() + 10);
+                }
+            }
+            dialog.setProgress(dialog.getProgress() + 30);
+        }
+
         @Override
         protected String doInBackground(String... params) {
-            dialog.setMax(0);
             dialog.setProgress(0);
             dialog.setProgressNumberFormat(null);
             dialog.setProgressPercentFormat(null);
             dialog.setTitle(R.string.crawler_open_database);
-            DatabaseConnection db = new DatabaseConnection(getApplicationContext());
-
             dialog.setMax(params.length * 30);
+
             for (int i = 0; i < params.length; i++) {
-                //TODO: check for update
                 dialog.setTitle(getString(R.string.crawler_load_packageinfo) + " (" + (i + 1) + "/" + params.length + ") ");
-                OpenDataPackage p = OpenDataUtilities.getPackageById(params[i]);
-                if (p != null) {
-                    setDialogTitle(getString(R.string.crawler_add_packageinfo) + " (" + (i + 1) + "/" + params.length + ") ");
-                    db.insertPackage(p);
-                    //if(packageId != -1) {
-                    dialog.setMax(dialog.getMax() + (p.getResources().size() * 10));
-                    for (OpenDataResource res : p.getResources()) {
-                        if (res.getFormat().toUpperCase().compareTo("KMZ") == 0) {
-                            OpenDataUtilities.downloadFromUrl(res.getUrl(), res.getId() + ".kmz");
-                            int needSteps = 0;
-                            int stepsMade = 0;
-                            setDialogTitle(getString(R.string.crawler_unzip) + " (" + (i + 1) + "/" + params.length + ") ");
-                            try {
-                                File kmlFile = KmzReader.getKmlFile(res.getId() + ".kmz");
-                                ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
-                                needSteps = placemarks.size() * 1;
-                                dialog.setMax(dialog.getMax() + needSteps);
-                                for (int n = 0; n < placemarks.size(); n++) {
-                                    setDialogTitle(getString(R.string.crawler_add_datapoint) + " (" + (i + 1) + "/" + params.length + ")\n" + getString(R.string.craalwer_datapoint) + ": " + (n + 1) + "/" + placemarks.size());
-                                    String result = OpenDataUtilities.getRequestResult(placemarks.get(n).getLink());
-                                    String parsedHtml = OpenDataUtilities.parseHTML(result);
-                                    Bitmap image = OpenDataUtilities.getPlacemarkImage(result);
 
-                                    db.addDatapoint(
-                                            parsedHtml,
-                                            image,
-                                            placemarks.get(n).getName(),
-                                            "" + p.getId(),
-                                            "" + placemarks.get(n).getLocation().getLatitude(),
-                                            "" + placemarks.get(n).getLocation().getLongitude(),
-                                            placemarks.get(n).getLink()
-                                    );
-                                    dialog.setProgress(dialog.getProgress() + 1);
-                                    stepsMade += 1;
-                                }
-                            } catch (Exception e) {
-                                // System.err.println(e);
-                                Log.wtf("Error", "unpack KMZ-File", e);
 
-                                int removeSteps = needSteps - stepsMade;
-                                dialog.setMax(dialog.getMax() - removeSteps);
-                            }
-                        }
-                        dialog.setProgress(dialog.getProgress() + 10);
+                OpenDataPackage openDataPackage = OpenDataUtilities.getPackageById(params[i]);
+                if(!db.isPackageInDatabase(openDataPackage)) {
+                    writeToDatabase(openDataPackage,i,params.length);
+                }else{
+                    if(db.checkForPackageUpdate(openDataPackage)){
+                        db.deletePackageInclusiveDatapoints(openDataPackage);
+                        writeToDatabase(openDataPackage,i,params.length);
                     }
-                    //}
                 }
                 dialog.setProgress(dialog.getProgress() + 30);
             }
@@ -198,6 +209,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         protected void onPreExecute() {
+            db = new DatabaseConnection(getApplicationContext());
             this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             this.dialog.setTitle("Please Wait");
             this.dialog.show();

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -162,9 +163,97 @@ public class DatabaseConnection extends SQLiteOpenHelper {
         return datapoints;
     }
 
-    //TODO: GET DATAPOINT BY LOCATION
-    //TODO: GET DATAPOINT
-    //TODO: UPDATE FUNCTION
-    //TODO: ISPACKAGEINDATABASE
-    //TODO: CHECK FOR UPDATE FUNCTION
+    public String[] getDatapointByLocation(Location location){
+        String[] result = null;
+        try{
+
+            SQLiteDatabase db=this.getReadableDatabase();
+            Cursor cursor = db.query(DATAPOINT_TABLE, null,
+                    LONGITUDE_DATAPOINT + " = ? AND " + LATITUDE_DATAPOINT + " = ?",
+                    new String[] { "" + location.getLongitude(), "" + location.getLatitude() } , null, null, null);
+            cursor.moveToFirst();
+            result = new String[]{
+                    cursor.getString(cursor.getColumnIndex(ID_DATAPOINT)),
+                    cursor.getString(cursor.getColumnIndex(DESCRIPTION_DATAPOINT)),
+                    cursor.getString(cursor.getColumnIndex(IMAGE_DATAPOINT)),
+                    cursor.getString(cursor.getColumnIndex(TITLE_DATAPOINT)),
+                    cursor.getString(cursor.getColumnIndex(ID_OPEN_DATA_PACKAGE_IN_DATAPOINT)),
+                    cursor.getString(cursor.getColumnIndex(LATITUDE_DATAPOINT)),
+                    cursor.getString(cursor.getColumnIndex(LONGITUDE_DATAPOINT)),
+                    cursor.getString(cursor.getColumnIndex(WEBLINK_DATAPOINT))
+            };
+            return result;
+        }catch (Exception e){
+            System.err.print(e);
+            return result;
+        }
+    }
+
+    public boolean isPackageInDatabase(OpenDataPackage openDataPackage){
+        try{
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.query(
+                    OPEN_DATA_PACKAGES_TABLE,
+                    new String[]{ID_OPEN_DATA_PACKAGE},
+                    ID_OPEN_DATA_PACKAGE + " = ?",
+                    new String[]{openDataPackage.getId()},
+                    null,
+                    null,
+                    null
+            );
+
+            if(cursor.getCount() == 0){
+                return false;
+            }else{
+                return true;
+            }
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    public void deletePackageInclusiveDatapoints(OpenDataPackage openDataPackage){
+        try{
+            SQLiteDatabase db = this.getReadableDatabase();
+            db.delete(DATAPOINT_TABLE, ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + "=" + openDataPackage.getId(), null);
+            db.delete(OPEN_DATA_PACKAGES_TABLE, ID_OPEN_DATA_PACKAGE + "=" + openDataPackage.getId(), null);
+        }catch (Exception e){
+            Log.wtf("Error", "delete Packages from Database", e);
+        }
+    }
+
+    public boolean checkForPackageUpdate(OpenDataPackage openDataPackage) {
+        try{
+            String updateTimestamp = "";
+            for (OpenDataResource res : openDataPackage.getResources()) {
+                if (res.getFormat().toUpperCase().compareTo("KMZ") == 0) {
+                    updateTimestamp = "" + res.getCreationTimestamp();
+                }
+            }
+
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.query(
+                    OPEN_DATA_PACKAGES_TABLE,
+                    new String[]{UPDATE_TIMESTAMP_OPEN_DATA_PACKAGE},
+                    ID_OPEN_DATA_PACKAGE + " = ?",
+                    new String[]{openDataPackage.getId(),},
+                    null,
+                    null,
+                    null
+            );
+            Double timestampInDatabase = 0.0;
+            if (cursor != null) {
+                timestampInDatabase = cursor.getDouble(0);
+            }
+            if(Double.parseDouble(updateTimestamp) > timestampInDatabase){
+                return true;
+            }else{
+                return false;
+            }
+
+        }catch (Exception e){
+            Log.wtf("Error", "check for Update", e);
+            return false;
+        }
+    }
 }
