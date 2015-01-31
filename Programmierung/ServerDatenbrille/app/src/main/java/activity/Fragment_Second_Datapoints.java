@@ -1,32 +1,37 @@
 package activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.util.AbstractList;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-import database.DatabaseConnection;
-import database.openDataUtilities.Datapoint;
 import htlhallein.at.serverdatenbrille.R;
 
-public class Fragment_Second_Datapoints extends ListFragment implements AdapterView.OnItemClickListener {
+public class Fragment_Second_Datapoints extends ListFragment {
     ListViewCustomAdapter adapter;
 
     @Override
@@ -38,41 +43,136 @@ public class Fragment_Second_Datapoints extends ListFragment implements AdapterV
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        adapter = new ListViewCustomAdapter(getActivity(), getActivity(), getListView());
-        setListAdapter(adapter);
-        getListView().setOnItemClickListener(this);
-    }
+        Button addPackageButton = (Button) getActivity().findViewById(R.id.addPackageButton);
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.v("Datapoint Clicked", adapter.getItem(position).getIdDatapoint() + "");
-        // TODO show datapoint in dialog
+        adapter = new ListViewCustomAdapter(getActivity(), addPackageButton, getListView());
+        setListAdapter(adapter);
     }
 }
 
-class ListViewCustomAdapter extends BaseAdapter implements AbsListView.OnScrollListener {
+class ListViewCustomAdapter extends BaseAdapter {
     private Context context;
-    private Activity activity;
-    private SortedList<Datapoint> datapoints;
-    private int VISIBLE_DATAPOINTS = 50;
-    private boolean alreadyLoading = false;
+    private List<Package> packages;
+    protected SharedPreferences.OnSharedPreferenceChangeListener mySharedPreferenceslistener;
+    protected SharedPreferences preferences;
 
-    private int lastMiddleScroll = 0;
-    private int lastShouldScroll = 0;
-
-    public ListViewCustomAdapter(Context context, Activity activity, ListView listView) {
+    public ListViewCustomAdapter(final Activity context, Button button, ListView listView) {
         this.context = context;
-        this.activity = activity;
-        listView.setOnScrollListener(this);
-        this.datapoints = new SortedList<>();
 
-        try {
-            List<Datapoint> addDatapoints = DatabaseConnection.getInstance(context).getDatapointsEnd(context, 0, VISIBLE_DATAPOINTS);
-            for (Datapoint datapoint : addDatapoints)
-                this.datapoints.add(datapoint);
-        }catch (Exception e){
-            Log.wtf("Error", "load Datapoints from Database", e);
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        this.packages = getPackagesFromPreferences();
+        this.mySharedPreferenceslistener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if (key.equals(context.getString(R.string.preferences_preference_packages))) {
+                    packages = getPackagesFromPreferences();
+                    notifyDataSetChanged();
+                }
+            }
+        };
+        preferences.registerOnSharedPreferenceChangeListener(this.mySharedPreferenceslistener);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                dialog.setTitle(context.getString(R.string.add_Package));
+
+                LinearLayout layout = new LinearLayout(context);
+                layout.setOrientation(LinearLayout.VERTICAL);
+
+                final EditText tvName = new EditText(context);
+                tvName.setHint("Name");
+                layout.addView(tvName);
+
+                final EditText tvKey = new EditText(context);
+                tvKey.setHint("Key");
+                layout.addView(tvKey);
+
+                dialog.setView(layout);
+                dialog.setPositiveButton(context.getString(R.string.add), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.v("Package added", "Name: \"" + tvName.getText() + "\", Key: \"" + tvKey.getText() + "\"");
+                        if (!tvName.getText().equals("")) {
+                            if (!tvKey.getText().equals("")) {
+                                Package addPackage = new Package(tvName.getText().toString(), tvKey.getText().toString());
+
+                                try {
+                                    loadOpendatapackage(tvKey.getText().toString());
+
+                                    ArrayList<Package> storedPackages = getPackagesFromPreferences();
+                                    storedPackages.add(addPackage);
+                                    storePackagesToPreferences(storedPackages);
+                                    Toast.makeText(context, "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
+                                } catch (Exception e) {
+                                    Toast.makeText(context, "Fehler beim hinzufügen des Packetes", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }
+                    }
+                });
+                dialog.setNegativeButton(context.getString(R.string.cancel), null);
+
+                dialog.show();
+            }
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                dialog.setTitle(context.getString(R.string.delete_Package));
+                dialog.setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        packages.remove(position);
+                        storePackagesToPreferences(packages);
+                    }
+                });
+                dialog.setNegativeButton(context.getString(R.string.cancel), null);
+                dialog.show();
+                return true;
+            }
+        });
+    }
+
+    private ArrayList<Package> getPackagesFromPreferences() {
+        ArrayList<Package> packageList = new ArrayList<>();
+
+        Package defaultPackage = new Package("Museen", "a5841caf-afe2-4f98-bb68-bd4899e8c9cb");
+
+        final String defaultValue = "undefined JSON Object!";
+        String preferencePackage = preferences.getString(this.context.getString(R.string.preferences_preference_packages), defaultValue);
+        if (preferencePackage.equals(defaultValue)) {
+            packageList.add(defaultPackage);
+            storePackagesToPreferences(packageList);
+
+            loadOpendatapackage(defaultPackage.getKey());
+
+            preferencePackage = preferences.getString(this.context.getString(R.string.preferences_preference_packages), defaultValue);
         }
+
+        packageList.clear();
+        Gson gson = new Gson();
+        Type type = new TypeToken<ArrayList<Package>>() {
+        }.getType();
+        packageList = gson.fromJson(preferencePackage, type);
+
+        return packageList;
+    }
+
+    private void loadOpendatapackage(String key) {
+        // TODO LOAD OPENDATAPACKAGE
+        // OpenDataPackage openDataPackage = OpenDataUtilities.getPackageById(defaultPackage.getKey());
+        // DatabaseConnection.getInstance(context).insertPackage(openDataPackage);
+    }
+
+    private void storePackagesToPreferences(List<Package> packageList) {
+        Gson gson = new Gson();
+        String json = gson.toJson(packageList);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(this.context.getString(R.string.preferences_preference_packages), json);
+        editor.commit();
     }
 
     @Override
@@ -83,121 +183,29 @@ class ListViewCustomAdapter extends BaseAdapter implements AbsListView.OnScrollL
             convertView = mInflater.inflate(R.layout.fragment_second_datapoints_listviewrow, null);
         }
 
-        ImageView iv_Picture = (ImageView) convertView.findViewById(R.id.icon);
-        TextView tv_Name = (TextView) convertView.findViewById(R.id.title);
+        TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
+        TextView tvKey = (TextView) convertView.findViewById(R.id.tvKey);
 
-        Datapoint datapoint = datapoints.get(position);
-        tv_Name.setText(datapoint.getTitle());
-        if (datapoint.getImage() != null) {
-            iv_Picture.setImageBitmap(datapoint.getImage());
-        } else {
-            iv_Picture.setImageResource(R.drawable.no_image_available);
-        }
+        Package actualPackage = packages.get(position);
+        ;
+        tvName.setText(actualPackage.getName());
+        tvKey.setText(actualPackage.getKey());
 
         return convertView;
     }
 
     @Override
     public int getCount() {
-        return datapoints.size();
+        return packages.size();
     }
 
     @Override
-    public Datapoint getItem(int position) {
-        return datapoints.get(position);
+    public Package getItem(int position) {
+        return packages.get(position);
     }
 
     @Override
     public long getItemId(int position) {
         return -1L;
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-    }
-
-    @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        Log.v("Scroll", "FirstVisibleItem: " + firstVisibleItem);
-        Log.v("Scroll", "VisibleItemCount: " + visibleItemCount);
-        Log.v("Scroll", "TotalItemCount: " + totalItemCount);
-
-        final int mitleresSichtbaresElement = firstVisibleItem + (visibleItemCount / 2);
-        final int solltengeladenseinHalf = totalItemCount / 2;
-
-        if ((mitleresSichtbaresElement == lastMiddleScroll) && (solltengeladenseinHalf == lastShouldScroll)) {
-            return;
-        } else {
-            lastMiddleScroll = mitleresSichtbaresElement;
-            lastShouldScroll = solltengeladenseinHalf;
-        }
-
-        if (!alreadyLoading) {
-            alreadyLoading = true;
-            if ((mitleresSichtbaresElement > solltengeladenseinHalf) && ((mitleresSichtbaresElement - solltengeladenseinHalf) > 5)) {
-                // Elemente an das hintere ende laden
-                Log.v("Nachladen", "ENDE");
-                new Thread() {
-                    @Override
-                    public void run() {
-                        final List<Datapoint> addDatapoints = DatabaseConnection.getInstance(context).getDatapointsEnd(context, datapoints.get(datapoints.size() - 1).getIdDatapoint(), mitleresSichtbaresElement - solltengeladenseinHalf);
-                        for (Datapoint actualDatapoint : addDatapoints) {
-                            ListViewCustomAdapter.this.datapoints.remove(0);
-                            ListViewCustomAdapter.this.datapoints.add(actualDatapoint);
-                        }
-                        ListViewCustomAdapter.this.activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                ListViewCustomAdapter.this.notifyDataSetChanged();
-                            }
-                        });
-                        ListViewCustomAdapter.this.alreadyLoading = false;
-                    }
-                }.start();
-            } else if ((solltengeladenseinHalf > mitleresSichtbaresElement) && ((solltengeladenseinHalf - mitleresSichtbaresElement) > 5)) {
-                // Elemente an das vordere ende laden
-                Log.v("Nachladen", "BEGIN");
-                alreadyLoading = false;
-            } else {
-                alreadyLoading = false;
-            }
-        }
-
-        Log.v("Scroll", "==============================");
-
-        return;
-    }
-}
-
-class SortedList<E> extends AbstractList<Datapoint> {
-
-    private ArrayList<Datapoint> internalList = new ArrayList<>();
-
-    @Override
-    public boolean add(Datapoint datapoint) {
-        internalList.add(datapoint);
-        Collections.sort(internalList, new Comparator<Datapoint>() {
-            @Override
-            public int compare(Datapoint lhs, Datapoint rhs) {
-                return ((Integer) lhs.getIdDatapoint()).compareTo(rhs.getIdDatapoint());
-            }
-        });
-        return true;
-    }
-
-    @Override
-    public Datapoint get(int i) {
-        return internalList.get(i);
-    }
-
-    @Override
-    public int size() {
-        return internalList.size();
-    }
-
-    @Override
-    public Datapoint remove(int location) {
-        return internalList.remove(location);
     }
 }

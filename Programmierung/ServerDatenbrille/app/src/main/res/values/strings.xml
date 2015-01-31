@@ -13,4 +13,10 @@
 
     <string name="qr_code_label">QR-Code</string>
 
+    <string name="add_Package">Package hinzufügen</string>
+    <string name="add">Hinzufügen</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="delete_Package">Package wirklich löschen?</string>
+    <string name="ok">OK</string>
+
 </resources>

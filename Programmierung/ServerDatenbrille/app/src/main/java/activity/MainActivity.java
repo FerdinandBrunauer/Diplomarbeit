@@ -4,9 +4,11 @@ import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -14,7 +16,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import activity.adapter.TabsPagerAdapter;
@@ -108,8 +114,17 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 return true;
             }
             case R.id.sync_action: {
-                //TODO: get packageIds from preferences
-                new PackageCrawler().execute("a5841caf-afe2-4f98-bb68-bd4899e8c9cb");
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                String preferencePackage = preferences.getString(getString(R.string.preferences_preference_packages), "");
+                Gson gson = new Gson();
+                Type type = new TypeToken<ArrayList<Package>>() {}.getType();
+                ArrayList<Package> storedPackages = gson.fromJson(preferencePackage, type);
+                String[] keys = new String[storedPackages.size()];
+                for(int i = 0; i < keys.length; i++)
+                    keys[i] = storedPackages.get(i).getKey();
+                new PackageCrawler().execute(keys);
+
+                return true;
             }
             default:
                 return false;
@@ -180,7 +195,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
             for (int i = 0; i < params.length; i++) {
                 dialog.setTitle(getString(R.string.crawler_load_packageinfo) + " (" + (i + 1) + "/" + params.length + ") ");
-
 
                 OpenDataPackage openDataPackage = OpenDataUtilities.getPackageById(params[i]);
                 if(!db.isPackageInDatabase(openDataPackage)) {

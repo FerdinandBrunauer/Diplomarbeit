@@ -27,13 +27,6 @@
             android:title="@string/preferences_preference_nfc_enabled" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/preferences_category_datapackages">
-        <CheckBoxPreference
-            android:defaultValue="@bool/preferences_preferences_museen_enabled_default"
-            android:key="@string/preferences_preference_museen_enabled"
-            android:title="@string/preferences_preference_museen_enabled" />
-    </PreferenceCategory>
-
     <PreferenceCategory android:title="@string/preferences_category_wifi">
         <EditTextPreference
             android:defaultValue="@string/preferences_preference_wifihotspot_name_default"

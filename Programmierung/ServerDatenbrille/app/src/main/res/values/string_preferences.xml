@@ -49,10 +49,6 @@
     <string name="preferences_category_nfc">NFC</string>
     <string name="preferences_preference_nfc_enabled">NFC ein/aus</string>
     <bool name="preferences_preference_nfc_enabled_default">true</bool>
-    <!-- Datenpakete -->
-    <string name="preferences_category_datapackages">Datenpakete</string>
-    <string name="preferences_preference_museen_enabled">Museen ein/aus</string>
-    <bool name="preferences_preferences_museen_enabled_default">true</bool>
     <!-- WIFI -->
     <string name="preferences_category_wifi">WLAN - Hotspot</string>
     <string name="preferences_preference_wifihotspot_name">Name</string>
@@ -74,6 +70,8 @@
     </string-array>
     <string name="preferences_preference_scroll_distance_per_click_default">2</string>
 
+    <string name="preferences_preference_packages">packages</string>
+    
     <string name="back_button_label">Zurück</string>
     <string name="next_button_label">Weiter</string>
     <!-- Optional button to Skip a PreferenceActivity [CHAR LIMIT=20] -->

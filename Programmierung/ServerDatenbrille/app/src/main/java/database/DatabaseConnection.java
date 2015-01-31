@@ -10,10 +10,8 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
-import database.openDataUtilities.Datapoint;
 import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataResource;
 
@@ -137,30 +135,6 @@ public class DatabaseConnection extends SQLiteOpenHelper {
         cv.put(WEBLINK_DATAPOINT, weblink);
 
         db.insert(DATAPOINT_TABLE, null, cv);
-    }
-
-    public List<Datapoint> getDatapointsEnd(Context context, int startID, int count) {
-        List<Datapoint> datapoints = new ArrayList<>();
-
-        String sql = "SELECT " + ID_DATAPOINT + ", " + TITLE_DATAPOINT + ", " + IMAGE_DATAPOINT + " FROM " + DATAPOINT_TABLE + " WHERE " + ID_DATAPOINT + ">?" + " LIMIT ?";
-        SQLiteDatabase db = getInstance(context).getReadableDatabase();
-        Cursor cursor = db.rawQuery(sql, new String[]{"" + startID, "" + count});
-        if (cursor != null) {
-            cursor.moveToFirst();
-            do {
-                datapoints.add(new Datapoint(cursor.getInt(0), null, null, null, null, cursor.getString(1), null, cursor.getBlob(2)));
-            } while (cursor.moveToNext());
-        }
-
-        return datapoints;
-    }
-
-    public List<Datapoint> getDatapointsBeginning(Context context, int startID, int count) {
-        List<Datapoint> datapoints = new ArrayList<>();
-
-        // TODO
-
-        return datapoints;
     }
 
     public String[] getDatapointByLocation(Location location){
