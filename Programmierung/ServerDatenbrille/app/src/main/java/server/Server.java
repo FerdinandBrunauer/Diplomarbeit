@@ -115,7 +115,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
         try {
             socket.setKeepAlive(true);
         } catch (SocketException e) {
-            // i cant do anything against that ...
+            // i can't do anything against that ...
         }
 
         // TODO Handshake

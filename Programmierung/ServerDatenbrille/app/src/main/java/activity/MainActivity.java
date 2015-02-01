@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -34,6 +33,10 @@ import database.XmlParser;
 import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataResource;
 import database.openDataUtilities.OpenDataUtilities;
+import datapoint.NFC_QRValidator;
+import datapoint.Validator;
+import event.datapoint.DatapointEventHandler;
+import event.datapoint.DatapointEventObject;
 import htlhallein.at.serverdatenbrille.R;
 import server.Server;
 
@@ -111,11 +114,17 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if(result != null) {
-            if(result.getContents() == null) {
-                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
+        if (result != null) {
+            if (result.getContents() == null) {
+                Log.v("QR-Code", "cancelled");
             } else {
-                Toast.makeText(this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
+                Log.v("QR-Code", "Scanned: " + result.getContents());
+
+                Validator validator = new NFC_QRValidator();
+                DatapointEventObject eventObject = validator.validate(result.getContents());
+                if (eventObject != null) {
+                    DatapointEventHandler.fireDatapointEvent(eventObject);
+                }
             }
         } else {
             // This is important, otherwise the result will not be passed to the fragment
@@ -137,10 +146,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
                 String preferencePackage = preferences.getString(getString(R.string.preferences_preference_packages), "");
                 Gson gson = new Gson();
-                Type type = new TypeToken<ArrayList<Package>>() {}.getType();
+                Type type = new TypeToken<ArrayList<Package>>() {
+                }.getType();
                 ArrayList<Package> storedPackages = gson.fromJson(preferencePackage, type);
                 String[] keys = new String[storedPackages.size()];
-                for(int i = 0; i < keys.length; i++)
+                for (int i = 0; i < keys.length; i++)
                     keys[i] = storedPackages.get(i).getKey();
                 new PackageCrawler().execute(keys);
 
@@ -156,7 +166,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         private DatabaseConnection db;
 
-        private void writeToDatabase(OpenDataPackage openDataPackage,int packageNr, int packagesCount){
+        private void writeToDatabase(OpenDataPackage openDataPackage, int packageNr, int packagesCount) {
             if (openDataPackage != null) {
                 setDialogTitle(getString(R.string.crawler_add_packageinfo) + " (" + (packageNr + 1) + "/" + packagesCount + ") ");
                 db.insertPackage(openDataPackage);
@@ -204,7 +214,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             dialog.setProgress(dialog.getProgress() + 30);
         }
 
-        public void deletePackage(String packageId){
+        public void deletePackage(String packageId) {
             onPreExecute();
             db.deletePackageInclusiveDatapoints(packageId);
             onPostExecute(null);
@@ -222,12 +232,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 dialog.setTitle(getString(R.string.crawler_load_packageinfo) + " (" + (i + 1) + "/" + params.length + ") ");
 
                 OpenDataPackage openDataPackage = OpenDataUtilities.getPackageById(params[i]);
-                if(!db.isPackageInDatabase(openDataPackage)) {
-                    writeToDatabase(openDataPackage,i,params.length);
-                }else{
-                    if(db.checkForPackageUpdate(openDataPackage)){
+                if (!db.isPackageInDatabase(openDataPackage)) {
+                    writeToDatabase(openDataPackage, i, params.length);
+                } else {
+                    if (db.checkForPackageUpdate(openDataPackage)) {
                         db.deletePackageInclusiveDatapoints(openDataPackage);
-                        writeToDatabase(openDataPackage,i,params.length);
+                        writeToDatabase(openDataPackage, i, params.length);
                     }
                 }
                 dialog.setProgress(dialog.getProgress() + 30);
@@ -264,7 +274,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     public class RemovePackage extends AsyncTask<String, Integer, String> {
-        private ArrayList<OpenDataPackage> openDataPackages = new ArrayList<>();
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
         private DatabaseConnection db;
