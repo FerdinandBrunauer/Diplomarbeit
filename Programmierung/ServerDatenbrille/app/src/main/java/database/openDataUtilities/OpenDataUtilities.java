@@ -17,17 +17,14 @@
 package database.openDataUtilities;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.AttributeSet;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
@@ -108,7 +105,7 @@ public class OpenDataUtilities {
 			}
 			return odPackage;
 		}catch(Exception e){
-            System.err.print(e);
+            Log.wtf("Error", "getPackageById", e);
 		}
         return null;
 	}
@@ -135,7 +132,7 @@ public class OpenDataUtilities {
 	public static List<String> getAllPackages() throws JSONException, IOException{
         JSONObject json = new JSONObject(getRequestResult(OPENDATAURL + PACKAGE_LIST));
         JSONArray jsonArray = json.getJSONArray("result");
-		List<String> allPackages = new ArrayList<String>();
+		List<String> allPackages = new ArrayList<>();
 		for(int i = 0; i < jsonArray.length(); i++){
 			allPackages.add(jsonArray.get(i).toString());
 		}
@@ -153,11 +150,11 @@ public class OpenDataUtilities {
 	public static List<List<String>> searchForPackages(String searchString) throws JSONException, IOException, ParseException{
 		List<List<String>> listOne = searchForPackageName(searchString);
 		List<List<String>> listTwo = searchForPackageTag(searchString);
-		List<List<String>> combinedList = new ArrayList<List<String>>();
+		List<List<String>> combinedList = new ArrayList<>();
 		combinedList.addAll(listOne);
 		combinedList.addAll(listTwo);
 		
-		Set<List<String>> set = new LinkedHashSet<List<String>>();
+		Set<List<String>> set = new LinkedHashSet<>();
 		set.addAll(combinedList);
 		combinedList.clear();
 		combinedList.addAll(set);
@@ -179,12 +176,12 @@ public class OpenDataUtilities {
 	public static List<List<String>> searchForPackageName(String searchString) throws JSONException, IOException, ParseException{
 		JSONObject json = new JSONObject(getRequestResult(OPENDATAURL + PACKAGE_LIST));
         JSONArray jsonArray = json.getJSONArray("result");
-		List<List<String>> foundPackages = new ArrayList<List<String>>();
+		List<List<String>> foundPackages = new ArrayList<>();
 		for(int i = 0; i < jsonArray.length(); i++){
 			if(jsonArray.get(i).toString().matches("(.*)" + searchString.trim().toLowerCase() + "(.*)")){
 				OpenDataPackage odPackage = getPackageById(jsonArray.getString(i));
 				if(odPackage != null){
-					List<String> tempPackages = new ArrayList<String>();
+					List<String> tempPackages = new ArrayList<>();
 					tempPackages.add(odPackage.getTitle());
 					tempPackages.add(odPackage.getId());
 					foundPackages.add(tempPackages);
@@ -204,9 +201,9 @@ public class OpenDataUtilities {
 		JSONObject json = new JSONObject(getRequestResult(OPENDATAURL + TAG_SHOW + id.trim()));
 		JSONObject temp = (JSONObject) json.get("result");
 		JSONArray packages = temp.getJSONArray("packages");
-		List<List<String>> foundPackages = new ArrayList<List<String>>();
+		List<List<String>> foundPackages = new ArrayList<>();
 		for(int i = 0; i < packages.length(); i++){
-			List<String> tempPackages = new ArrayList<String>();
+			List<String> tempPackages = new ArrayList<>();
 			JSONObject odPackage = packages.getJSONObject(i);
 			tempPackages.add(odPackage.getString("title"));
 			tempPackages.add(odPackage.getString("id"));
@@ -225,9 +222,9 @@ public class OpenDataUtilities {
         JSONObject json = new JSONObject(getRequestResult(OPENDATAURL + TAG_SHOW + tag.getId()));
         JSONObject temp = (JSONObject) json.get("result");
         JSONArray packages = temp.getJSONArray("packages");
-        List<List<String>> foundPackages = new ArrayList<List<String>>();
+        List<List<String>> foundPackages = new ArrayList<>();
         for (int i = 0; i < packages.length(); i++) {
-            List<String> tempPackages = new ArrayList<String>();
+            List<String> tempPackages = new ArrayList<>();
             JSONObject odPackage = packages.getJSONObject(i);
             tempPackages.add(odPackage.getString("title"));
             tempPackages.add(odPackage.getString("id"));
@@ -261,9 +258,9 @@ public class OpenDataUtilities {
                 throw new IOException(statusLine.getReasonPhrase());
             }
         } catch (ClientProtocolException e) {
-            System.err.print(e);
+            Log.wtf("Error", "getRequestResult", e);
         } catch (IOException e) {
-            System.err.print(e);
+            Log.wtf("Error", "getRequestResult", e);
         }
         return responseString;
     }
@@ -274,7 +271,7 @@ public class OpenDataUtilities {
             File root = android.os.Environment.getExternalStorageDirectory();
 
             File dir = new File (root.getAbsolutePath() + "/datenbrille/download/");
-            if(dir.exists()==false) {
+            if(!dir.exists()) {
                 dir.mkdirs();
             }
 
@@ -299,7 +296,7 @@ public class OpenDataUtilities {
             * Read bytes to the Buffer until there is nothing more to read(-1).
             */
             ByteArrayBuffer baf = new ByteArrayBuffer(5000);
-            int current = 0;
+            int current;
             while ((current = bis.read()) != -1) {
                 baf.append((byte) current);
             }

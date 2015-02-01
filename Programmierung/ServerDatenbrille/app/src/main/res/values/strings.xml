@@ -19,4 +19,9 @@
     <string name="delete_Package">Package wirklich löschen?</string>
     <string name="ok">OK</string>
 
+    <string name="search">Suchen</string>
+    <string name="search_Dialog">Suchen</string>
+
+    <string name="wait">Bitte warten</string>
+
 </resources>

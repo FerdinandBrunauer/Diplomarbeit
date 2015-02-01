@@ -10,14 +10,16 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.List;
 
 import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataResource;
 
 public class DatabaseConnection extends SQLiteOpenHelper {
-    private static final String DATABASE_NAME = Environment.getExternalStorageDirectory() + "/datenbrille/database/datenbrille";
-    private static final int DATABASE_VERSION = 3;
+    private static final String DATABASE_NAME = Environment.getExternalStorageDirectory() + "/datenbrille/database/datenbrille.sqlite";
+    private static final String DATABASE_FOLDER = Environment.getExternalStorageDirectory() + "/datenbrille/database";
+    private static final int DATABASE_VERSION = 1;
 
     // OPEN DATA PACKAGE TABLE
     private static final String OPEN_DATA_PACKAGES_TABLE = "openDataPackages";
@@ -156,6 +158,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
                     cursor.getString(cursor.getColumnIndex(LONGITUDE_DATAPOINT)),
                     cursor.getString(cursor.getColumnIndex(WEBLINK_DATAPOINT))
             };
+            cursor.close();
             return result;
         }catch (Exception e){
             System.err.print(e);
@@ -165,6 +168,14 @@ public class DatabaseConnection extends SQLiteOpenHelper {
 
     public boolean isPackageInDatabase(OpenDataPackage openDataPackage){
         try{
+            File dbFolder = new File(DATABASE_FOLDER);
+            File dbFile = new File(DATABASE_NAME);
+            if(!dbFolder.exists()) {
+                dbFolder.mkdir();
+                if (!dbFile.exists()) {
+                    dbFile.createNewFile();
+                }
+            }
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor cursor = db.query(
                     OPEN_DATA_PACKAGES_TABLE,
@@ -177,8 +188,10 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             );
 
             if(cursor.getCount() == 0){
+                cursor.close();
                 return false;
             }else{
+                cursor.close();
                 return true;
             }
         }catch(Exception e){
@@ -191,6 +204,15 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             SQLiteDatabase db = this.getReadableDatabase();
             db.delete(DATAPOINT_TABLE, ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + "=" + openDataPackage.getId(), null);
             db.delete(OPEN_DATA_PACKAGES_TABLE, ID_OPEN_DATA_PACKAGE + "=" + openDataPackage.getId(), null);
+        }catch (Exception e){
+            Log.wtf("Error", "delete Packages from Database", e);
+        }
+    }
+    public void deletePackageInclusiveDatapoints(String packageId){
+        try{
+            SQLiteDatabase db = this.getReadableDatabase();
+            db.delete(DATAPOINT_TABLE, ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + "= '" + packageId + "'", null);
+            db.delete(OPEN_DATA_PACKAGES_TABLE, ID_OPEN_DATA_PACKAGE + "= '" + packageId + "'", null);
         }catch (Exception e){
             Log.wtf("Error", "delete Packages from Database", e);
         }
@@ -208,18 +230,22 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor cursor = db.query(
                     OPEN_DATA_PACKAGES_TABLE,
-                    new String[]{UPDATE_TIMESTAMP_OPEN_DATA_PACKAGE},
-                    ID_OPEN_DATA_PACKAGE + " = ?",
-                    new String[]{openDataPackage.getId(),},
+                    null,
+                    ID_OPEN_DATA_PACKAGE + " = '" + openDataPackage.getId() + "'",
+                    null,
                     null,
                     null,
                     null
             );
-            Double timestampInDatabase = 0.0;
+            String timestampInDatabase = "";
             if (cursor != null) {
-                timestampInDatabase = cursor.getDouble(0);
+                if (cursor.moveToFirst()) {
+                    timestampInDatabase = cursor.getString(cursor.getColumnIndex(UPDATE_TIMESTAMP_OPEN_DATA_PACKAGE));
+                }
             }
-            if(Double.parseDouble(updateTimestamp) > timestampInDatabase){
+            cursor.close();
+
+            if(timestampInDatabase.compareTo(updateTimestamp) > 0){
                 return true;
             }else{
                 return false;

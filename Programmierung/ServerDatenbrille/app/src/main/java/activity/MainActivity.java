@@ -131,7 +131,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         }
     }
 
-    class PackageCrawler extends AsyncTask<String, Integer, String> {
+    public class PackageCrawler extends AsyncTask<String, String, String> {
         private ArrayList<OpenDataPackage> openDataPackages = new ArrayList<>();
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
@@ -185,6 +185,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             dialog.setProgress(dialog.getProgress() + 30);
         }
 
+        public void deletePackage(String packageId){
+            onPreExecute();
+            db.deletePackageInclusiveDatapoints(packageId);
+            onPostExecute(null);
+        }
+
         @Override
         protected String doInBackground(String... params) {
             dialog.setProgress(0);
@@ -231,6 +237,45 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         protected void onPostExecute(String result) {
+            db.close();
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+        }
+    }
+
+    public class RemovePackage extends AsyncTask<String, Integer, String> {
+        private ArrayList<OpenDataPackage> openDataPackages = new ArrayList<>();
+        private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+
+        private DatabaseConnection db;
+
+        @Override
+        protected String doInBackground(String... params) {
+            db.deletePackageInclusiveDatapoints(params[0]);
+            return null;
+        }
+
+        private void setDialogTitle(final String title) {
+            MainActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dialog.setTitle(title);
+                }
+            });
+        }
+
+        @Override
+        protected void onPreExecute() {
+            db = new DatabaseConnection(getApplicationContext());
+            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            this.dialog.setTitle("Please Wait");
+            this.dialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            db.close();
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
