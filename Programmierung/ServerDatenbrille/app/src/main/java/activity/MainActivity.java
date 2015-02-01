@@ -15,9 +15,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -106,11 +109,28 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if(result != null) {
+            if(result.getContents() == null) {
+                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
+            }
+        } else {
+            // This is important, otherwise the result will not be passed to the fragment
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         switch (item.getItemId()) {
             case R.id.qr_code_action: {
-                Intent intent = new Intent(this, QRCodeActivity.class);
-                startActivity(intent);
+                IntentIntegrator integrator = new IntentIntegrator(this);
+                integrator.setWide();
+                integrator.autoWide();
+                integrator.initiateScan();
                 return true;
             }
             case R.id.sync_action: {
@@ -132,7 +152,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     public class PackageCrawler extends AsyncTask<String, String, String> {
-        private ArrayList<OpenDataPackage> openDataPackages = new ArrayList<>();
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
         private DatabaseConnection db;
@@ -152,7 +171,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                         try {
                             File kmlFile = KmzReader.getKmlFile(res.getId() + ".kmz");
                             ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
-                            needSteps = placemarks.size() * 1;
+                            needSteps = placemarks.size();
                             dialog.setMax(dialog.getMax() + needSteps);
                             for (int n = 0; n < placemarks.size(); n++) {
                                 setDialogTitle(getString(R.string.crawler_add_datapoint) + " (" + (packageNr + 1) + "/" + packagesCount + ")\n" + getString(R.string.craalwer_datapoint) + ": " + (n + 1) + "/" + placemarks.size());
