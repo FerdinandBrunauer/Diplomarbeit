@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import database.DatabaseConnection;
-import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataUtilities;
 import htlhallein.at.serverdatenbrille.R;
 
@@ -66,8 +65,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
         private List<Package> packages;
         protected SharedPreferences.OnSharedPreferenceChangeListener mySharedPreferenceslistener;
         protected SharedPreferences preferences;
-        final EditText tvName = new EditText(getActivity());
-        final EditText tvKey = new EditText(getActivity());
 
         public ListViewCustomAdapter(final Activity context, Button button, ListView listView) {
             this.context = context;
@@ -88,19 +85,19 @@ public class Fragment_Second_Datapoints extends ListFragment {
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(context);
                     dialog.setTitle(context.getString(R.string.add_Package));
-
                     LinearLayout layout = new LinearLayout(context);
                     layout.setOrientation(LinearLayout.VERTICAL);
-
+                    final EditText tvName = new EditText(getActivity());
+                    final EditText tvKey = new EditText(getActivity());
                     tvName.setHint("Name");
                     layout.addView(tvName);
-
                     tvKey.setHint("Key");
                     layout.addView(tvKey);
 
                     dialog.setView(layout);
+
                     dialog.setPositiveButton(context.getString(R.string.add), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -110,8 +107,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
                                     Package addPackage = new Package(tvName.getText().toString(), tvKey.getText().toString());
 
                                     try {
-                                        loadOpendatapackage(tvKey.getText().toString());
-
                                         ArrayList<Package> storedPackages = getPackagesFromPreferences();
                                         storedPackages.add(addPackage);
                                         storePackagesToPreferences(storedPackages);
@@ -123,10 +118,21 @@ public class Fragment_Second_Datapoints extends ListFragment {
                             }
                         }
                     });
-                    dialog.setNegativeButton(context.getString(R.string.search), new DialogInterface.OnClickListener() {
+                    dialog.setNegativeButton(context.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            new PackageSearcher().execute(tvName.getText().toString());
+                            dialog.cancel();
+                        }
+                    });
+                    dialog.setNeutralButton(context.getString(R.string.search), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String searchName = tvName.getText().toString();
+                            if(searchName.compareTo("") == 0) {
+                                Toast.makeText(context, context.getString(R.string.search_package_no_name), Toast.LENGTH_LONG).show();
+                            } else {
+                                new PackageSearcher().execute(tvName.getText().toString());
+                            }
                         }
                     });
 
@@ -164,8 +170,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
                 packageList.add(defaultPackage);
                 storePackagesToPreferences(packageList);
 
-                loadOpendatapackage(defaultPackage.getKey());
-
                 preferencePackage = preferences.getString(this.context.getString(R.string.preferences_preference_packages), defaultValue);
             }
 
@@ -176,12 +180,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
             packageList = gson.fromJson(preferencePackage, type);
 
             return packageList;
-        }
-
-        private void loadOpendatapackage(String key) {
-            // TODO LOAD OPENDATAPACKAGE
-            // OpenDataPackage openDataPackage = OpenDataUtilities.getPackageById(defaultPackage.getKey());
-            // DatabaseConnection.getInstance(context).insertPackage(openDataPackage);
         }
 
         private void storePackagesToPreferences(List<Package> packageList) {
@@ -255,7 +253,7 @@ public class Fragment_Second_Datapoints extends ListFragment {
     }
 
     public class PackageSearcher extends AsyncTask<String, String, String> {
-        private Dialog searchDialog = new Dialog(getActivity());
+        private AlertDialog searchDialog;
         private Dialog dialog = new ProgressDialog(getActivity());
         private DatabaseConnection db;
         protected SharedPreferences preferences;
@@ -265,9 +263,15 @@ public class Fragment_Second_Datapoints extends ListFragment {
             try {
                 List<List<String>> foundPackages = OpenDataUtilities.searchForPackages(params[0]);
 
+                TableLayout.LayoutParams tableParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
+                TableRow.LayoutParams rowParams = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+
                 final TableLayout tableLayout = new TableLayout(getActivity());
-                for(final List<String> packages:foundPackages){
+                tableLayout.setLayoutParams(tableParams);
+                for (final List<String> packages : foundPackages) {
                     TableRow row = new TableRow(getActivity());
+                    row.setLayoutParams(rowParams);
+                    row.setPadding(50, 10, 10, 10);
                     row.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -277,8 +281,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
                                     Package addPackage = new Package(packages.get(0), packages.get(1));
 
                                     try {
-                                        loadOpendatapackage(packages.get(1));
-
                                         ArrayList<Package> storedPackages = getPackagesFromPreferences();
                                         storedPackages.add(addPackage);
                                         storePackagesToPreferences(storedPackages);
@@ -298,6 +300,7 @@ public class Fragment_Second_Datapoints extends ListFragment {
                     });
                     TextView nameView = new TextView(getActivity());
                     nameView.setText(packages.get(0));
+                    nameView.setPadding(20, 20, 20, 20);
 
                     row.addView(nameView);
 
@@ -307,9 +310,16 @@ public class Fragment_Second_Datapoints extends ListFragment {
                     @Override
                     public void run() {
                         dialog.dismiss();
-                        searchDialog.setContentView(tableLayout);
-                        searchDialog.setTitle(getString(R.string.search_Dialog));
-                        searchDialog.show();
+                        AlertDialog.Builder searchDialogBuilder = new AlertDialog.Builder(getActivity());
+                        searchDialogBuilder.setView(tableLayout);
+                        searchDialogBuilder.setTitle(getString(R.string.search_Dialog));
+                        searchDialogBuilder.setNegativeButton(getActivity().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
+                        searchDialog = searchDialogBuilder.show();
                     }
                 });
             } catch (JSONException | IOException | ParseException e) {
@@ -329,8 +339,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
                 packageList.add(defaultPackage);
                 storePackagesToPreferences(packageList);
 
-                loadOpendatapackage(defaultPackage.getKey());
-
                 preferencePackage = preferences.getString(getActivity().getString(R.string.preferences_preference_packages), defaultValue);
             }
 
@@ -341,12 +349,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
             packageList = gson.fromJson(preferencePackage, type);
 
             return packageList;
-        }
-
-        private void loadOpendatapackage(String key) {
-            // TODO LOAD OPENDATAPACKAGE
-            // OpenDataPackage openDataPackage = OpenDataUtilities.getPackageById(defaultPackage.getKey());
-            // DatabaseConnection.getInstance(context).insertPackage(openDataPackage);
         }
 
         private void storePackagesToPreferences(List<Package> packageList) {

@@ -24,4 +24,6 @@
 
     <string name="wait">Bitte warten</string>
 
+    <string name="search_package_no_name">Bitte geben sie einen Namen ein, nach welchem gesucht werden kann!</string>
+
 </resources>
