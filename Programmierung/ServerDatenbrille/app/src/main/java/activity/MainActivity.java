@@ -2,12 +2,20 @@ package activity;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.NfcF;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -15,6 +23,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -24,6 +33,7 @@ import com.google.zxing.integration.android.IntentResult;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import activity.adapter.TabsPagerAdapter;
 import database.DatabaseConnection;
@@ -47,6 +57,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private TabsPagerAdapter myTabsPagerAdapter;
     private ActionBar myActionBar;
     private Server server;
+    // NFC
+    private SharedPreferences preferences;
+    private SharedPreferences.OnSharedPreferenceChangeListener myPreferenceListener;
+    private NfcAdapter adapter;
+    private PendingIntent pendingIntent;
+    private IntentFilter[] intentFilter;
+    private String[][] techList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +104,47 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         this.server = new Server(this);
 //        new Thread(this.server).start(); TODO FOR DEBUGGING DEACTIVATED
+
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        this.nfcInitialize();
+        this.myPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if (key.compareTo(MainActivity.this.getString(R.string.preferences_preference_nfc_enabled)) == 0) {
+                    boolean nfcEnabled = nfcPreferenceEnabled();
+
+                    if (nfcEnabled && (adapter == null))
+                        nfcInitialize();
+
+                    if (adapter != null) {
+                        if (nfcEnabled) {
+                            adapter.enableForegroundDispatch(MainActivity.this, pendingIntent, intentFilter, techList);
+                        } else {
+                            adapter.disableForegroundDispatch(MainActivity.this);
+                        }
+                    }
+                }
+            }
+        };
+        this.preferences.registerOnSharedPreferenceChangeListener(this.myPreferenceListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (adapter != null)
+            if (nfcPreferenceEnabled())
+                adapter.enableForegroundDispatch(this, pendingIntent, intentFilter, techList);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (adapter != null)
+            if (nfcPreferenceEnabled())
+                adapter.disableForegroundDispatch(this);
     }
 
     @Override
@@ -159,6 +217,71 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             default:
                 return false;
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        if (nfcPreferenceEnabled()) {
+            String action = intent.getAction();
+            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            // parse through all NDEF messages and their records and pick text type only
+            Parcelable[] data = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+            if (data != null) {
+                try {
+                    for (int i = 0; i < data.length; i++) {
+                        NdefRecord[] recs = ((NdefMessage) data[i]).getRecords();
+                        for (int j = 0; j < recs.length; j++) {
+                            if (recs[j].getTnf() == NdefRecord.TNF_WELL_KNOWN &&
+                                    Arrays.equals(recs[j].getType(), NdefRecord.RTD_TEXT)) {
+                                byte[] payload = recs[j].getPayload();
+                                String textEncoding = ((payload[0] & 0200) == 0) ? "UTF-8" : "UTF-16";
+                                int langCodeLen = payload[0] & 0077;
+
+                                Validator validator = new NFC_QRValidator();
+                                DatapointEventObject eventObject = validator.validate(new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1, textEncoding));
+                                if (eventObject != null) {
+                                    DatapointEventHandler.fireDatapointEvent(eventObject);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e("TagDispatch", e.toString());
+                }
+            }
+        }
+    }
+
+    private void nfcInitialize() {
+        if (nfcPreferenceEnabled()) {
+            this.adapter = NfcAdapter.getDefaultAdapter(this);
+            if (!this.adapter.isEnabled()) {
+                Log.v("NFC", this.getString(R.string.nfc_disabled));
+
+                Toast.makeText(this, this.getString(R.string.nfc_disabled), Toast.LENGTH_LONG).show();
+
+                SharedPreferences.Editor editor = this.preferences.edit();
+                editor.putBoolean(this.getString(R.string.preferences_preference_nfc_enabled), false);
+                editor.commit();
+
+                this.adapter = null;
+
+                return;
+            }
+            pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, this.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+            IntentFilter ndefIntent = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+            try {
+                ndefIntent.addDataType("*/*");
+                intentFilter = new IntentFilter[]{ndefIntent};
+            } catch (Exception e) {
+                Log.e("NfcTagDispatch", e.toString());
+            }
+            techList = new String[][]{new String[]{NfcF.class.getName()}};
+        }
+    }
+
+    private boolean nfcPreferenceEnabled() {
+        return preferences.getBoolean(this.getString(R.string.preferences_preference_nfc_enabled), this.getResources().getBoolean(R.bool.preferences_preference_nfc_enabled_default));
     }
 
     public class PackageCrawler extends AsyncTask<String, String, String> {

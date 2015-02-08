@@ -26,8 +26,6 @@
 
     <string name="search_package_no_name">Bitte geben sie einen Namen ein, nach welchem gesucht werden kann!</string>
 
-    <string name="no_nfc_support">Dieses Gerät unterstützt kein NFC!</string>
-    <string name="nfc_enabled">NFC ist einsatzbereit</string>
-    <string name="nfc_disabled">NFC ist nicht aktiviert!</string>
+    <string name="nfc_disabled">NFC ist nicht aktiviert! Bitte aktivieren sie NFC um diese Funktion nutzen zu können!</string>
 
 </resources>
