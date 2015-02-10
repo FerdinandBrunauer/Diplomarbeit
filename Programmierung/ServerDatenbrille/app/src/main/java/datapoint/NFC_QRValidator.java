@@ -1,16 +1,13 @@
 package datapoint;
 
-import android.util.Log;
+import android.content.Context;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import org.json.JSONObject;
-
-import java.util.HashMap;
 import java.util.Map;
 
+import database.DatabaseConnection;
+import database.Location;
 import event.datapoint.DatapointEventObject;
 
 /**
@@ -21,11 +18,28 @@ import event.datapoint.DatapointEventObject;
 public class NFC_QRValidator implements Validator {
 
     @Override
-    public DatapointEventObject validate(Object... objects) {
+    public DatapointEventObject validate(Context context, Object... objects) {
         if(objects.length == 1) {
             if(objects[0] instanceof String) {
                 Map<String, Object> json = new Gson().fromJson((String) objects[0], Map.class);
                 // TODO
+                if(json.containsKey("datapointtype")) {
+                    String datapointType = (String) json.get("datapointtype");
+                    switch (datapointType) {
+                        case "location": {
+                            if(json.containsKey("latitude") && json.containsKey("longitude")) {
+                                String html = DatabaseConnection.getInstance(context).getDatapointByLocation(new Location(Double.parseDouble((String)json.get("latitude")), Double.parseDouble((String)json.get("longitude"))))[1]; // TODO from database if exist in database
+                                return new DatapointEventObject(this, html);
+                            }
+                        }
+                        default:
+                        {
+                            return null;
+                        }
+                    }
+                }else {
+                    return null;
+                }
             } else {
                 return null;
             }
@@ -34,8 +48,6 @@ public class NFC_QRValidator implements Validator {
         } else {
             return null;
         }
-
-        return null;
     }
 
 }

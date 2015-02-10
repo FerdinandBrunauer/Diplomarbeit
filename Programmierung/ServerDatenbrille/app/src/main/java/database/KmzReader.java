@@ -17,12 +17,9 @@ public class KmzReader {
             d.unzip();
 
             final File tempFolder = new File(tempFolderPath);
-            //if (tempFolder.exists())
-            //	tempFolder.delete();
 
 
             File[] tempFolderFiles = tempFolder.listFiles();
-            // tempFolder.deleteOnExit();
 
             String kmlFilePath = null;
 

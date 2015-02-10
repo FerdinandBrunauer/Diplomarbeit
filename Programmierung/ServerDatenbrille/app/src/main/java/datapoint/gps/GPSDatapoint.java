@@ -12,12 +12,12 @@ import event.datapoint.DatapointEventObject;
 public class GPSDatapoint {
 
     public GPSDatapoint() {
-
+        // TODO
     }
 
     protected void fireEvent(Object... objects) {
         Validator validator = new GPSValidator();
-        DatapointEventObject eventObject = validator.validate(objects);
+        DatapointEventObject eventObject = validator.validate(null, objects);
         if (eventObject != null) {
             DatapointEventHandler.fireDatapointEvent(eventObject);
         }

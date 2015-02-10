@@ -34,6 +34,7 @@ import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import activity.adapter.TabsPagerAdapter;
 import database.DatabaseConnection;
@@ -47,7 +48,7 @@ import datapoint.NFC_QRValidator;
 import datapoint.Validator;
 import event.datapoint.DatapointEventHandler;
 import event.datapoint.DatapointEventObject;
-import htlhallein.at.serverdatenbrille.R;
+import htlhallein.at.serverdatenbrille1.R;
 import server.Server;
 
 @SuppressWarnings("deprecation")
@@ -179,7 +180,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 Log.v("QR-Code", "Scanned: " + result.getContents());
 
                 Validator validator = new NFC_QRValidator();
-                DatapointEventObject eventObject = validator.validate(result.getContents());
+                DatapointEventObject eventObject = validator.validate(this, result.getContents());
                 if (eventObject != null) {
                     DatapointEventHandler.fireDatapointEvent(eventObject);
                 }
@@ -195,8 +196,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         switch (item.getItemId()) {
             case R.id.qr_code_action: {
                 IntentIntegrator integrator = new IntentIntegrator(this);
-                integrator.setWide();
-                integrator.autoWide();
+                List<String> formats = new ArrayList<String>();
+                formats.add("QR_CODE");
+                integrator.setDesiredBarcodeFormats(formats);
                 integrator.initiateScan();
                 return true;
             }
@@ -238,7 +240,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                                 int langCodeLen = payload[0] & 0077;
 
                                 Validator validator = new NFC_QRValidator();
-                                DatapointEventObject eventObject = validator.validate(new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1, textEncoding));
+                                DatapointEventObject eventObject = validator.validate(this, new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1, textEncoding));
                                 if (eventObject != null) {
                                     DatapointEventHandler.fireDatapointEvent(eventObject);
                                 }

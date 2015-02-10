@@ -1,5 +1,7 @@
 package datapoint;
 
+import android.content.Context;
+
 import event.datapoint.DatapointEventObject;
 
 /**
@@ -12,5 +14,5 @@ public interface Validator {
      * @param objects Coordinates or whatever
      * @return NULL when not a valid Point and an DatapointEventObject if it is a valid Point
      */
-    public DatapointEventObject validate(Object... objects);
+    public DatapointEventObject validate(Context context, Object... objects);
 }

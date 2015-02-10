@@ -24,7 +24,7 @@ import event.scroll.ScrollEventObject;
 import event.tcpSocket.TCPSocketEventHandler;
 import event.tcpSocket.TCPSocketEventListener;
 import event.tcpSocket.TCPSocketEventObject;
-import htlhallein.at.serverdatenbrille.R;
+import htlhallein.at.serverdatenbrille1.R;
 import server.tcpService.TcpServer;
 import server.tcpService.TcpServerState;
 import server.wifiHotspotUtils.WifiApManager;
@@ -52,7 +52,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
 
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        clients = new ArrayList<>();
+        clients = new ArrayList<Socket>();
         this.myWifiManager = new WifiApManager(context);
 
         this.tcpServer = new TcpServer();
@@ -123,9 +123,8 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
     }
 
     private void sendMessageToAllClients(String jsonMessage) {
-        Socket[] sockets = (Socket[]) clients.toArray();
-
-        for (Socket actualSocket : sockets) {
+        Log.v("Clients", "Sending Data to \"" + clients.size() + "\" Clients");
+        for (Socket actualSocket : clients) {
             try {
                 OutputStream stream = actualSocket.getOutputStream();
                 stream.write(jsonMessage.getBytes("UTF-8"));

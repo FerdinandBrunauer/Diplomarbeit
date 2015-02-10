@@ -16,6 +16,8 @@
 
 package database;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,7 +48,8 @@ public class XmlParser {
 			}
 			return placemarks;
 		} catch (Exception e) {
-			throw new ParseException("Error occured at parsing file.", 0);
+            Log.v("Parsing File", "Parse Error", e);
+            throw new ParseException("Error occured at parsing file.", 0);
 		} finally {
 			try {
 				br.close();

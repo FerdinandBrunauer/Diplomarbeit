@@ -1,5 +1,7 @@
 package datapoint.gps;
 
+import android.content.Context;
+
 import datapoint.Validator;
 import event.datapoint.DatapointEventObject;
 
@@ -12,7 +14,7 @@ import event.datapoint.DatapointEventObject;
 public class GPSValidator implements Validator {
 
     @Override
-    public DatapointEventObject validate(Object... objects) {
+    public DatapointEventObject validate(Context context, Object... objects) {
         // TODO implement validate for GPS
         return null;
     }

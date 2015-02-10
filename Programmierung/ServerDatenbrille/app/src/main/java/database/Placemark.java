@@ -32,10 +32,14 @@ public class Placemark {
 		matcher.find();
 		this.id = matcher.group(1);
 
-		Pattern namePattern = Pattern.compile("\\<name\\>([\\w����\\s\\d-\\\"\\(\\\\'\\.)\\,]+)\\<\\/name\\>");
-		matcher = namePattern.matcher(rawPlacemark);
-		matcher.find();
-		this.name = matcher.group(1);
+        try {
+            Pattern namePattern = Pattern.compile("<name>([a-zA-Z0-9äöü     -\"/\\\\(\\\\'\\.\\),]+)</name>");
+            matcher = namePattern.matcher(rawPlacemark);
+            matcher.find();
+            this.name = matcher.group(1);
+        } catch (Exception e){
+            this.name = "";
+        }
 
 		this.link = StringUtils.unescapeHtml3(getStringBetween(rawPlacemark, "\\<td\\>\\<a target\\=\\\"\\_blank\\\" href\\=\\\"", "\\\"\\>http\\:\\/\\/"));
 		this.location = new Location(getStringBetween(rawPlacemark, "\\<coordinates\\>", "\\<\\/coordinates\\>"));
