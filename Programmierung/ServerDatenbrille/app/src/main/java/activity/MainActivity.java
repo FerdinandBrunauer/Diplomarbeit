@@ -48,7 +48,7 @@ import datapoint.NFC_QRValidator;
 import datapoint.Validator;
 import event.datapoint.DatapointEventHandler;
 import event.datapoint.DatapointEventObject;
-import htlhallein.at.serverdatenbrille1.R;
+import htlhallein.at.serverdatenbrille.R;
 import server.Server;
 
 @SuppressWarnings("deprecation")
@@ -101,7 +101,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         });
 
         // Instantiate Database
-        DatabaseConnection.getInstance(this);
+        DatabaseConnection.setContext(this);
 
         this.server = new Server(this);
 //        new Thread(this.server).start(); TODO FOR DEBUGGING DEACTIVATED
@@ -289,12 +289,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public class PackageCrawler extends AsyncTask<String, String, String> {
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
-        private DatabaseConnection db;
-
         private void writeToDatabase(OpenDataPackage openDataPackage, int packageNr, int packagesCount) {
             if (openDataPackage != null) {
                 setDialogTitle(getString(R.string.crawler_add_packageinfo) + " (" + (packageNr + 1) + "/" + packagesCount + ") ");
-                db.insertPackage(openDataPackage);
+                DatabaseConnection.insertPackage(openDataPackage);
                 dialog.setMax(dialog.getMax() + (openDataPackage.getResources().size() * 10));
 
                 for (OpenDataResource res : openDataPackage.getResources()) {
@@ -307,6 +305,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                             File kmlFile = KmzReader.getKmlFile(res.getId() + ".kmz");
                             ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
                             needSteps = placemarks.size();
+                            dialog.setProgress(dialog.getProgress() + 30);
                             dialog.setMax(dialog.getMax() + needSteps);
                             for (int n = 0; n < placemarks.size(); n++) {
                                 setDialogTitle(getString(R.string.crawler_add_datapoint) + " (" + (packageNr + 1) + "/" + packagesCount + ")\n" + getString(R.string.craalwer_datapoint) + ": " + (n + 1) + "/" + placemarks.size());
@@ -314,7 +313,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                                 String parsedHtml = OpenDataUtilities.parseHTML(result);
                                 Bitmap image = OpenDataUtilities.getPlacemarkImage(result);
 
-                                db.addDatapoint(
+                                DatabaseConnection.addDatapoint(
                                         parsedHtml,
                                         image,
                                         placemarks.get(n).getName(),
@@ -336,12 +335,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                     dialog.setProgress(dialog.getProgress() + 10);
                 }
             }
-            dialog.setProgress(dialog.getProgress() + 30);
         }
 
         public void deletePackage(String packageId) {
             onPreExecute();
-            db.deletePackageInclusiveDatapoints(packageId);
+            DatabaseConnection.deletePackageInclusiveDatapoints(packageId);
             onPostExecute(null);
         }
 
@@ -357,11 +355,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 dialog.setTitle(getString(R.string.crawler_load_packageinfo) + " (" + (i + 1) + "/" + params.length + ") ");
 
                 OpenDataPackage openDataPackage = OpenDataUtilities.getPackageById(params[i]);
-                if (!db.isPackageInDatabase(openDataPackage)) {
+                if (!DatabaseConnection.isPackageInDatabase(openDataPackage)) {
                     writeToDatabase(openDataPackage, i, params.length);
                 } else {
-                    if (db.checkForPackageUpdate(openDataPackage)) {
-                        db.deletePackageInclusiveDatapoints(openDataPackage);
+                    if (DatabaseConnection.checkForPackageUpdate(openDataPackage)) {
+                        DatabaseConnection.deletePackageInclusiveDatapoints(openDataPackage);
                         writeToDatabase(openDataPackage, i, params.length);
                     }
                 }
@@ -383,7 +381,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         protected void onPreExecute() {
-            db = new DatabaseConnection(getApplicationContext());
             this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             this.dialog.setTitle("Please Wait");
             this.dialog.show();
@@ -391,7 +388,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         protected void onPostExecute(String result) {
-            db.close();
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
@@ -401,11 +397,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public class RemovePackage extends AsyncTask<String, Integer, String> {
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
-        private DatabaseConnection db;
-
         @Override
         protected String doInBackground(String... params) {
-            db.deletePackageInclusiveDatapoints(params[0]);
+            DatabaseConnection.deletePackageInclusiveDatapoints(params[0]);
             return null;
         }
 
@@ -420,7 +414,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         protected void onPreExecute() {
-            db = new DatabaseConnection(getApplicationContext());
             this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             this.dialog.setTitle("Please Wait");
             this.dialog.show();
@@ -428,7 +421,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         protected void onPostExecute(String result) {
-            db.close();
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }

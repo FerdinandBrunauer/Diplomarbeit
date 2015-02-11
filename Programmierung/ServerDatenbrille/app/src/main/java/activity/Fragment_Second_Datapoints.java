@@ -227,17 +227,14 @@ public class Fragment_Second_Datapoints extends ListFragment {
 
     public class PackageRemover extends AsyncTask<String, String, String> {
         private ProgressDialog dialog = new ProgressDialog(getActivity());
-        private DatabaseConnection db;
-
         @Override
         protected String doInBackground(String... params) {
-            db.deletePackageInclusiveDatapoints(params[0]);
+            DatabaseConnection.deletePackageInclusiveDatapoints(params[0]);
             return null;
         }
 
         @Override
         protected void onPreExecute() {
-            db = new DatabaseConnection(getActivity().getApplicationContext());
             this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             this.dialog.setTitle("Please Wait");
             this.dialog.show();
@@ -245,7 +242,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
 
         @Override
         protected void onPostExecute(String result) {
-            db.close();
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
@@ -255,7 +251,6 @@ public class Fragment_Second_Datapoints extends ListFragment {
     public class PackageSearcher extends AsyncTask<String, String, String> {
         private AlertDialog searchDialog;
         private Dialog dialog = new ProgressDialog(getActivity());
-        private DatabaseConnection db;
         protected SharedPreferences preferences;
 
         @Override
@@ -362,14 +357,8 @@ public class Fragment_Second_Datapoints extends ListFragment {
         @Override
         protected void onPreExecute() {
             this.preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            db = new DatabaseConnection(getActivity().getApplicationContext());
             this.dialog.setTitle(getString(R.string.wait));
             this.dialog.show();
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            db.close();
         }
     }
 }

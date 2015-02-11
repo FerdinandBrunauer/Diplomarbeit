@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.util.List;
 
 import database.openDataUtilities.OpenDataPackage;
@@ -19,7 +18,7 @@ import database.openDataUtilities.OpenDataResource;
 public class DatabaseConnection extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = Environment.getExternalStorageDirectory() + "/datenbrille/database/datenbrille.sqlite";
     private static final String DATABASE_FOLDER = Environment.getExternalStorageDirectory() + "/datenbrille/database";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // OPEN DATA PACKAGE TABLE
     private static final String OPEN_DATA_PACKAGES_TABLE = "openDataPackages";
@@ -42,17 +41,26 @@ public class DatabaseConnection extends SQLiteOpenHelper {
     private static final String NAME_DATAPOINT = "name";
 
     private static DatabaseConnection myInstance = null;
+    private static Context myContext = null;
 
-    public DatabaseConnection(Context context) {
+    private DatabaseConnection(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     public static DatabaseConnection getInstance(Context context) {
         if (myInstance == null) {
-            myInstance = new DatabaseConnection(context.getApplicationContext());
+            if (myContext == null) {
+                myInstance = new DatabaseConnection(context);
+            } else {
+                myInstance = new DatabaseConnection(myContext);
+            }
         }
 
         return myInstance;
+    }
+
+    public static void setContext(Context context) {
+        myContext = context;
     }
 
     @Override
@@ -65,7 +73,6 @@ public class DatabaseConnection extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
         db.execSQL("CREATE TABLE " + OPEN_DATA_PACKAGES_TABLE + " ("
                 + ID_OPEN_DATA_PACKAGE + " TEXT PRIMARY KEY , "
                 + NAME_OPEN_DATA_PACKAGE + " TEXT , "
@@ -95,11 +102,11 @@ public class DatabaseConnection extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void insertPackage(OpenDataPackage odPackage) {
+    public static void insertPackage(OpenDataPackage odPackage) {
         List<OpenDataResource> resources = odPackage.getResources();
 
         try {
-            SQLiteDatabase db = this.getWritableDatabase();
+            SQLiteDatabase db = getInstance(null).getWritableDatabase();
 
             ContentValues cv = new ContentValues();
             cv.put(ID_OPEN_DATA_PACKAGE, odPackage.getId());
@@ -114,11 +121,11 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             }
             db.insert(OPEN_DATA_PACKAGES_TABLE, null, cv);
         } catch (Exception e) {
-            System.err.print(e);
+            Log.v("Database", "Insert Package Error", e);
         }
     }
 
-    public void addDatapoint(String html, Bitmap image, String title, String packageId, String latitude, String longitude, String weblink) {
+    public static void addDatapoint(String html, Bitmap image, String title, String packageId, String latitude, String longitude, String weblink) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buffer = null;
         if (image != null) {
@@ -126,7 +133,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             buffer = out.toByteArray();
         }
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = getInstance(null).getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(DESCRIPTION_DATAPOINT, html);
         cv.put(IMAGE_DATAPOINT, buffer);
@@ -139,44 +146,36 @@ public class DatabaseConnection extends SQLiteOpenHelper {
         db.insert(DATAPOINT_TABLE, null, cv);
     }
 
-    public String[] getDatapointByLocation(Location location){
+    public static String[] getDatapointByLocation(Location location) {
         String[] result = null;
-        try{
+        try {
 
-            SQLiteDatabase db=this.getReadableDatabase();
+            SQLiteDatabase db = getInstance(null).getReadableDatabase();
             Cursor cursor = db.query(DATAPOINT_TABLE, null,
                     LONGITUDE_DATAPOINT + " = ? AND " + LATITUDE_DATAPOINT + " = ?",
-                    new String[] { "" + location.getLongitude(), "" + location.getLatitude() } , null, null, null);
+                    new String[]{"" + location.getLongitude(), "" + location.getLatitude()}, null, null, null);
             cursor.moveToFirst();
             result = new String[]{
                     cursor.getString(cursor.getColumnIndex(ID_DATAPOINT)),
                     cursor.getString(cursor.getColumnIndex(DESCRIPTION_DATAPOINT)),
-                    cursor.getString(cursor.getColumnIndex(IMAGE_DATAPOINT)),
                     cursor.getString(cursor.getColumnIndex(TITLE_DATAPOINT)),
                     cursor.getString(cursor.getColumnIndex(ID_OPEN_DATA_PACKAGE_IN_DATAPOINT)),
-                    cursor.getString(cursor.getColumnIndex(LATITUDE_DATAPOINT)),
-                    cursor.getString(cursor.getColumnIndex(LONGITUDE_DATAPOINT)),
-                    cursor.getString(cursor.getColumnIndex(WEBLINK_DATAPOINT))
             };
             cursor.close();
             return result;
-        }catch (Exception e){
-            System.err.print(e);
+        } catch (Exception e) {
+            Log.v("Database", "getDatapointLocation", e);
             return result;
         }
     }
 
-    public boolean isPackageInDatabase(OpenDataPackage openDataPackage){
-        try{
-            File dbFolder = new File(DATABASE_FOLDER);
-            File dbFile = new File(DATABASE_NAME);
-            if(!dbFolder.exists()) {
-                dbFolder.mkdir();
-                if (!dbFile.exists()) {
-                    dbFile.createNewFile();
-                }
-            }
-            SQLiteDatabase db = this.getReadableDatabase();
+    public static boolean isPackageInDatabase(OpenDataPackage openDataPackage) {
+        try {
+            getInstance(null).close();
+            myContext.deleteDatabase(DATABASE_NAME);
+            myInstance = new DatabaseConnection(myContext);
+
+            SQLiteDatabase db = getInstance(null).getReadableDatabase();
             Cursor cursor = db.query(
                     OPEN_DATA_PACKAGES_TABLE,
                     new String[]{ID_OPEN_DATA_PACKAGE},
@@ -187,39 +186,41 @@ public class DatabaseConnection extends SQLiteOpenHelper {
                     null
             );
 
-            if(cursor.getCount() == 0){
+            if (cursor.getCount() == 0) {
                 cursor.close();
                 return false;
-            }else{
+            } else {
                 cursor.close();
                 return true;
             }
-        }catch(Exception e){
+        } catch (Exception e) {
+            Log.v("Database", "isPackageInDatabase", e);
             return false;
         }
     }
 
-    public void deletePackageInclusiveDatapoints(OpenDataPackage openDataPackage){
-        try{
-            SQLiteDatabase db = this.getReadableDatabase();
+    public static void deletePackageInclusiveDatapoints(OpenDataPackage openDataPackage) {
+        try {
+            SQLiteDatabase db = getInstance(null).getReadableDatabase();
             db.delete(DATAPOINT_TABLE, ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + "=" + openDataPackage.getId(), null);
             db.delete(OPEN_DATA_PACKAGES_TABLE, ID_OPEN_DATA_PACKAGE + "=" + openDataPackage.getId(), null);
-        }catch (Exception e){
-            Log.wtf("Error", "delete Packages from Database", e);
-        }
-    }
-    public void deletePackageInclusiveDatapoints(String packageId){
-        try{
-            SQLiteDatabase db = this.getReadableDatabase();
-            db.delete(DATAPOINT_TABLE, ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + "= '" + packageId + "'", null);
-            db.delete(OPEN_DATA_PACKAGES_TABLE, ID_OPEN_DATA_PACKAGE + "= '" + packageId + "'", null);
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.wtf("Error", "delete Packages from Database", e);
         }
     }
 
-    public boolean checkForPackageUpdate(OpenDataPackage openDataPackage) {
-        try{
+    public static void deletePackageInclusiveDatapoints(String packageId) {
+        try {
+            SQLiteDatabase db = getInstance(null).getReadableDatabase();
+            db.delete(DATAPOINT_TABLE, ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + "= '" + packageId + "'", null);
+            db.delete(OPEN_DATA_PACKAGES_TABLE, ID_OPEN_DATA_PACKAGE + "= '" + packageId + "'", null);
+        } catch (Exception e) {
+            Log.wtf("Error", "delete Packages from Database", e);
+        }
+    }
+
+    public static boolean checkForPackageUpdate(OpenDataPackage openDataPackage) {
+        try {
             String updateTimestamp = "";
             for (OpenDataResource res : openDataPackage.getResources()) {
                 if (res.getFormat().toUpperCase().compareTo("KMZ") == 0) {
@@ -227,7 +228,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
                 }
             }
 
-            SQLiteDatabase db = this.getReadableDatabase();
+            SQLiteDatabase db = getInstance(null).getReadableDatabase();
             Cursor cursor = db.query(
                     OPEN_DATA_PACKAGES_TABLE,
                     null,
@@ -242,16 +243,12 @@ public class DatabaseConnection extends SQLiteOpenHelper {
                 if (cursor.moveToFirst()) {
                     timestampInDatabase = cursor.getString(cursor.getColumnIndex(UPDATE_TIMESTAMP_OPEN_DATA_PACKAGE));
                 }
-            }
-            cursor.close();
-
-            if(timestampInDatabase.compareTo(updateTimestamp) > 0){
-                return true;
-            }else{
-                return false;
+                cursor.close();
             }
 
-        }catch (Exception e){
+            return (timestampInDatabase.compareTo(updateTimestamp) > 0);
+
+        } catch (Exception e) {
             Log.wtf("Error", "check for Update", e);
             return false;
         }

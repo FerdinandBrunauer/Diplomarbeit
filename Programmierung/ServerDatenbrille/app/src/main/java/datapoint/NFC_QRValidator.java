@@ -1,6 +1,7 @@
 package datapoint;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -22,14 +23,19 @@ public class NFC_QRValidator implements Validator {
         if(objects.length == 1) {
             if(objects[0] instanceof String) {
                 Map<String, Object> json = new Gson().fromJson((String) objects[0], Map.class);
-                // TODO
                 if(json.containsKey("datapointtype")) {
                     String datapointType = (String) json.get("datapointtype");
                     switch (datapointType) {
                         case "location": {
                             if(json.containsKey("latitude") && json.containsKey("longitude")) {
-                                String html = DatabaseConnection.getInstance(context).getDatapointByLocation(new Location(Double.parseDouble((String)json.get("latitude")), Double.parseDouble((String)json.get("longitude"))))[1]; // TODO from database if exist in database
-                                return new DatapointEventObject(this, html);
+                                try {
+                                    Location location = new Location(Double.parseDouble((String) json.get("latitude")), Double.parseDouble((String) json.get("longitude")));
+                                    String html = DatabaseConnection.getDatapointByLocation(location)[1]; // TODO from database if exist in database
+                                    return new DatapointEventObject(this, html);
+                                } catch (Exception e) {
+                                    Log.v("Validator", "Datapoint by Location", e);
+                                    return null;
+                                }
                             }
                         }
                         default:

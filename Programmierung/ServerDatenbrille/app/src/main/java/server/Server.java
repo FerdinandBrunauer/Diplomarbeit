@@ -24,7 +24,7 @@ import event.scroll.ScrollEventObject;
 import event.tcpSocket.TCPSocketEventHandler;
 import event.tcpSocket.TCPSocketEventListener;
 import event.tcpSocket.TCPSocketEventObject;
-import htlhallein.at.serverdatenbrille1.R;
+import htlhallein.at.serverdatenbrille.R;
 import server.tcpService.TcpServer;
 import server.tcpService.TcpServerState;
 import server.wifiHotspotUtils.WifiApManager;
