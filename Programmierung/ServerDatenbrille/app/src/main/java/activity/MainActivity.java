@@ -257,6 +257,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private void nfcInitialize() {
         if (nfcPreferenceEnabled()) {
             this.adapter = NfcAdapter.getDefaultAdapter(this);
+            if(this.adapter == null){
+                return;
+            }
             if (!this.adapter.isEnabled()) {
                 Log.v("NFC", this.getString(R.string.nfc_disabled));
 
