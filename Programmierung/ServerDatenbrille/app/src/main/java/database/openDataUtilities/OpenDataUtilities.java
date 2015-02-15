@@ -255,7 +255,9 @@ public class OpenDataUtilities {
             } else {
                 //Closes the connection.
                 response.getEntity().getContent().close();
-                throw new IOException(statusLine.getReasonPhrase());
+                IOException e =  new IOException(statusLine.getReasonPhrase());
+                Log.v("OpenDataUtilities", "URL unreachable! URL: \"" + url + "\"", e);
+                throw e;
             }
         } catch (ClientProtocolException e) {
             Log.wtf("Error", "getRequestResult", e);

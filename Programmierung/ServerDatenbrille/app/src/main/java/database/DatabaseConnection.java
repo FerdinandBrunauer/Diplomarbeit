@@ -16,8 +16,7 @@ import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataResource;
 
 public class DatabaseConnection extends SQLiteOpenHelper {
-    private static final String DATABASE_NAME = Environment.getExternalStorageDirectory() + "/datenbrille/database/datenbrille.sqlite";
-    private static final String DATABASE_FOLDER = Environment.getExternalStorageDirectory() + "/datenbrille/database";
+    private static final String DATABASE_NAME = "datenbrille";
     private static final int DATABASE_VERSION = 2;
 
     // OPEN DATA PACKAGE TABLE
@@ -45,9 +44,11 @@ public class DatabaseConnection extends SQLiteOpenHelper {
 
     private DatabaseConnection(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+
+        Log.v("Database", "Databasename: \"" + DATABASE_NAME + "\"");
     }
 
-    public static DatabaseConnection getInstance(Context context) {
+    public synchronized static DatabaseConnection getInstance(Context context) {
         if (myInstance == null) {
             if (myContext == null) {
                 myInstance = new DatabaseConnection(context);
