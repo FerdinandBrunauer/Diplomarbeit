@@ -3,12 +3,16 @@ package server;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiConfiguration;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
+import java.io.EOFException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
@@ -52,10 +56,19 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
 
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        clients = new ArrayList<Socket>();
+        clients = new ArrayList<>();
         this.myWifiManager = new WifiApManager(context);
 
         this.tcpServer = new TcpServer();
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                disableWifiAP();
+            }
+        });
+
+        this.tcpServer.start();
     }
 
     @Override
@@ -70,7 +83,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
                 // shit happens
             }
         }
-
+        Log.v("Server", "started ...");
         while (this.tcpServer.getState() != TcpServerState.STOPPED) {
             try {
                 Thread.sleep(500);
@@ -78,20 +91,29 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
                 this.tcpServer.stop();
             }
         }
+        Log.v("Server", "stopped ...");
 
         disableWifiAP();
     }
 
     private void enableWifiAP() {
+        Log.v("Server", "Enabling AP ...");
+
         WifiConfiguration wifiConfiguration = new WifiConfiguration();
         wifiConfiguration.SSID = preferences.getString(context.getString(R.string.preferences_preference_wifihotspot_name), context.getString(R.string.preferences_preference_wifihotspot_name_default));
         wifiConfiguration.preSharedKey = preferences.getString(context.getString(R.string.preferences_preference_wifihotspot_password), context.getString(R.string.preferences_preference_wifihotspot_password_default));
         wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
         myWifiManager.setWifiApEnabled(wifiConfiguration, true);
+
+        Log.v("Server", "AP enabled ...");
     }
 
     private void disableWifiAP() {
+        Log.v("Server", "Disable AP ...");
+
         myWifiManager.setWifiApEnabled(null, false);
+
+        Log.v("Server", "AP disabled ...");
     }
 
     @Override
@@ -111,7 +133,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
         try {
             JSONObject object = new JSONObject();
             object.put("operationType", "SCROLL");
-            if(eventObject.getDirection() == ScrollEventDirection.UP)
+            if (eventObject.getDirection() == ScrollEventDirection.UP)
                 object.put("direction", "UP");
             else
                 object.put("direction", "DOWN");
@@ -123,6 +145,8 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
     }
 
     private void sendMessageToAllClients(String jsonMessage) {
+        jsonMessage += '\r';
+
         Log.v("Clients", "Sending Data to \"" + clients.size() + "\" Clients");
         for (Socket actualSocket : clients) {
             try {
@@ -138,7 +162,9 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
                 } catch (Exception e1) {
                     Log.v("Client", "Error closing Socket", e1);
                 } finally {
+                    Log.v("Server", "Removing Client from Arraylist start. Count: \"" + clients.size() + "\"");
                     clients.remove(actualSocket); // i dont know if this works
+                    Log.v("Server", "Removing Client from Arraylist finish. Count: \"" + clients.size() + "\"");
                 }
             }
         }
@@ -160,20 +186,28 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
             public void run() {
                 try {
                     socket.setSoTimeout(5000);
-                    DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-                    String data = inputStream.readUTF();
-                    if(data.compareTo("Datenbrille-Handshake") == 0) {
+                    // DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+                    BufferedReader inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    String data = inputStream.readLine();
+                    Log.v("Handshake", "Data recieved: \"" + data + "\"");
+                    if (data.compareTo("Datenbrille-Handshake") == 0) {
                         // SUCCESSFULL
                         socket.setSoTimeout(0);
                         Server.this.clients.add(socket);
+                        Looper.prepare();
+                        Toast.makeText(context, context.getText(R.string.new_client_connected), Toast.LENGTH_LONG).show();
                     } else {
                         // NOT SUCCESSFULL
                         socket.close();
                         inputStream.close();
                         throw new UnsupportedOperationException("Wrong Handshake Message");
                     }
+                } catch (EOFException e) {
+                    // Socket closed
+                } catch (NullPointerException e) {
+                    // Socket closed
                 } catch (Exception e) {
-                    Log.v("Client handshake", "Fail", e);
+                    Log.v("Client handshake", "Fail with undefined Exception", e);
                 }
             }
         }.start();

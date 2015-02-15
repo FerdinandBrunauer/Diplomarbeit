@@ -28,4 +28,6 @@
 
     <string name="nfc_disabled">NFC ist nicht aktiviert! Bitte aktivieren sie NFC um diese Funktion nutzen zu können!</string>
 
+    <string name="new_client_connected">Es hat sich ein neues Gerät verbunden!</string>
+
 </resources>

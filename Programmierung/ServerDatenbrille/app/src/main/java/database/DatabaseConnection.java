@@ -171,6 +171,11 @@ public class DatabaseConnection extends SQLiteOpenHelper {
     }
 
     public static boolean isPackageInDatabase(OpenDataPackage openDataPackage) {
+        if(openDataPackage != null)
+            Log.v("DatabaseConnection", "Datapackage ID: \"" + openDataPackage.getId() + "\"");
+        else
+            return false;
+
         try {
             getInstance(null).close();
             myContext.deleteDatabase(DATABASE_NAME);

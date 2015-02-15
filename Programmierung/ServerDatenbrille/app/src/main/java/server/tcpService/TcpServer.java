@@ -1,5 +1,7 @@
 package server.tcpService;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -8,7 +10,7 @@ import event.tcpSocket.TCPSocketEventHandler;
 import event.tcpSocket.TCPSocketEventObject;
 
 public class TcpServer {
-    public final static int PORT = 1234;
+    public final static int PORT = 6484;
 
     private TcpServerState currentState = TcpServerState.STOPPED;
 
@@ -50,8 +52,11 @@ public class TcpServer {
     }
 
     protected void runServer() {
+        Log.v("TcpServer", "Server started ...");
+
         try {
             this.tcpServer = new ServerSocket(TcpServer.PORT);
+            Log.v("TcpServer", "ServerSocket created ...");
             this.currentState = TcpServerState.STARTED;
 
             while (!this.tcpServer.isClosed()) {
@@ -62,7 +67,9 @@ public class TcpServer {
 
                 if (!this.tcpServer.isClosed()) {
                     // ////// B L O C K I N G
+                    Log.v("TcpServer", "Waiting for new Client ...");
                     Socket newClient = this.tcpServer.accept();
+                    Log.v("TcpServer", "new Client recieved ...");
                     // ////// B L O C K I N G
                     TCPSocketEventObject eventObject = new TCPSocketEventObject(this, newClient);
                     TCPSocketEventHandler.fireTCPSocketEvent(eventObject);

@@ -104,7 +104,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         DatabaseConnection.setContext(this);
 
         this.server = new Server(this);
-//        new Thread(this.server).start(); TODO FOR DEBUGGING DEACTIVATED
+        new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
 
         this.preferences = PreferenceManager.getDefaultSharedPreferences(this);
         this.nfcInitialize();
@@ -146,6 +146,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         if (adapter != null)
             if (nfcPreferenceEnabled())
                 adapter.disableForegroundDispatch(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     @Override
