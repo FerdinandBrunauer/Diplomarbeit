@@ -12,7 +12,10 @@ import android.webkit.WebView;
 
 import org.apache.commons.net.util.SubnetUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -124,9 +127,15 @@ public class NetworkManager extends Thread {
                     String subnet = ipToString(subnetRaw);
                     // WIFI - Connection established but do we have already an IP ?
                     if(subnet.compareTo("0.0.0.0") == 0) {
+                        makeLog("Could not obtain Subnetmask");
+                        success = false;
+                        break;
+                    }else{
+                        makeLog("Obtained subnetmask: " + subnet);
                         success = true;
                         break;
                     }
+
                 }
                 if((System.currentTimeMillis() - startTime) > 15000) {
                     success = false;
@@ -163,6 +172,7 @@ public class NetworkManager extends Thread {
                 ArrayList<String> hosts = new ArrayList<>(Arrays.asList(utils.getInfo().getAllAddresses()));
                 makeLog("Total possible IP-Adresses: \"" + hosts.size() + "\"");
 
+                /*
                 Parallel.ForEach(hosts, new LoopBody<String>() {
                     @Override
                     public void run(String ipAdress) {
@@ -171,10 +181,23 @@ public class NetworkManager extends Thread {
                         boolean reachable = isHostReachable(ipAdress, ReachableMode.Socket);
 
                         if (reachable) {
+                            makeLog("Reachable Host:" + ipAdress);
                             respondingHosts.add(ipAdress);
                         }
                     }
-                });
+                });*/
+
+
+                for(String host:hosts){
+                    Log.v("Testing IP", host);
+                    boolean reachable = isHostReachable(host, ReachableMode.Socket);
+
+                    if (reachable) {
+                        makeLog("Reachable Host:" + host);
+                        respondingHosts.add(host);
+                        break;
+                    }
+                }
                 Log.v("Testing IP", "finished");
             }
 
@@ -188,6 +211,30 @@ public class NetworkManager extends Thread {
                             serverConnection = SocketFactory.getDefault().createSocket(host, PORT);
                             if(serverConnection.isConnected()){
                                 makeLog("Connected to Server");
+                                OutputStream outputStream = serverConnection.getOutputStream();
+                                outputStream.write("Datenbrille-Handshake".getBytes());
+                                outputStream.flush();
+                                outputStream.write('\r');
+                                outputStream.flush();
+
+                                final Socket soc = serverConnection;
+
+                                new Thread(){
+                                    @Override
+                                    public void run() {
+                                        while(true){
+                                            try {
+                                                BufferedReader reader = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+                                                String line = reader.readLine();
+                                                //TODO: do stuff
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                }.start();
+
+                                serverConnection.getInputStream().read();
                             }else{
                                 makeLog("Can not connect to Server");
                             }
