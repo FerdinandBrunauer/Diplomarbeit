@@ -96,7 +96,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
         disableWifiAP();
     }
 
-    private void enableWifiAP() {
+    public void enableWifiAP() {
         Log.v("Server", "Enabling AP ...");
 
         WifiConfiguration wifiConfiguration = new WifiConfiguration();
@@ -108,7 +108,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
         Log.v("Server", "AP enabled ...");
     }
 
-    private void disableWifiAP() {
+    public void disableWifiAP() {
         Log.v("Server", "Disable AP ...");
 
         myWifiManager.setWifiApEnabled(null, false);
