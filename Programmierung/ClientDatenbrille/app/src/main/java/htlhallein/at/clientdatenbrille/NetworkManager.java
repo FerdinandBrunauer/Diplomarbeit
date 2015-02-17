@@ -1,16 +1,20 @@
 package htlhallein.at.clientdatenbrille;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
 
 import org.apache.commons.net.util.SubnetUtils;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -226,8 +230,16 @@ public class NetworkManager extends Thread {
                                             try {
                                                 BufferedReader reader = new BufferedReader(new InputStreamReader(soc.getInputStream()));
                                                 String line = reader.readLine();
-                                                //TODO: do stuff
-                                            } catch (IOException e) {
+                                                JSONObject mainObject = new JSONObject(line);
+                                                switch(mainObject.getString("operationType")){
+                                                    case "HTML":{
+                                                        setHTML(mainObject.getString("HTML"));
+                                                    }
+                                                    case "SCROLL":{
+                                                        scrollToPosition(mainObject.getInt("percent"));
+                                                    }
+                                                }
+                                            } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
                                         }
@@ -261,6 +273,15 @@ public class NetworkManager extends Thread {
                 // Just to make sure, that the Loop don't waste too much resources
             }
         }
+    }
+
+    private void scrollToPosition(final int percent) {
+        this.activity.runOnUiThread(new Thread() {
+            @Override
+            public void run() {
+                NetworkManager.this.webView.scrollTo(0, percent);
+            }
+        });
     }
 
     private void setHTML(final String html) {
