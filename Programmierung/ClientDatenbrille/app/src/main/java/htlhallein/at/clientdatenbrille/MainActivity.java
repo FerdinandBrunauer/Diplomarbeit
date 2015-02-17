@@ -35,7 +35,6 @@ public class MainActivity extends Activity {
             case R.id.action_settings: {
                 Intent intent = new Intent(this, SettingsActivity.class);
                 this.startActivity(intent);
-                Toast.makeText(this, "TEST", Toast.LENGTH_LONG).show();
                 return true;
             }
             default: {

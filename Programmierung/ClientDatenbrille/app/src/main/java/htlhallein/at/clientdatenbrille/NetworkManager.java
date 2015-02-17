@@ -1,24 +1,19 @@
 package htlhallein.at.clientdatenbrille;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.preference.PreferenceManager;
-import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.util.SubnetUtils;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -30,9 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.net.SocketFactory;
-
-import htlhallein.at.clientdatenbrille.htlhallein.at.clientdatenbrille.parallel.LoopBody;
-import htlhallein.at.clientdatenbrille.htlhallein.at.clientdatenbrille.parallel.Parallel;
 
 public class NetworkManager extends Thread {
 
@@ -51,9 +43,6 @@ public class NetworkManager extends Thread {
     private boolean shouldClose = false;
     private boolean preferencesChanged = false;
 
-    //----------------------------------------------------------------------------------------------
-    //  Constructor
-    //----------------------------------------------------------------------------------------------
     public NetworkManager(Context context, Activity activity, WebView webView) {
         this.context = context;
         this.activity = activity;
@@ -73,9 +62,6 @@ public class NetworkManager extends Thread {
         }
     }
 
-    //----------------------------------------------------------------------------------------------
-    // RUN
-    //----------------------------------------------------------------------------------------------
     @Override
     public void run() {
         while (!this.shouldClose) {
@@ -125,23 +111,23 @@ public class NetworkManager extends Thread {
 
             // 15 seconds time for getting a IP-Adress
             long startTime = System.currentTimeMillis();
-            while(success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled() ) {
-                if(this.wifiManager.getConnectionInfo().getNetworkId() != -1) {
+            while (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
+                if (this.wifiManager.getConnectionInfo().getNetworkId() != -1) {
                     int subnetRaw = this.wifiManager.getDhcpInfo().netmask;
                     String subnet = ipToString(subnetRaw);
                     // WIFI - Connection established but do we have already an IP ?
-                    if(subnet.compareTo("0.0.0.0") == 0) {
+                    if (subnet.compareTo("0.0.0.0") == 0) {
                         makeLog("Could not obtain Subnetmask");
                         success = false;
                         break;
-                    }else{
+                    } else {
                         makeLog("Obtained subnetmask: " + subnet);
                         success = true;
                         break;
                     }
 
                 }
-                if((System.currentTimeMillis() - startTime) > 15000) {
+                if ((System.currentTimeMillis() - startTime) > 15000) {
                     success = false;
                 }
 
@@ -176,23 +162,7 @@ public class NetworkManager extends Thread {
                 ArrayList<String> hosts = new ArrayList<>(Arrays.asList(utils.getInfo().getAllAddresses()));
                 makeLog("Total possible IP-Adresses: \"" + hosts.size() + "\"");
 
-                /*
-                Parallel.ForEach(hosts, new LoopBody<String>() {
-                    @Override
-                    public void run(String ipAdress) {
-                        Log.v("Testing IP", ipAdress);
-
-                        boolean reachable = isHostReachable(ipAdress, ReachableMode.Socket);
-
-                        if (reachable) {
-                            makeLog("Reachable Host:" + ipAdress);
-                            respondingHosts.add(ipAdress);
-                        }
-                    }
-                });*/
-
-
-                for(String host:hosts){
+                for (String host : hosts) {
                     Log.v("Testing IP", host);
                     boolean reachable = isHostReachable(host, ReachableMode.Socket);
 
@@ -209,45 +179,18 @@ public class NetworkManager extends Thread {
             boolean connectionEtablished = false;
             if (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
                 makeLog("Total count of Reachable Hosts: \"" + respondingHosts.size() + "\"");
-                if(respondingHosts.size() > 0) {
-                    for(String host : respondingHosts) {
+                if (respondingHosts.size() > 0) {
+                    for (String host : respondingHosts) {
                         try {
                             serverConnection = SocketFactory.getDefault().createSocket(host, PORT);
-                            if(serverConnection.isConnected()){
+                            if (serverConnection.isConnected()) {
                                 makeLog("Connected to Server");
                                 OutputStream outputStream = serverConnection.getOutputStream();
                                 outputStream.write("Datenbrille-Handshake".getBytes());
                                 outputStream.flush();
                                 outputStream.write('\r');
                                 outputStream.flush();
-
-                                final Socket soc = serverConnection;
-
-                                new Thread(){
-                                    @Override
-                                    public void run() {
-                                        while(true){
-                                            try {
-                                                BufferedReader reader = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-                                                String line = reader.readLine();
-                                                JSONObject mainObject = new JSONObject(line);
-                                                switch(mainObject.getString("operationType")){
-                                                    case "HTML":{
-                                                        setHTML(mainObject.getString("HTML"));
-                                                    }
-                                                    case "SCROLL":{
-                                                        scrollToPosition(mainObject.getInt("percent"));
-                                                    }
-                                                }
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    }
-                                }.start();
-
-                                serverConnection.getInputStream().read();
-                            }else{
+                            } else {
                                 makeLog("Can not connect to Server");
                             }
                             connectionEtablished = true;
@@ -261,8 +204,32 @@ public class NetworkManager extends Thread {
                 }
             }
 
-            while(success && connectionEtablished && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
-                // listen and listen and listen
+            while ((serverConnection != null) && success && connectionEtablished && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
+                try {
+                    String data = IOUtils.toString(serverConnection.getInputStream(), "UTF-8");
+                    JSONObject mainObject = new JSONObject(data);
+                    if (mainObject.has("operationType")) {
+                        switch (mainObject.getString("operationType")) {
+                            case "HTML": {
+                                setHTML(mainObject.getString("HTML"));
+                                break;
+                            }
+                            case "SCROLL": {
+                                scrollToPosition(mainObject.getInt("percent"));
+                                break;
+                            }
+                            default: {
+                                Log.v("NetworkManager", "Undefined Mode: \"" + mainObject.getString("operationType") + "\"");
+                                break;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    Log.v("NetworkManager", "IOError while reading Data from the Server!");
+                    break;
+                } catch (Exception e) {
+                    Log.v("NetworkManager", "Undefined Error while reading Data from the Server!");
+                }
             }
 
             makeLog("Connection closed -> Reconnect starting soon");
