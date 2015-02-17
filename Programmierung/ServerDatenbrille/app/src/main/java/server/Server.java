@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.wifi.WifiConfiguration;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,7 +14,6 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
 
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        clients = new ArrayList<>();
+        clients = new ArrayList<Socket>();
         this.myWifiManager = new WifiApManager(context);
 
         this.tcpServer = new TcpServer();
@@ -121,7 +121,15 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
         try {
             JSONObject object = new JSONObject();
             object.put("operationType", "HTML");
-            object.put("HTML", eventObject.getHtmlText());
+            byte[] jsonMessageBase64;
+            try {
+                jsonMessageBase64 = Base64.encode(eventObject.getHtmlText().getBytes(), Base64.NO_WRAP);
+            } catch (Exception e) {
+                Log.v("Server", "Failed to base64 encode the message ...", e);
+                return;
+            }
+            String htmlTextEncoded = new String(jsonMessageBase64);
+            object.put("HTML", htmlTextEncoded);
             sendMessageToAllClients(object.toString());
         } catch (Exception e) {
             Log.v("Client send", "JSON Object Error - Datapoint", e);
@@ -145,27 +153,26 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
     }
 
     private void sendMessageToAllClients(String jsonMessage) {
-        jsonMessage += '\r';
+        jsonMessage += (char) 13;
 
         Log.v("Clients", "Sending Data to \"" + clients.size() + "\" Clients");
-        for (Socket actualSocket : clients) {
+        Socket[] sockets = clients.toArray(new Socket[clients.size()]);
+
+        for (Socket actualSocket : sockets) {
             try {
-                OutputStream stream = actualSocket.getOutputStream();
-                stream.write(jsonMessage.getBytes("UTF-8"));
-                stream.flush();
+                actualSocket.getOutputStream().write(jsonMessage.getBytes("UTF-8"));
+                actualSocket.getOutputStream().flush();
             } catch (Exception e) {
                 Log.v("Client", "Error sending data", e);
                 try {
-                    actualSocket.getInputStream().close();
-                    actualSocket.getOutputStream().close();
                     actualSocket.close();
                 } catch (Exception e1) {
                     Log.v("Client", "Error closing Socket", e1);
-                } finally {
-                    Log.v("Server", "Removing Client from Arraylist start. Count: \"" + clients.size() + "\"");
-                    clients.remove(actualSocket); // i dont know if this works
-                    Log.v("Server", "Removing Client from Arraylist finish. Count: \"" + clients.size() + "\"");
                 }
+
+                Log.v("Server", "Removing Client from Arraylist start. Count: \"" + clients.size() + "\"");
+                clients.remove(actualSocket); // i dont know if this works
+                Log.v("Server", "Removing Client from Arraylist finish. Count: \"" + clients.size() + "\"");
             }
         }
     }
@@ -205,7 +212,7 @@ public class Server implements DatapointEventListener, ScrollEventListener, TCPS
                 } catch (EOFException e) {
                     // Socket closed
                 } catch (NullPointerException e) {
-                    // Socket closed
+                    // Socket closed or something like that
                 } catch (Exception e) {
                     Log.v("Client handshake", "Fail with undefined Exception", e);
                 }

@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 
 public class LocationTracker {
-
     private final Context context;
     private LocationManager locationManager;
     private long TIME_BETWEEN_UPDATES;

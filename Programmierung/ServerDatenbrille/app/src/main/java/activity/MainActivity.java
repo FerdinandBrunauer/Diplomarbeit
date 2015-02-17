@@ -46,6 +46,7 @@ import database.openDataUtilities.OpenDataResource;
 import database.openDataUtilities.OpenDataUtilities;
 import datapoint.NFC_QRValidator;
 import datapoint.Validator;
+import datapoint.gps.GPSDatapoint;
 import event.datapoint.DatapointEventHandler;
 import event.datapoint.DatapointEventObject;
 import htlhallein.at.serverdatenbrille.R;
@@ -65,6 +66,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private PendingIntent pendingIntent;
     private IntentFilter[] intentFilter;
     private String[][] techList;
+    // GPS
+    private GPSDatapoint gpsDatapoint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +105,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         // Instantiate Database
         DatabaseConnection.setContext(this);
+
+        this.gpsDatapoint = new GPSDatapoint(this);
 
         this.server = new Server(this);
         new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
