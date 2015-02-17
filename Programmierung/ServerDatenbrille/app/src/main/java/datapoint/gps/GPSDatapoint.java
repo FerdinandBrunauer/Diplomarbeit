@@ -5,12 +5,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.Log;
 
 import datapoint.Validator;
 import event.datapoint.DatapointEventHandler;
@@ -26,14 +31,17 @@ public class GPSDatapoint {
 
     private Context context;
     private LocationManager locationManager;
+    private SensorManager sensorManager;
     private long TIME_BETWEEN_UPDATES;
     private long DISTANCE_BETWEEN_UPDATES;
     private boolean GPSEnabled = false;
-    private boolean NetworkEnabled = false;
+    private float currentDegree = 0.0f;
     private LocationListener gpsListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            fireEvent(location.getLatitude(), location.getLongitude());
+            Log.v("GPS Datapoint", "New Location recieved! Latitude: \"" + location.getLatitude() + "\", Longitude: \"" + location.getLongitude() + "\"");
+
+            fireEvent(context, location.getLatitude(), location.getLongitude(), currentDegree);
         }
 
         @Override
@@ -51,25 +59,16 @@ public class GPSDatapoint {
             GPSDatapoint.this.GPSEnabled = false;
         }
     };
-    private LocationListener networkListener = new LocationListener() {
+    private SensorEventListener sensorEventListener = new SensorEventListener() {
         @Override
-        public void onLocationChanged(Location location) {
-            fireEvent(location.getLatitude(), location.getLongitude());
+        public void onSensorChanged(SensorEvent event) {
+            float degree = Math.round(event.values[0]);
+            currentDegree = -degree;
         }
 
         @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            GPSDatapoint.this.NetworkEnabled = true;
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            GPSDatapoint.this.NetworkEnabled = false;
         }
     };
     private boolean alreadyInitialized = false;
@@ -79,7 +78,7 @@ public class GPSDatapoint {
 
     public GPSDatapoint(final Context context) {
         this.context = context;
-        setConstants(5L, 1000 * 20 * 1L);
+        setConstants(5L, 1000 * 10 * 1L); //5SEC between updates and 10METERS
 
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
         this.listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -104,13 +103,15 @@ public class GPSDatapoint {
     }
 
     private void initialize() {
+        Log.v("GPS Datapoint", "Initialize ...");
+
         if(!gpsPreferenceEnabled())
             return;
 
         if (!initialized) {
+            this.sensorManager = (SensorManager) this.context.getSystemService(Context.SENSOR_SERVICE);
             this.locationManager = (LocationManager) this.context.getSystemService(Context.LOCATION_SERVICE);
             this.GPSEnabled = this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            this.NetworkEnabled = this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
             if (!canGetLocation()) {
                 if (!GPSDatapoint.this.alreadyInitialized) {
                     AlertDialog.Builder changeSettingsDialog = new AlertDialog.Builder(this.context);
@@ -128,6 +129,8 @@ public class GPSDatapoint {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.cancel();
+                            initialized = false;
+                            return;
                         }
                     });
                     changeSettingsDialog.show();
@@ -139,27 +142,28 @@ public class GPSDatapoint {
     }
 
     public void startTracking() {
+        Log.v("GPS Datapoint", "Start Tracking ...");
+
         if (!initialized) {
             initialize();
         }
         if (canGetLocation()) {
             if (this.GPSEnabled) {
                 this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, this.TIME_BETWEEN_UPDATES, this.DISTANCE_BETWEEN_UPDATES, gpsListener);
-            }
-            if (this.NetworkEnabled) {
-                this.locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, this.TIME_BETWEEN_UPDATES, this.DISTANCE_BETWEEN_UPDATES, networkListener);
+                this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
             }
         }
     }
 
     public void stopTracking() {
+        Log.v("GPS Datapoint", "Stop Tracking ...");
+
         if (!initialized) {
             initialize();
         }
 
         this.locationManager.removeUpdates(gpsListener);
-        this.locationManager.removeUpdates(networkListener);
-
+        this.sensorManager.unregisterListener(sensorEventListener);
     }
 
     private void setConstants(long timeBetweenUpdates, long distanceBetweenUpdates) {
@@ -168,12 +172,12 @@ public class GPSDatapoint {
     }
 
     private boolean canGetLocation() {
-        return (this.GPSEnabled && this.NetworkEnabled);
+        return this.GPSEnabled;
     }
 
-    protected void fireEvent(Object... objects) {
+    protected void fireEvent(Context context, Object... objects) {
         Validator validator = new GPSValidator();
-        DatapointEventObject eventObject = validator.validate(null, objects);
+        DatapointEventObject eventObject = validator.validate(context, objects);
         if (eventObject != null) {
             DatapointEventHandler.fireDatapointEvent(eventObject);
         }

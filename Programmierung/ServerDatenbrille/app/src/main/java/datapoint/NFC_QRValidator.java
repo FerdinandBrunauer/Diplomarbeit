@@ -20,17 +20,17 @@ public class NFC_QRValidator implements Validator {
 
     @Override
     public DatapointEventObject validate(Context context, Object... objects) {
-        if(objects.length == 1) {
-            if(objects[0] instanceof String) {
+        if (objects.length == 1) {
+            if (objects[0] instanceof String) {
                 Map<String, Object> json = new Gson().fromJson((String) objects[0], Map.class);
-                if(json.containsKey("datapointtype")) {
+                if (json.containsKey("datapointtype")) {
                     String datapointType = (String) json.get("datapointtype");
                     switch (datapointType) {
                         case "location": {
-                            if(json.containsKey("latitude") && json.containsKey("longitude")) {
+                            if (json.containsKey("latitude") && json.containsKey("longitude")) {
                                 try {
                                     Location location = new Location(Double.parseDouble((String) json.get("latitude")), Double.parseDouble((String) json.get("longitude")));
-                                    String html = DatabaseConnection.getDatapointByLocation(location)[1]; // TODO from database if exist in database
+                                    String html = DatabaseConnection.getDatapointByLocation(location)[1];
                                     return new DatapointEventObject(this, html);
                                 } catch (Exception e) {
                                     Log.v("Validator", "Datapoint by Location", e);
@@ -38,18 +38,17 @@ public class NFC_QRValidator implements Validator {
                                 }
                             }
                         }
-                        default:
-                        {
+                        default: {
                             return null;
                         }
                     }
-                }else {
+                } else {
                     return null;
                 }
             } else {
                 return null;
             }
-        } else if(objects.length > 1) {
+        } else if (objects.length > 1) {
             return null;
         } else {
             return null;

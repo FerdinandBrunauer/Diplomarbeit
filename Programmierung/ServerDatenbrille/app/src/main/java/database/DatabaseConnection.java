@@ -6,14 +6,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataResource;
+import datapoint.gps.GPSDatapointObject;
 
 public class DatabaseConnection extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "datenbrille";
@@ -45,7 +46,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
     private DatabaseConnection(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
 
-        Log.v("Database", "Databasename: \"" + DATABASE_NAME + "\"");
+        Log.v("DatabaseConnection", "Databasename: \"" + DATABASE_NAME + "\"");
     }
 
     public synchronized static DatabaseConnection getInstance(Context context) {
@@ -62,45 +63,6 @@ public class DatabaseConnection extends SQLiteOpenHelper {
 
     public static void setContext(Context context) {
         myContext = context;
-    }
-
-    @Override
-    public void onOpen(SQLiteDatabase db) {
-        super.onOpen(db);
-        if (!db.isReadOnly()) {
-            db.execSQL("PRAGMA foreign_keys=ON;");
-        }
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + OPEN_DATA_PACKAGES_TABLE + " ("
-                + ID_OPEN_DATA_PACKAGE + " TEXT PRIMARY KEY , "
-                + NAME_OPEN_DATA_PACKAGE + " TEXT , "
-                + NOTES_OPEN_DATA_PACKAGE + " TEXT , "
-                + UPDATE_TIMESTAMP_OPEN_DATA_PACKAGE + " TEXT , "
-                + TITLE_OPEN_DATA_PACKAGE + " TEXT);");
-
-        db.execSQL("CREATE TABLE " + DATAPOINT_TABLE + " ("
-                + ID_DATAPOINT + " INTEGER PRIMARY KEY AUTOINCREMENT , "
-                + ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + " TEXT , "
-                + LATITUDE_DATAPOINT + " TEXT , "
-                + LONGITUDE_DATAPOINT + " TEXT , "
-                + WEBLINK_DATAPOINT + " TEXT , "
-                + DESCRIPTION_DATAPOINT + " TEXT , "
-                + TITLE_DATAPOINT + " TEXT , "
-                + NAME_DATAPOINT + " TEXT , "
-                + IMAGE_DATAPOINT + " BLOB , "
-                + "FOREIGN KEY (" + ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + ") REFERENCES "
-                + OPEN_DATA_PACKAGES_TABLE + " (" + ID_OPEN_DATA_PACKAGE + "));");
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + OPEN_DATA_PACKAGES_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + DATAPOINT_TABLE);
-
-        onCreate(db);
     }
 
     public static void insertPackage(OpenDataPackage odPackage) {
@@ -122,7 +84,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             }
             db.insert(OPEN_DATA_PACKAGES_TABLE, null, cv);
         } catch (Exception e) {
-            Log.v("Database", "Insert Package Error", e);
+            Log.v("DatabaseConnection", "Error while inserting Package", e);
         }
     }
 
@@ -165,13 +127,13 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             cursor.close();
             return result;
         } catch (Exception e) {
-            Log.v("Database", "getDatapointLocation", e);
+            Log.v("DatabaseConnection", "Error while getting Datapoint by Location", e);
             return result;
         }
     }
 
     public static boolean isPackageInDatabase(OpenDataPackage openDataPackage) {
-        if(openDataPackage != null)
+        if (openDataPackage != null)
             Log.v("DatabaseConnection", "Datapackage ID: \"" + openDataPackage.getId() + "\"");
         else
             return false;
@@ -200,7 +162,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
                 return true;
             }
         } catch (Exception e) {
-            Log.v("Database", "isPackageInDatabase", e);
+            Log.v("DatabaseConnection", "Error reading if Package is in Database", e);
             return false;
         }
     }
@@ -211,7 +173,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             db.delete(DATAPOINT_TABLE, ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + "=" + openDataPackage.getId(), null);
             db.delete(OPEN_DATA_PACKAGES_TABLE, ID_OPEN_DATA_PACKAGE + "=" + openDataPackage.getId(), null);
         } catch (Exception e) {
-            Log.wtf("Error", "delete Packages from Database", e);
+            Log.v("DatabaseConnection", "Error while deleting Packages from Database", e);
         }
     }
 
@@ -221,7 +183,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             db.delete(DATAPOINT_TABLE, ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + "= '" + packageId + "'", null);
             db.delete(OPEN_DATA_PACKAGES_TABLE, ID_OPEN_DATA_PACKAGE + "= '" + packageId + "'", null);
         } catch (Exception e) {
-            Log.wtf("Error", "delete Packages from Database", e);
+            Log.v("DatabaseConnection", "Error while deleting Packages from Database", e);
         }
     }
 
@@ -255,8 +217,71 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             return (timestampInDatabase.compareTo(updateTimestamp) > 0);
 
         } catch (Exception e) {
-            Log.wtf("Error", "check for Update", e);
+            Log.v("DatabaseConnection", "Error while check for Update", e);
             return false;
         }
+    }
+
+    public static List<GPSDatapointObject> getAllDatapoints() {
+        try {
+            List<GPSDatapointObject> list = new LinkedList<GPSDatapointObject>(); // much faster than ArrayList
+
+            SQLiteDatabase db = getInstance(null).getReadableDatabase();
+            Cursor cursor = db.query(DATAPOINT_TABLE, new String[]{ID_DATAPOINT, LATITUDE_DATAPOINT, LONGITUDE_DATAPOINT}, null, null, null, null, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    GPSDatapointObject object = new GPSDatapointObject();
+                    object.setId(cursor.getInt(0));
+                    object.setLatitude(cursor.getDouble(1));
+                    object.setLongitude(cursor.getDouble(2));
+                    list.add(object);
+                } while (cursor.moveToNext());
+                return list;
+            }
+
+            return null;
+        } catch (Exception e) {
+            Log.v("DatabaseConnection", "Error while gettint all Datapoints", e);
+            return null;
+        }
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (!db.isReadOnly()) {
+            db.execSQL("PRAGMA foreign_keys=ON;");
+        }
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE " + OPEN_DATA_PACKAGES_TABLE + " ("
+                + ID_OPEN_DATA_PACKAGE + " TEXT PRIMARY KEY , "
+                + NAME_OPEN_DATA_PACKAGE + " TEXT , "
+                + NOTES_OPEN_DATA_PACKAGE + " TEXT , "
+                + UPDATE_TIMESTAMP_OPEN_DATA_PACKAGE + " TEXT , "
+                + TITLE_OPEN_DATA_PACKAGE + " TEXT);");
+
+        db.execSQL("CREATE TABLE " + DATAPOINT_TABLE + " ("
+                + ID_DATAPOINT + " INTEGER PRIMARY KEY AUTOINCREMENT , "
+                + ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + " TEXT , "
+                + LATITUDE_DATAPOINT + " TEXT , "
+                + LONGITUDE_DATAPOINT + " TEXT , "
+                + WEBLINK_DATAPOINT + " TEXT , "
+                + DESCRIPTION_DATAPOINT + " TEXT , "
+                + TITLE_DATAPOINT + " TEXT , "
+                + NAME_DATAPOINT + " TEXT , "
+                + IMAGE_DATAPOINT + " BLOB , "
+                + "FOREIGN KEY (" + ID_OPEN_DATA_PACKAGE_IN_DATAPOINT + ") REFERENCES "
+                + OPEN_DATA_PACKAGES_TABLE + " (" + ID_OPEN_DATA_PACKAGE + "));");
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + OPEN_DATA_PACKAGES_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + DATAPOINT_TABLE);
+
+        onCreate(db);
     }
 }
