@@ -142,8 +142,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         if (adapter != null)
             if (nfcPreferenceEnabled())
                 adapter.enableForegroundDispatch(this, pendingIntent, intentFilter, techList);
-
-        server.enableWifiAP();
     }
 
     @Override
@@ -158,7 +156,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     protected void onStop() {
         super.onStop();
-        server.disableWifiAP(); // XXX Not the best way ...
     }
 
     @Override
