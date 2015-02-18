@@ -154,6 +154,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        this.server.disableWifiAP();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
     }
