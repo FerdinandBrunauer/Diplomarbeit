@@ -20,7 +20,6 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile files('libs/Apache-SubnetUtils.jar')
-    compile 'org.apache.commons:commons-io:1.3.2'
+    // compile 'org.apache.commons:commons-io:1.3.2'
+    compile files('libs/Apache-SubnetUtils-1.jar')
 }

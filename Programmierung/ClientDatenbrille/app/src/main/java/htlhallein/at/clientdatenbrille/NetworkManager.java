@@ -9,7 +9,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.webkit.WebView;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.util.SubnetUtils;
 import org.json.JSONObject;
 
@@ -204,14 +203,26 @@ public class NetworkManager extends Thread {
                 }
             }
 
+            String data = "";
+            byte[] buffer;// = new byte[1024];
             while ((serverConnection != null) && success && connectionEtablished && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
                 try {
-                    String data = IOUtils.toString(serverConnection.getInputStream(), "UTF-8");
+                    data = "";
+                    while (serverConnection.getInputStream().available() > 0) {
+                        buffer = new byte[serverConnection.getInputStream().available()];
+                        serverConnection.getInputStream().read(buffer);
+                        data += new String(buffer);
+                    }
+                    if (data.compareTo("") == 0)
+                        continue;
+
                     JSONObject mainObject = new JSONObject(data);
                     if (mainObject.has("operationType")) {
                         switch (mainObject.getString("operationType")) {
                             case "HTML": {
-                                setHTML(mainObject.getString("HTML"));
+                                String htmlRaw = mainObject.getString("HTML");
+                                String html = new String(Base64.decode(htmlRaw.getBytes(), Base64.NO_WRAP));
+                                setHTML(html);
                                 break;
                             }
                             case "SCROLL": {
