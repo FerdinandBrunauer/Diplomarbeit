@@ -41,6 +41,7 @@ public class NetworkManager extends Thread {
     private String WifiPassword = "Passwort1!";
     private boolean shouldClose = false;
     private boolean preferencesChanged = false;
+    Socket serverConnection = null;
 
     public NetworkManager(Context context, Activity activity, WebView webView) {
         this.context = context;
@@ -174,7 +175,7 @@ public class NetworkManager extends Thread {
                 Log.v("Testing IP", "finished");
             }
 
-            Socket serverConnection = null;
+
             boolean connectionEtablished = false;
             if (success && !this.preferencesChanged && !this.shouldClose && this.wifiManager.isWifiEnabled()) {
                 makeLog("Total count of Reachable Hosts: \"" + respondingHosts.size() + "\"");
@@ -242,7 +243,21 @@ public class NetworkManager extends Thread {
                     Log.v("NetworkManager", "Undefined Error while reading Data from the Server!");
                 }
             }
-
+            try {
+                serverConnection.getInputStream().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                serverConnection.getOutputStream().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                serverConnection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             makeLog("Connection closed -> Reconnect starting soon");
 
             try {
@@ -257,7 +272,11 @@ public class NetworkManager extends Thread {
         this.activity.runOnUiThread(new Thread() {
             @Override
             public void run() {
-                NetworkManager.this.webView.scrollTo(0, percent);
+                double height = NetworkManager.this.webView.getContentHeight();
+                double windowHeight = NetworkManager.this.webView.getHeight();
+                if(height>windowHeight) {
+                    NetworkManager.this.webView.scrollTo(0, (int) ((height + windowHeight) / 100 * percent));
+                }
             }
         });
     }
@@ -339,6 +358,24 @@ public class NetworkManager extends Thread {
 
     public String ipToString(int ip) {
         return String.format("%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
+    }
+
+    public void closeConnection(){
+        try {
+            serverConnection.getInputStream().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            serverConnection.getOutputStream().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            serverConnection.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     enum ReachableMode {
