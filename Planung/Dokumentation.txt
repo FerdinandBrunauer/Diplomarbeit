@@ -1,0 +1,10 @@
+GPS
+QR
+NFC
+Bluetooth
+Raspberry Pi gegen Android als Server
+Wlan schnittstelle gegen Chinch
+Lokal gegen nicht lokale Daten der Website
+Beschreibung der Schnittstelle zum Server (Json format ..)
+JSON
+Kommunikation zwischen Server und Client (TCP, UDP)
