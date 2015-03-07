@@ -41,6 +41,9 @@ public class GPSDatapoint {
         public void onLocationChanged(Location location) {
             Log.v("GPS Datapoint", "New Location recieved! Latitude: \"" + location.getLatitude() + "\", Longitude: \"" + location.getLongitude() + "\"");
 
+            double lattemp = location.getLatitude();
+            double longtemp = location.getLongitude();
+            //TODO: go ferdi
             fireEvent(context, location.getLatitude(), location.getLongitude(), currentDegree);
         }
 
@@ -75,10 +78,11 @@ public class GPSDatapoint {
     private boolean initialized = false;
     private SharedPreferences preferences;
     private SharedPreferences.OnSharedPreferenceChangeListener listener; // must be a local variable, otherwise the garbage collector will remove it
+    private String provider = LocationManager.NETWORK_PROVIDER;
 
     public GPSDatapoint(final Context context) {
         this.context = context;
-        setConstants(5L, 1000 * 10 * 1L); //5SEC between updates and 10METERS
+        setConstants(1000 * 5, 1); //5SEC between updates and 10METERS
 
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
         this.listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -111,7 +115,7 @@ public class GPSDatapoint {
         if (!initialized) {
             this.sensorManager = (SensorManager) this.context.getSystemService(Context.SENSOR_SERVICE);
             this.locationManager = (LocationManager) this.context.getSystemService(Context.LOCATION_SERVICE);
-            this.GPSEnabled = this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            this.GPSEnabled = this.locationManager.isProviderEnabled(provider);
             if (!canGetLocation()) {
                 if (!GPSDatapoint.this.alreadyInitialized) {
                     AlertDialog.Builder changeSettingsDialog = new AlertDialog.Builder(this.context);
@@ -149,7 +153,7 @@ public class GPSDatapoint {
         }
         if (canGetLocation()) {
             if (this.GPSEnabled) {
-                this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, this.TIME_BETWEEN_UPDATES, this.DISTANCE_BETWEEN_UPDATES, gpsListener);
+                this.locationManager.requestLocationUpdates(provider, this.TIME_BETWEEN_UPDATES, this.DISTANCE_BETWEEN_UPDATES, gpsListener);
                 this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
             }
         }

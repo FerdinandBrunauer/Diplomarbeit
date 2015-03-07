@@ -109,7 +109,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         this.gpsDatapoint = new GPSDatapoint(this);
 
         this.server = new Server(this);
-        new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
+        //new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
 
         this.preferences = PreferenceManager.getDefaultSharedPreferences(this);
         this.nfcInitialize();
