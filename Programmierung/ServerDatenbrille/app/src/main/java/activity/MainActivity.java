@@ -17,7 +17,6 @@ import android.location.Location;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
 import android.nfc.tech.NfcF;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -29,9 +28,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -52,26 +58,23 @@ import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataResource;
 import database.openDataUtilities.OpenDataUtilities;
 import datapoint.NFC_QRValidator;
-import datapoint.Validator;
-import datapoint.gps.GPSDatapoint;
+import datapoint.gps.GPSValidator;
 import event.datapoint.DatapointEventHandler;
 import event.datapoint.DatapointEventObject;
 import htlhallein.at.serverdatenbrille.R;
 import server.Server;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation"})
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener, ConnectionCallbacks,
-        OnConnectionFailedListener, LocationListener{
+        OnConnectionFailedListener, LocationListener {
 
+    // LogCat tag
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
+    // Location updates intervals in sec
+    private static final int UPDATE_INTERVAL = 2000; // 10 sec
+    private static final int FATEST_INTERVAL = 2000; // 5 sec
+    private static final int DISPLACEMENT = 1; // 10 meters;
     private ViewPager myViewPager;
     private TabsPagerAdapter myTabsPagerAdapter;
     private ActionBar myActionBar;
@@ -83,25 +86,24 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private PendingIntent pendingIntent;
     private IntentFilter[] intentFilter;
     private String[][] techList;
-    // GPS
-    private GPSDatapoint gpsDatapoint;
-
-    // LogCat tag
-    private static final String TAG = MainActivity.class.getSimpleName();
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     private Location mLastLocation;
-
     // Google client to interact with Google API
     private GoogleApiClient mGoogleApiClient;
-
     private LocationRequest mLocationRequest;
-
-    // Location updates intervals in sec
-    private static int UPDATE_INTERVAL = 2000; // 10 sec
-    private static int FATEST_INTERVAL = 2000; // 5 sec
-    private static int DISPLACEMENT = 1; // 10 meters;
     private SensorManager sensorManager;
     private float currentDegree = 0.0f;
+    private SensorEventListener sensorEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            float degree = Math.round(event.values[0]);
+            currentDegree = -degree;
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,7 +173,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         //GPS
         // First we need to check availability of play services
         if (checkPlayServices()) {
-
             // Building the GoogleApi client
             buildGoogleApiClient();
             createLocationRequest();
@@ -203,7 +204,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         // Resuming the periodic location updates
 
         if (mGoogleApiClient.isConnected() && gpsPreferenceEnabled()) {
-            startLocationUpdates();Log.d(TAG, "Periodic location updates stopped!");
+            startLocationUpdates();
+            Log.d(TAG, "Periodic location updates stopped!");
         }
     }
 
@@ -263,7 +265,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             } else {
                 Log.v("QR-Code", "Scanned: " + result.getContents());
 
-                Validator validator = new NFC_QRValidator();
+                NFC_QRValidator validator = new NFC_QRValidator();
                 DatapointEventObject eventObject = validator.validate(this, result.getContents());
                 if (eventObject != null) {
                     DatapointEventHandler.fireDatapointEvent(eventObject);
@@ -280,7 +282,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         switch (item.getItemId()) {
             case R.id.qr_code_action: {
                 IntentIntegrator integrator = new IntentIntegrator(this);
-                List<String> formats = new ArrayList<String>();
+                List<String> formats = new ArrayList<>();
                 formats.add("QR_CODE");
                 integrator.setDesiredBarcodeFormats(formats);
                 integrator.initiateScan();
@@ -308,22 +310,20 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     protected void onNewIntent(Intent intent) {
         if (nfcPreferenceEnabled()) {
-            String action = intent.getAction();
-            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             // parse through all NDEF messages and their records and pick text type only
             Parcelable[] data = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
             if (data != null) {
                 try {
-                    for (int i = 0; i < data.length; i++) {
-                        NdefRecord[] recs = ((NdefMessage) data[i]).getRecords();
-                        for (int j = 0; j < recs.length; j++) {
-                            if (recs[j].getTnf() == NdefRecord.TNF_WELL_KNOWN &&
-                                    Arrays.equals(recs[j].getType(), NdefRecord.RTD_TEXT)) {
-                                byte[] payload = recs[j].getPayload();
-                                String textEncoding = ((payload[0] & 0200) == 0) ? "UTF-8" : "UTF-16";
-                                int langCodeLen = payload[0] & 0077;
+                    for (Parcelable aData : data) {
+                        NdefRecord[] recs = ((NdefMessage) aData).getRecords();
+                        for (NdefRecord rec : recs) {
+                            if (rec.getTnf() == NdefRecord.TNF_WELL_KNOWN &&
+                                    Arrays.equals(rec.getType(), NdefRecord.RTD_TEXT)) {
+                                byte[] payload = rec.getPayload();
+                                String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
+                                int langCodeLen = payload[0] & 63;
 
-                                Validator validator = new NFC_QRValidator();
+                                NFC_QRValidator validator = new NFC_QRValidator();
                                 DatapointEventObject eventObject = validator.validate(this, new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1, textEncoding));
                                 if (eventObject != null) {
                                     DatapointEventHandler.fireDatapointEvent(eventObject);
@@ -351,7 +351,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
                 SharedPreferences.Editor editor = this.preferences.edit();
                 editor.putBoolean(this.getString(R.string.preferences_preference_nfc_enabled), false);
-                editor.commit();
+                editor.apply();
 
                 this.adapter = null;
 
@@ -371,6 +371,145 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     private boolean nfcPreferenceEnabled() {
         return preferences.getBoolean(this.getString(R.string.preferences_preference_nfc_enabled), this.getResources().getBoolean(R.bool.preferences_preference_nfc_enabled_default));
+    }
+
+    /* public class RemovePackage extends AsyncTask<String, Integer, String> {
+        private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+
+        @Override
+        protected String doInBackground(String... params) {
+            DatabaseConnection.deletePackageInclusiveDatapoints(params[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            this.dialog.setTitle("Please Wait");
+            this.dialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+        }
+    } */
+
+    private void displayLocation() {
+        mLastLocation = LocationServices.FusedLocationApi
+                .getLastLocation(mGoogleApiClient);
+
+        if (mLastLocation != null) {
+            double latitude = mLastLocation.getLatitude();
+            double longitude = mLastLocation.getLongitude();
+
+            //double altitude = mLastLocation.getAltitude();
+            //String provider = mLastLocation.getProvider();
+            //double test = mLastLocation.getAccuracy();
+            //double speed = mLastLocation.getSpeed();
+            //double bearing = mLastLocation.getBearing();
+            // TODO ferdi fix it
+            Toast.makeText(this, longitude + ":" + latitude, Toast.LENGTH_SHORT).show();
+            fireEvent(latitude, longitude, currentDegree);
+        }
+    }
+
+    protected void fireEvent(Object... objects) {
+        GPSValidator validator = new GPSValidator();
+        DatapointEventObject eventObject = validator.validate(this, objects);
+        if (eventObject != null) {
+            DatapointEventHandler.fireDatapointEvent(eventObject);
+        }
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API).build();
+    }
+
+    /**
+     * Creating location request object
+     */
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FATEST_INTERVAL);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
+    }
+
+    /**
+     * Method to verify google play services on the device
+     */
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil
+                .isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        "This device is not supported.", Toast.LENGTH_LONG)
+                        .show();
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Starting the location updates
+     */
+    protected void startLocationUpdates() {
+        this.sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
+        this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+    }
+
+    /**
+     * Stopping location updates
+     */
+    protected void stopLocationUpdates() {
+        this.sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
+        this.sensorManager.unregisterListener(sensorEventListener);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+
+    /**
+     * Google api callback methods
+     */
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = "
+                + result.getErrorCode());
+    }
+
+    @Override
+    public void onConnected(Bundle arg0) {
+        if (gpsPreferenceEnabled()) {
+            startLocationUpdates();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int arg0) {
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        // Assign the new location
+        mLastLocation = location;
+
+        // Displaying the new location on UI
+        displayLocation();
     }
 
     public class PackageCrawler extends AsyncTask<String, String, String> {
@@ -424,12 +563,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             }
         }
 
-        public void deletePackage(String packageId) {
-            onPreExecute();
-            DatabaseConnection.deletePackageInclusiveDatapoints(packageId);
-            onPostExecute(null);
-        }
-
         @Override
         protected String doInBackground(String... params) {
             dialog.setProgress(0);
@@ -480,158 +613,4 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             }
         }
     }
-
-    public class RemovePackage extends AsyncTask<String, Integer, String> {
-        private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
-
-        @Override
-        protected String doInBackground(String... params) {
-            DatabaseConnection.deletePackageInclusiveDatapoints(params[0]);
-            return null;
-        }
-
-        private void setDialogTitle(final String title) {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    dialog.setTitle(title);
-                }
-            });
-        }
-
-        @Override
-        protected void onPreExecute() {
-            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            this.dialog.setTitle("Please Wait");
-            this.dialog.show();
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-        }
-    }
-
-    private void displayLocation() {
-
-        mLastLocation = LocationServices.FusedLocationApi
-                .getLastLocation(mGoogleApiClient);
-
-        if (mLastLocation != null) {
-            double latitude = mLastLocation.getLatitude();
-            double longitude = mLastLocation.getLongitude();
-
-            double altitude = mLastLocation.getAltitude();
-            String provider = mLastLocation.getProvider();
-            double test = mLastLocation.getAccuracy();
-            double speed = mLastLocation.getSpeed();
-            double bearing = mLastLocation.getBearing();
-            Toast toast = Toast.makeText(this, longitude + ":" + latitude, Toast.LENGTH_SHORT);
-            toast.show();
-            //TODO: go ferdi
-            //fireEvent(context, latitude, longitude, currentDegree);
-        }
-    }
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API).build();
-    }
-
-    /**
-     * Creating location request object
-     * */
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(FATEST_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
-    }
-
-    /**
-     * Method to verify google play services on the device
-     * */
-    private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil
-                .isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                Toast.makeText(getApplicationContext(),
-                        "This device is not supported.", Toast.LENGTH_LONG)
-                        .show();
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Starting the location updates
-     * */
-    protected void startLocationUpdates() {
-        this.sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
-        this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-
-    }
-
-    /**
-     * Stopping location updates
-     */
-    protected void stopLocationUpdates() {
-        this.sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
-        this.sensorManager.unregisterListener(sensorEventListener);
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-    }
-
-    /**
-     * Google api callback methods
-     */
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = "
-                + result.getErrorCode());
-    }
-
-    @Override
-    public void onConnected(Bundle arg0) {
-        if (gpsPreferenceEnabled()) {
-            startLocationUpdates();
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int arg0) {
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        // Assign the new location
-        mLastLocation = location;
-
-        // Displaying the new location on UI
-        displayLocation();
-    }
-
-    private SensorEventListener sensorEventListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            float degree = Math.round(event.values[0]);
-            currentDegree = -degree;
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    };
 }

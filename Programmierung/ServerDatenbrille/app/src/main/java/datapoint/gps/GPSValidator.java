@@ -11,7 +11,6 @@ import java.util.List;
 
 import database.DatabaseConnection;
 import database.Location;
-import datapoint.Validator;
 import event.datapoint.DatapointEventObject;
 import htlhallein.at.serverdatenbrille.R;
 
@@ -21,9 +20,8 @@ import htlhallein.at.serverdatenbrille.R;
  * Created on:  13.01.2015
  * Author:      Ferdinand
  */
-public class GPSValidator implements Validator {
+public class GPSValidator {
 
-    @Override
     public DatapointEventObject validate(Context context, Object... objects) {
         if (objects.length >= 3) {
             Object first = objects[0];
