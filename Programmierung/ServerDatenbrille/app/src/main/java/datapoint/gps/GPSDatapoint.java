@@ -43,7 +43,6 @@ public class GPSDatapoint {
 
             double lattemp = location.getLatitude();
             double longtemp = location.getLongitude();
-            //TODO: go ferdi
             fireEvent(context, location.getLatitude(), location.getLongitude(), currentDegree);
         }
 
@@ -78,11 +77,11 @@ public class GPSDatapoint {
     private boolean initialized = false;
     private SharedPreferences preferences;
     private SharedPreferences.OnSharedPreferenceChangeListener listener; // must be a local variable, otherwise the garbage collector will remove it
-    private String provider = LocationManager.NETWORK_PROVIDER;
+    private String provider = LocationManager.GPS_PROVIDER;
 
     public GPSDatapoint(final Context context) {
         this.context = context;
-        setConstants(1000 * 5, 1); //5SEC between updates and 10METERS
+        setConstants(0,15); //5SEC between updates and 10METERS
 
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
         this.listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
