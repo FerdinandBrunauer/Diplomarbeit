@@ -51,7 +51,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
 
     public synchronized static DatabaseConnection getInstance(Context context) {
         if (myInstance == null) {
-            if (myContext == null) {
+            if (context != null) {
                 myInstance = new DatabaseConnection(context);
             } else {
                 myInstance = new DatabaseConnection(myContext);

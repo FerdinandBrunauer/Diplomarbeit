@@ -92,11 +92,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private LocationRequest mLocationRequest;
     private SensorManager sensorManager;
     private float currentDegree = 0.0f;
+
     private SensorEventListener sensorEventListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
             float degree = Math.round(event.values[0]);
-            currentDegree = -degree;
+            currentDegree = degree;
+            Log.v("Current Angle", currentDegree + "");
         }
 
         @Override
@@ -481,7 +483,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         this.sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
         this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-
     }
 
     /**
