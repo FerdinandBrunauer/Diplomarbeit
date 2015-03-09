@@ -16,9 +16,8 @@ import event.datapoint.DatapointEventObject;
  * Created on:  13.01.2015
  * Author:      Ferdinand
  */
-public class NFC_QRValidator implements Validator {
+public class NFC_QRValidator  {
 
-    @Override
     public DatapointEventObject validate(Context context, Object... objects) {
         if (objects.length == 1) {
             if (objects[0] instanceof String) {

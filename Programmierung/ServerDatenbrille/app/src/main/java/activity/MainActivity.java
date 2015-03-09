@@ -68,20 +68,20 @@ import server.Server;
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener, ConnectionCallbacks,
         OnConnectionFailedListener, LocationListener {
 
+    private SharedPreferences preferences;
+    private SharedPreferences.OnSharedPreferenceChangeListener myPreferenceListener;
     // LogCat tag
     private static final String TAG = MainActivity.class.getSimpleName();
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     // Location updates intervals in sec
-    private static final int UPDATE_INTERVAL = 2000; // 10 sec
-    private static final int FATEST_INTERVAL = 2000; // 5 sec
-    private static final int DISPLACEMENT = 1; // 10 meters;
+    private static int updateInterval;
+    private static int fastestInterval;
+    private static int displacement;
     private ViewPager myViewPager;
     private TabsPagerAdapter myTabsPagerAdapter;
     private ActionBar myActionBar;
     private Server server;
     // NFC
-    private SharedPreferences preferences;
-    private SharedPreferences.OnSharedPreferenceChangeListener myPreferenceListener;
     private NfcAdapter adapter;
     private PendingIntent pendingIntent;
     private IntentFilter[] intentFilter;
@@ -109,6 +109,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         this.myViewPager = (ViewPager) findViewById(R.id.pager);
         this.myActionBar = getActionBar();
@@ -146,8 +148,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         this.server = new Server(this);
         //new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
 
+        updateInterval = preferences.getInt("gps_update_interval", 5000);
+        fastestInterval = preferences.getInt("gps_fastest_interval", 2000);
+        displacement = preferences.getInt("gps_displacement", 1);
+
         //NFC
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(this);
         this.nfcInitialize();
         this.myPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
@@ -169,6 +174,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             }
         };
         this.preferences.registerOnSharedPreferenceChangeListener(this.myPreferenceListener);
+
 
         //GPS
         // First we need to check availability of play services
@@ -302,6 +308,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
                 return true;
             }
+            case R.id.gps_action:{
+                displayLocation();
+            }
             default:
                 return false;
         }
@@ -398,14 +407,16 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     } */
 
     private void displayLocation() {
-        mLastLocation = LocationServices.FusedLocationApi
-                .getLastLocation(mGoogleApiClient);
+        //mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-        if (mLastLocation != null) {
-            double latitude = mLastLocation.getLatitude();
-            double longitude = mLastLocation.getLongitude();
+        //if (mLastLocation != null) {
+            //double latitude = mLastLocation.getLatitude();
+            //double longitude = mLastLocation.getLongitude();
 
-            //double altitude = mLastLocation.getAltitude();
+        double latitude = 47.68248;
+        double longitude = 13.10037;
+
+        //double altitude = mLastLocation.getAltitude();
             //String provider = mLastLocation.getProvider();
             //double test = mLastLocation.getAccuracy();
             //double speed = mLastLocation.getSpeed();
@@ -413,7 +424,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             // TODO ferdi fix it
             Toast.makeText(this, longitude + ":" + latitude, Toast.LENGTH_SHORT).show();
             fireEvent(latitude, longitude, currentDegree);
-        }
+        //}
     }
 
     protected void fireEvent(Object... objects) {
@@ -436,10 +447,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
      */
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(FATEST_INTERVAL);
+        mLocationRequest.setInterval(updateInterval);
+        mLocationRequest.setFastestInterval(fastestInterval);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
+        mLocationRequest.setSmallestDisplacement(displacement);
     }
 
     /**

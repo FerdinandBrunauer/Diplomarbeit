@@ -13,4 +13,10 @@
         android:title="Sync"
     />
 
+    <item
+        android:id="@+id/gps_action"
+        android:icon="@drawable/gps_location"
+        android:showAsAction="always"
+        android:title="GPS"/>
+
 </menu>

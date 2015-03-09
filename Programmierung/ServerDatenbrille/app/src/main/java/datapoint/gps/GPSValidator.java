@@ -45,7 +45,7 @@ public class GPSValidator {
                 });
 
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-                int viewAngleTolerance = preferences.getInt(context.getString(R.string.preferences_preference_gps_viewangletolerance), Integer.parseInt(context.getString(R.string.preferences_preference_gps_viewangletolerance_default)));
+                int viewAngleTolerance = Integer.parseInt(preferences.getString(context.getString(R.string.preferences_preference_gps_viewangletolerance), context.getString(R.string.preferences_preference_gps_viewangletolerance_default)));
 
                 for (GPSDatapointObject currentDatapointObject : datapointObjects) {
                     double coarseAngle = GPSCalculationMethods.getCourseAngle(actualLocation, new Location(currentDatapointObject.getLatitude(), currentDatapointObject.getLongitude()));

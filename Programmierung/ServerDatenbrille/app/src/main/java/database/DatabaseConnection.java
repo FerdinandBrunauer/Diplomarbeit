@@ -239,9 +239,9 @@ public class DatabaseConnection extends SQLiteOpenHelper {
                 return list;
             }
 
-            return null;
+            return list;
         } catch (Exception e) {
-            Log.v("DatabaseConnection", "Error while gettint all Datapoints", e);
+            Log.v("DatabaseConnection", "Error while getting all Datapoints", e);
             return null;
         }
     }

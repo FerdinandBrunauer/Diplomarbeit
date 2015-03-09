@@ -25,6 +25,7 @@
         <item>30</item>
     </string-array>
     <string name="preferences_preference_gps_viewangletolerance_default">10</string>
+
     <string name="preferences_preference_gps_viewmaxdistance">Maximale Distanz der Punkte</string>
     <string-array name="preferences_preference_gps_viewmaxdistance_entries">
         <item>1m</item>
@@ -45,6 +46,59 @@
         <item>100</item>
     </string-array>
     <string name="preferences_preference_gps_viewmaxdistance_default">10</string>
+
+    <string name="preferences_preference_gps_update_interval">Update Intervall</string>
+    <string-array name="preferences_preference_gps_update_interval_entries">
+        <item>1 Sekunden</item>
+        <item>2 Sekunden</item>
+        <item>5 Sekunden</item>
+        <item>10 Sekunden</item>
+        <item>30 Sekunden</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_update_interval_values">
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>10000</item>
+        <item>30000</item>
+    </string-array>
+    <string name="preferences_preference_gps_update_interval_default">5000</string>
+
+    <string name="preferences_preference_gps_fastest_interval">Schnellster Intervall</string>
+    <string-array name="preferences_preference_gps_fastest_interval_entries">
+        <item>1 Sekunde</item>
+        <item>2 Sekunden</item>
+        <item>5 Sekunden</item>
+        <item>10 Sekunden</item>
+        <item>30 Sekunden</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_fastest_interval_values">
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>10000</item>
+        <item>30000</item>
+    </string-array>
+    <string  name="preferences_preference_gps_fastest_interval_default">1000</string >
+
+    <string name="preferences_preference_gps_displacement">Benötigte Positionsänderung</string>
+    <string-array name="preferences_preference_gps_displacement_entries">
+        <item>1 Meter</item>
+        <item>2 Meter</item>
+        <item>5 Meter</item>
+        <item>10 Meter</item>
+        <item>25 Meter</item>
+        <item>50 Meter</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_displacement_values">
+        <item>1</item>
+        <item>2</item>
+        <item>5</item>
+        <item>10</item>
+        <item>25</item>
+        <item>50</item>
+    </string-array>
+    <string name="preferences_preference_gps_displacement_default">2</string>
     <!-- NFC -->
     <string name="preferences_category_nfc">NFC</string>
     <string name="preferences_preference_nfc_enabled">NFC ein/aus</string>
