@@ -58,6 +58,8 @@ import database.openDataUtilities.OpenDataPackage;
 import database.openDataUtilities.OpenDataResource;
 import database.openDataUtilities.OpenDataUtilities;
 import datapoint.NFC_QRValidator;
+import datapoint.gps.GPSCalculationMethods;
+import datapoint.gps.GPSDatapointObject;
 import datapoint.gps.GPSValidator;
 import event.datapoint.DatapointEventHandler;
 import event.datapoint.DatapointEventObject;
@@ -148,7 +150,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         //Server
         this.server = new Server(this);
-        //new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
+        new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
 
         updateInterval = preferences.getInt("gps_update_interval", 5000);
         fastestInterval = preferences.getInt("gps_fastest_interval", 2000);
@@ -409,31 +411,58 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     } */
 
     private void displayLocation() {
-        //mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-        //if (mLastLocation != null) {
-            //double latitude = mLastLocation.getLatitude();
-            //double longitude = mLastLocation.getLongitude();
+        if (mLastLocation != null) {
+            double latitude = mLastLocation.getLatitude();
+            double longitude = mLastLocation.getLongitude();
 
-        double latitude = 47.68248;
-        double longitude = 13.10037;
+        //double latitude = 47.477394;
+        //double longitude = 13.18850;
 
-        //double altitude = mLastLocation.getAltitude();
+        double altitude = mLastLocation.getAltitude();
             //String provider = mLastLocation.getProvider();
             //double test = mLastLocation.getAccuracy();
             //double speed = mLastLocation.getSpeed();
             //double bearing = mLastLocation.getBearing();
             // TODO ferdi fix it
-            Toast.makeText(this, longitude + ":" + latitude, Toast.LENGTH_SHORT).show();
-            fireEvent(latitude, longitude, currentDegree);
-        //}
+            Toast.makeText(this, longitude + ":" + latitude + ":" + currentDegree, Toast.LENGTH_SHORT).show();
+            fireEvent(mLastLocation);
+        }
     }
 
-    protected void fireEvent(Object... objects) {
-        GPSValidator validator = new GPSValidator();
-        DatapointEventObject eventObject = validator.validate(this, objects);
-        if (eventObject != null) {
-            DatapointEventHandler.fireDatapointEvent(eventObject);
+    protected void fireEvent(Location location) {
+        List<GPSDatapointObject> datapointObjects = DatabaseConnection.getAllDatapoints();
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int viewAngleTolerance = Integer.parseInt(preferences.getString(getString(R.string.preferences_preference_gps_viewangletolerance), getString(R.string.preferences_preference_gps_viewangletolerance_default)));
+
+        for (GPSDatapointObject currentDatapointObject : datapointObjects) {
+            Location dest = new Location("" + currentDatapointObject.getId());
+            dest.setLatitude(currentDatapointObject.getLatitude());
+            dest.setLongitude(currentDatapointObject.getLongitude());
+
+            int maxDistance = Integer.parseInt(
+                    preferences.getString(
+                            getString(R.string.preferences_preference_gps_viewmaxdistance),
+                            getString(R.string.preferences_preference_gps_viewmaxdistance_default)));
+
+            double distance = location.distanceTo(dest);
+            if (distance < maxDistance) {
+                double coarseAngle = GPSCalculationMethods.getCourseAngle(
+                        new database.Location(location.getLatitude(),location.getLongitude()),
+                        new database.Location(dest.getLatitude(),dest.getLongitude()));
+                double angleDeviation = Math.abs(currentDegree - coarseAngle);
+                Toast.makeText(this, "datapoint is in reach", Toast.LENGTH_SHORT).show();
+
+                if (angleDeviation <= viewAngleTolerance) {
+                    String html = DatabaseConnection.getDatapointByLocation(new database.Location(currentDatapointObject.getLatitude(), currentDatapointObject.getLongitude()))[1];
+
+                    Toast.makeText(this, "found datapoint in angle", Toast.LENGTH_LONG).show();
+                    DatapointEventObject eventObject = new DatapointEventObject(this, html);
+                    DatapointEventHandler.fireDatapointEvent(eventObject);
+                }
+            }
         }
     }
 

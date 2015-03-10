@@ -42,7 +42,10 @@ public class Placemark {
         }
 
 		this.link = StringUtils.unescapeHtml3(getStringBetween(rawPlacemark, "\\<td\\>\\<a target\\=\\\"\\_blank\\\" href\\=\\\"", "\\\"\\>http\\:\\/\\/"));
-		this.location = new Location(getStringBetween(rawPlacemark, "\\<coordinates\\>", "\\<\\/coordinates\\>"));
+        String s = getStringBetween(rawPlacemark, "\\<coordinates\\>", "\\<\\/coordinates\\>");
+        String[] temp = s.split(",");
+        String t = temp[1].trim() + "," + temp[0].trim() + "," + temp[2].trim();
+		this.location = new Location(t);
 	}
 
 	private static String getStringBetween(String input, String start, String end) {
