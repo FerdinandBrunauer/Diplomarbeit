@@ -558,6 +558,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
         private void writeToDatabase(OpenDataPackage openDataPackage, int packageNr, int packagesCount) {
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setCancelable(false);
             if (openDataPackage != null) {
                 setDialogTitle(getString(R.string.crawler_add_packageinfo) + " (" + (packageNr + 1) + "/" + packagesCount + ") ");
                 DatabaseConnection.insertPackage(openDataPackage);
