@@ -60,7 +60,6 @@ import database.openDataUtilities.OpenDataUtilities;
 import datapoint.NFC_QRValidator;
 import datapoint.gps.GPSCalculationMethods;
 import datapoint.gps.GPSDatapointObject;
-import datapoint.gps.GPSValidator;
 import event.datapoint.DatapointEventHandler;
 import event.datapoint.DatapointEventObject;
 import htlhallein.at.serverdatenbrille.R;
@@ -100,7 +99,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         public void onSensorChanged(SensorEvent event) {
             float degree = Math.round(event.values[0]);
             currentDegree = degree;
-            Log.v("Current Angle", currentDegree + "");
+            // Log.v("Current Angle", currentDegree + "");
         }
 
         @Override
@@ -335,6 +334,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                                 byte[] payload = rec.getPayload();
                                 String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
                                 int langCodeLen = payload[0] & 63;
+
+                                Toast.makeText(this, "NFC Tag erfasst!", Toast.LENGTH_LONG).show();
 
                                 NFC_QRValidator validator = new NFC_QRValidator();
                                 DatapointEventObject eventObject = validator.validate(this, new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1, textEncoding));

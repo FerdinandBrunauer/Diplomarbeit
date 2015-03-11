@@ -2,6 +2,7 @@ package datapoint;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -32,6 +33,7 @@ public class NFC_QRValidator  {
                                     String html = DatabaseConnection.getDatapointByLocation(location)[1];
                                     return new DatapointEventObject(this, html);
                                 } catch (Exception e) {
+                                    Toast.makeText(context, "Datenpunkt wurde in der Datenbank nicht gefunden!", Toast.LENGTH_LONG).show();
                                     Log.v("Validator", "Datapoint by Location", e);
                                     return null;
                                 }
