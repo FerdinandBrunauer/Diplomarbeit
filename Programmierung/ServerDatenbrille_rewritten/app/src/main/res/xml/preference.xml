@@ -1,0 +1,72 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/preferences_category_gps">
+        <CheckBoxPreference
+            android:defaultValue="@bool/preferences_preference_gps_enabled_default"
+            android:key="@string/preferences_preference_gps_enabled"
+            android:title="@string/preferences_preference_gps_enabled" />
+        <ListPreference
+            android:defaultValue="@string/preferences_preference_gps_viewangletolerance_default"
+            android:dependency="@string/preferences_preference_gps_enabled"
+            android:entries="@array/preferences_preference_gps_viewangletolerance_entries"
+            android:entryValues="@array/preferences_preference_gps_viewangletolerance_values"
+            android:key="@string/preferences_preference_gps_viewangletolerance"
+            android:title="@string/preferences_preference_gps_viewangletolerance" />
+        <ListPreference
+            android:defaultValue="@string/preferences_preference_gps_viewmaxdistance_default"
+            android:dependency="@string/preferences_preference_gps_enabled"
+            android:entries="@array/preferences_preference_gps_viewmaxdistance_entries"
+            android:entryValues="@array/preferences_preference_gps_viewmaxdistance_values"
+            android:key="@string/preferences_preference_gps_viewmaxdistance"
+            android:title="@string/preferences_preference_gps_viewmaxdistance" />
+        <ListPreference
+            android:defaultValue="@string/preferences_preference_gps_update_interval_default"
+            android:dependency="@string/preferences_preference_gps_enabled"
+            android:entries="@array/preferences_preference_gps_update_interval_entries"
+            android:entryValues="@array/preferences_preference_gps_update_interval_values"
+            android:key="@string/preferences_preference_gps_update_interval"
+            android:title="@string/preferences_preference_gps_update_interval" />
+        <ListPreference
+            android:defaultValue="@string/preferences_preference_gps_fastest_interval_default"
+            android:dependency="@string/preferences_preference_gps_enabled"
+            android:entries="@array/preferences_preference_gps_fastest_interval_entries"
+            android:entryValues="@array/preferences_preference_gps_fastest_interval_values"
+            android:key="@string/preferences_preference_gps_fastest_interval"
+            android:title="@string/preferences_preference_gps_fastest_interval" />
+        <ListPreference
+            android:defaultValue="@string/preferences_preference_gps_displacement_default"
+            android:dependency="@string/preferences_preference_gps_enabled"
+            android:entries="@array/preferences_preference_gps_displacement_entries"
+            android:entryValues="@array/preferences_preference_gps_displacement_values"
+            android:key="@string/preferences_preference_gps_displacement"
+            android:title="@string/preferences_preference_gps_displacement" />
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/preferences_category_nfc">
+        <CheckBoxPreference
+            android:defaultValue="@bool/preferences_preference_nfc_enabled_default"
+            android:key="@string/preferences_preference_nfc_enabled"
+            android:title="@string/preferences_preference_nfc_enabled" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/preferences_category_wifi">
+        <EditTextPreference
+            android:defaultValue="@string/preferences_preference_wifihotspot_name_default"
+            android:key="@string/preferences_preference_wifihotspot_name"
+            android:title="@string/preferences_preference_wifihotspot_name" />
+        <EditTextPreference
+            android:defaultValue="@string/preferences_preference_wifihotspot_password_default"
+            android:key="@string/preferences_preference_wifihotspot_password"
+            android:title="@string/preferences_preference_wifihotspot_password" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/preferences_category_scroll">
+        <ListPreference
+            android:defaultValue="@string/preferences_preference_scroll_distance_per_click_default"
+            android:entries="@array/preferences_preference_scroll_distance_per_click_entries"
+            android:entryValues="@array/preferences_preference_scroll_distance_per_click_values"
+            android:key="@string/preferences_preference_scroll_distance_per_click"
+            android:title="@string/preferences_preference_scroll_distance_per_click" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

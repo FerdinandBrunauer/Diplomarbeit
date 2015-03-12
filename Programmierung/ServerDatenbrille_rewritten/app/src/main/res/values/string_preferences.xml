@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- GPS -->
+    <string name="preferences_category_gps">GPS</string>
+    <string name="preferences_preference_gps_enabled">GPS ein/aus</string>
+    <bool name="preferences_preference_gps_enabled_default">true</bool>
+    <string name="preferences_preference_gps_viewangletolerance">Blickfeldtoleranz</string>
+    <string-array name="preferences_preference_gps_viewangletolerance_entries">
+        <item>1°</item>
+        <item>2°</item>
+        <item>5°</item>
+        <item>10°</item>
+        <item>15°</item>
+        <item>20°</item>
+        <item>30°</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_viewangletolerance_values">
+        <item>1</item>
+        <item>2</item>
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>30</item>
+    </string-array>
+    <string name="preferences_preference_gps_viewangletolerance_default">10</string>
+
+    <string name="preferences_preference_gps_viewmaxdistance">Maximale Distanz der Punkte</string>
+    <string-array name="preferences_preference_gps_viewmaxdistance_entries">
+        <item>1m</item>
+        <item>2m</item>
+        <item>5m</item>
+        <item>10m</item>
+        <item>30m</item>
+        <item>50m</item>
+        <item>100m</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_viewmaxdistance_values">
+        <item>1</item>
+        <item>2</item>
+        <item>5</item>
+        <item>10</item>
+        <item>30</item>
+        <item>50</item>
+        <item>100</item>
+    </string-array>
+    <string name="preferences_preference_gps_viewmaxdistance_default">10</string>
+
+    <string name="preferences_preference_gps_update_interval">Update Intervall</string>
+    <string-array name="preferences_preference_gps_update_interval_entries">
+        <item>1 Sekunden</item>
+        <item>2 Sekunden</item>
+        <item>5 Sekunden</item>
+        <item>10 Sekunden</item>
+        <item>30 Sekunden</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_update_interval_values">
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>10000</item>
+        <item>30000</item>
+    </string-array>
+    <string name="preferences_preference_gps_update_interval_default">5000</string>
+
+    <string name="preferences_preference_gps_fastest_interval">Schnellster Intervall</string>
+    <string-array name="preferences_preference_gps_fastest_interval_entries">
+        <item>1 Sekunde</item>
+        <item>2 Sekunden</item>
+        <item>5 Sekunden</item>
+        <item>10 Sekunden</item>
+        <item>30 Sekunden</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_fastest_interval_values">
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>10000</item>
+        <item>30000</item>
+    </string-array>
+    <string name="preferences_preference_gps_fastest_interval_default">1000</string>
+
+    <string name="preferences_preference_gps_displacement">Benötigte Positionsänderung</string>
+    <string-array name="preferences_preference_gps_displacement_entries">
+        <item>1 Meter</item>
+        <item>2 Meter</item>
+        <item>5 Meter</item>
+        <item>10 Meter</item>
+        <item>25 Meter</item>
+        <item>50 Meter</item>
+    </string-array>
+    <string-array name="preferences_preference_gps_displacement_values">
+        <item>1</item>
+        <item>2</item>
+        <item>5</item>
+        <item>10</item>
+        <item>25</item>
+        <item>50</item>
+    </string-array>
+    <string name="preferences_preference_gps_displacement_default">2</string>
+    <!-- NFC -->
+    <string name="preferences_category_nfc">NFC</string>
+    <string name="preferences_preference_nfc_enabled">NFC ein/aus</string>
+    <bool name="preferences_preference_nfc_enabled_default">true</bool>
+    <!-- WIFI -->
+    <string name="preferences_category_wifi">WLAN - Hotspot</string>
+    <string name="preferences_preference_wifihotspot_name">Name</string>
+    <string name="preferences_preference_wifihotspot_name_default">Datenbrille</string>
+    <string name="preferences_preference_wifihotspot_password">Passwort</string>
+    <string name="preferences_preference_wifihotspot_password_default">Passwort1!</string>
+    <!-- Scrolling -->
+    <string name="preferences_category_scroll">Brillensteuerung</string>
+    <string name="preferences_preference_scroll_distance_per_click">Prozent pro Klick</string>
+    <string-array name="preferences_preference_scroll_distance_per_click_entries">
+        <item>1%</item>
+        <item>2%</item>
+        <item>5%</item>
+    </string-array>
+    <string-array name="preferences_preference_scroll_distance_per_click_values">
+        <item>1</item>
+        <item>2</item>
+        <item>5</item>
+    </string-array>
+    <string name="preferences_preference_scroll_distance_per_click_default">2</string>
+
+    <string name="preferences_preference_packages">packages</string>
+
+    <string name="back_button_label">Zurück</string>
+    <string name="next_button_label">Weiter</string>
+    <!-- Optional button to Skip a PreferenceActivity [CHAR LIMIT=20] -->
+    <string name="skip_button_label">Überspringen</string>
+
+</resources>
