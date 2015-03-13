@@ -255,5 +255,17 @@ public class DatapointFragment extends ListFragment {
             }
             return null;
         }
+
+        @Override
+        protected void onPreExecute() {
+            dialog.setTitle(MainActivity.getContext().getString(R.string.wait));
+            dialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            if (dialog.isShowing())
+                dialog.dismiss();
+        }
     }
 }

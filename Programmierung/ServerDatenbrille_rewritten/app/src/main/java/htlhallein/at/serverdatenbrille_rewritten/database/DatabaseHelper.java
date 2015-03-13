@@ -15,6 +15,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "datenbrille";
     private static final int DATABASE_VERSION = 1; // never change
+    private static final double LOCATION_TOLERANCE = 0.0000000005d;
     private static DatabaseHelper myInstance;
 
     private DatabaseHelper() {
@@ -65,6 +66,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("DELETE FROM `Package` WHERE `idPackage`=?;");
         statement.bindLong(1, id);
         return statement.executeUpdateDelete();
+    }
+
+    public static String getDatapointcontentFromLocation(final double latitude, final double longitude) {
+        Cursor cursor = getInstance().getReadableDatabase().rawQuery("SELECT `content` FROM `Datapoint` WHERE (`latitude` BETWEEN " + (latitude - LOCATION_TOLERANCE) + " AND " + (latitude + LOCATION_TOLERANCE) + ") AND (`longitude` BETWEEN " + (longitude - LOCATION_TOLERANCE) + " AND " + (longitude + LOCATION_TOLERANCE) + ");", null);
+        // TODO TEST if that works
+        if (cursor.moveToFirst()) {
+            return cursor.getString(0);
+        } else {
+            return null;
+        }
     }
 
     @Override

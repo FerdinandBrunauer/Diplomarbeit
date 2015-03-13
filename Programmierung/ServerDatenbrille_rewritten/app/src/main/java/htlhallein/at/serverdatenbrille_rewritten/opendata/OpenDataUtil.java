@@ -27,6 +27,8 @@ import java.util.Set;
 
 public class OpenDataUtil {
 
+    // TODO FIX ME PLEASE :D
+
     private static final String OPENDATAURL = "https://www.data.gv.at/katalog/api/3/action/";
     private static final String PACKAGE_LIST = "package_list";
     private static final String TAG_SHOW = "tag_show?id=";

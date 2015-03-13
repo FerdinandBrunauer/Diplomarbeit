@@ -16,6 +16,9 @@ import java.util.List;
 import htlhallein.at.serverdatenbrille_rewritten.MainActivity;
 import htlhallein.at.serverdatenbrille_rewritten.R;
 import htlhallein.at.serverdatenbrille_rewritten.activityHandler.ActivityListener;
+import htlhallein.at.serverdatenbrille_rewritten.datapoint.Validator;
+import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventHandler;
+import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventObject;
 
 public class QRCode implements ActivityListener {
 
@@ -39,12 +42,10 @@ public class QRCode implements ActivityListener {
             } else {
                 Log.d(QRCode.class.toString(), "Scanned: " + result.getContents());
                 Toast.makeText(MainActivity.getContext(), MainActivity.getContext().getString(R.string.qr_code_scanned), Toast.LENGTH_LONG).show();
-                // TODO
-                /* NFC_QRValidator validator = new NFC_QRValidator();
-                DatapointEventObject eventObject = validator.validate(this, result.getContents());
+                DatapointEventObject eventObject = Validator.validate(result.getContents());
                 if (eventObject != null) {
                     DatapointEventHandler.fireDatapointEvent(eventObject);
-                } */
+                }
             }
         }
     }

@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
                 return true;
             }
             case R.id.sync_action: {
-                // TODO
+                // TODO sync me
                 return true;
             }
             default:
@@ -181,7 +181,7 @@ public class MainActivity extends Activity {
         mAdapter.addItem(nsItemQr);
 
         mAdapter.addHeader(R.string.drawer_title_settings);
-        NsMenuItemModel nsItemSettings = new NsMenuItemModel(R.string.drawer_action_settings, R.drawable.ic_action_settings, nsMenuItem_settings);
+        NsMenuItemModel nsItemSettings = new NsMenuItemModel(R.string.drawer_action_settings, R.drawable.ic_settings, nsMenuItem_settings);
         mAdapter.addItem(nsItemSettings);
 
         mDrawerList = (ListView) findViewById(R.id.drawer);
@@ -239,7 +239,7 @@ public class MainActivity extends Activity {
                     break;
                 }
                 case nsMenuItem_Datapoints: {
-                    // TODO
+                    // TODO show map with points
                     break;
                 }
                 case nsMenuItem_qrcode: {

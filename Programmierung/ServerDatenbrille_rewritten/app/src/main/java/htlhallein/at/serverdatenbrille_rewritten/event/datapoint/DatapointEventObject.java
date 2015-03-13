@@ -5,8 +5,8 @@ import java.util.EventObject;
 public class DatapointEventObject extends EventObject {
     private String htmlText;
 
-    public DatapointEventObject(Object source, String htmlText) {
-        super(source);
+    public DatapointEventObject(String htmlText) {
+        super("");
         this.htmlText = htmlText;
     }
 

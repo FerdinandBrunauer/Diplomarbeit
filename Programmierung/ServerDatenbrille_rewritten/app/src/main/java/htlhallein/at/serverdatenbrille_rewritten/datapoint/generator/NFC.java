@@ -22,6 +22,9 @@ import java.util.Arrays;
 import htlhallein.at.serverdatenbrille_rewritten.MainActivity;
 import htlhallein.at.serverdatenbrille_rewritten.R;
 import htlhallein.at.serverdatenbrille_rewritten.activityHandler.ActivityListener;
+import htlhallein.at.serverdatenbrille_rewritten.datapoint.Validator;
+import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventHandler;
+import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventObject;
 
 public class NFC implements ActivityListener {
 
@@ -29,8 +32,6 @@ public class NFC implements ActivityListener {
     private PendingIntent pendingIntent;
     private IntentFilter[] intentFilter;
     private String[][] techList;
-
-    private SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
     private SharedPreferences.OnSharedPreferenceChangeListener mChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -52,6 +53,7 @@ public class NFC implements ActivityListener {
             }
         }
     };
+    private SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
 
     private void NFCinitialize() {
         Resources resources = MainActivity.getContext().getResources();
@@ -104,13 +106,10 @@ public class NFC implements ActivityListener {
                                 int langCodeLen = payload[0] & 63;
                                 String nfcText = new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1, textEncoding);
                                 Toast.makeText(MainActivity.getContext(), MainActivity.getContext().getString(R.string.nfc_tag_read), Toast.LENGTH_LONG).show();
-                                Toast.makeText(MainActivity.getContext(), nfcText, Toast.LENGTH_LONG).show();
-                                // TODO fire NFC Event
-                                /* NFC_QRValidator validator = new NFC_QRValidator();
-                                DatapointEventObject eventObject = validator.validate(this, new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1, textEncoding));
+                                DatapointEventObject eventObject = Validator.validate(nfcText);
                                 if (eventObject != null) {
                                     DatapointEventHandler.fireDatapointEvent(eventObject);
-                                } */
+                                }
                             }
                         }
                     }
