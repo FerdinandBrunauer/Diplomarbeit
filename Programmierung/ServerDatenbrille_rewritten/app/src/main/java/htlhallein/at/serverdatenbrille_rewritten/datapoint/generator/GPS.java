@@ -38,4 +38,9 @@ public class GPS implements ActivityListener {
     public void onNewIntent(Intent intent) {
 
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+    }
 }

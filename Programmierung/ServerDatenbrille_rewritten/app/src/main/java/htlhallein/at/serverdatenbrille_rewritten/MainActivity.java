@@ -134,17 +134,6 @@ public class MainActivity extends Activity {
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_settings: {
-                getFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.flContent, new PrefsFragment())
-                        .commit();
-
-                if (mDrawer.isDrawerOpen(mDrawerList))
-                    mDrawer.closeDrawer(mDrawerList);
-
-                return true;
-            }
             case R.id.qr_code_action: {
                 ActivityHandler.showQRCode(this);
                 return true;
@@ -156,6 +145,13 @@ public class MainActivity extends Activity {
             default:
                 return super.onMenuItemSelected(featureId, item);
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        ActivityHandler.onActivityResult(requestCode, resultCode, data);
     }
 
     public static Context getContext() {

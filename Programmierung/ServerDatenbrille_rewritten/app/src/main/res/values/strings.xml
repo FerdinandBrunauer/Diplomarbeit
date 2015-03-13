@@ -18,4 +18,7 @@
     <string name="nfc_disabled">NFC ist nicht aktiviert! Bitte aktivieren sie NFC um diese Funktion nutzen zu können!</string>
     <string name="nfc_tag_read">NFC Tag erfasst!</string>
 
+    <string name="qr_code_scanned">QR - Code scanned!</string>
+    <string name="qr_code_canceled">Qr - Code abgebrochen!</string>
+
 </resources>

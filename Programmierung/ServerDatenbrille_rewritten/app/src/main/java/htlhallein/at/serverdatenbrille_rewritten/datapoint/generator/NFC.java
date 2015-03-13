@@ -157,4 +157,8 @@ public class NFC implements ActivityListener {
         // Ignore this in the NFC Generator
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+    }
 }

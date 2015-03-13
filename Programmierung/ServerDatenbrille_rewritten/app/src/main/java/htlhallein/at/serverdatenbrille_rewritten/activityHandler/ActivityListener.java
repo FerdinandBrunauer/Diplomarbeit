@@ -16,8 +16,11 @@ public interface ActivityListener {
     public abstract void onDestroy(Context context);
 
     // QR specific
-    public void showQRCode(Context context);
+    public abstract void showQRCode(Context context);
+
+    public abstract void onActivityResult(int requestCode, int resultCode, Intent data);
 
     // NFC specific
-    public void onNewIntent(Intent intent);
+    public abstract void onNewIntent(Intent intent);
+
 }

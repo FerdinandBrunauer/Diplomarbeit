@@ -16,10 +16,6 @@ public class ActivityHandler {
         listeners.add(listener);
     }
 
-    public static synchronized void removeListener(ActivityListener listener) {
-        listeners.remove(listener);
-    }
-
     public static synchronized void onCreate(Context context, Bundle savedInstanceState) {
         for (ActivityListener listener : listeners) {
             listener.onCreate(context, savedInstanceState);
@@ -53,6 +49,12 @@ public class ActivityHandler {
     public static synchronized void onNewIntent(Intent intent) {
         for (ActivityListener listener : listeners) {
             listener.onNewIntent(intent);
+        }
+    }
+
+    public static synchronized void onActivityResult(int requestCode, int resultCode, Intent data) {
+        for (ActivityListener listener : listeners) {
+            listener.onActivityResult(requestCode, resultCode, data);
         }
     }
 
