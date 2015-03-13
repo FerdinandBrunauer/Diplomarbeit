@@ -21,22 +21,34 @@ import htlhallein.at.serverdatenbrille_rewritten.activityHandler.ActivityHandler
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.GPS;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.NFC;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.QRCode;
-import htlhallein.at.serverdatenbrille_rewritten.drawer_menu.NsMenuAdapter;
-import htlhallein.at.serverdatenbrille_rewritten.drawer_menu.NsMenuItemModel;
+import htlhallein.at.serverdatenbrille_rewritten.drawer.NsMenuAdapter;
+import htlhallein.at.serverdatenbrille_rewritten.drawer.NsMenuItemModel;
 
 public class MainActivity extends Activity {
 
+    // Drawer
+    private static final int nsMenuItem_ControllerID = 0, nsMenuItem_Packages = 1, nsMenuItem_Datapoints = 2, nsMenuItem_qrcode = 3, nsMenuItem_settings = 4;
     // Context
     private static Context mContext;
     // Activity
     private static Activity mActivity;
     // Class
     private static Class mClass;
-    // Drawer
-    private static final int nsMenuItem_ControllerID = 0, nsMenuItem_Packages = 1, nsMenuItem_Datapoints = 2, nsMenuItem_qrcode = 3, nsMenuItem_settings = 4;
     private ListView mDrawerList;
     private DrawerLayout mDrawer;
     private CustomActionBarDrawerToggle mDrawerToggle;
+
+    public static Context getContext() {
+        return mContext;
+    }
+
+    public static Activity getActivity() {
+        return mActivity;
+    }
+
+    public static Class getMClass() {
+        return mClass;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,18 +164,6 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
 
         ActivityHandler.onActivityResult(requestCode, resultCode, data);
-    }
-
-    public static Context getContext() {
-        return mContext;
-    }
-
-    public static Activity getActivity() {
-        return mActivity;
-    }
-
-    public static Class getMClass() {
-        return mClass;
     }
 
     private void _initMenu() {

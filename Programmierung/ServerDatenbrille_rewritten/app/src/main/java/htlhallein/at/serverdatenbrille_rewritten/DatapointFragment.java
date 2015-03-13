@@ -2,12 +2,13 @@ package htlhallein.at.serverdatenbrille_rewritten;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListFragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -20,15 +21,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
+
+import htlhallein.at.serverdatenbrille_rewritten.database.DatabaseHelper;
+import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.DataPackage;
+import htlhallein.at.serverdatenbrille_rewritten.opendata.OpenDataUtil;
 
 public class DatapointFragment extends ListFragment {
     ListViewCustomAdapter adapter;
@@ -43,63 +45,18 @@ public class DatapointFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         Button addPackageButton = (Button) getActivity().findViewById(R.id.addPackageButton);
-
         adapter = new ListViewCustomAdapter(getActivity(), addPackageButton, getListView());
         setListAdapter(adapter);
     }
 
-    public static ArrayList<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> getPackagesFromPreferences() {
-        ArrayList<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> packageList = new ArrayList<>();
-
-        htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package defaultPackage = new htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package("Museen", "a5841caf-afe2-4f98-bb68-bd4899e8c9cb");
-
-        final String defaultValue = "undefined JSON Object!";
-        String preferencePackage = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_packages), defaultValue);
-        if (preferencePackage.equals(defaultValue)) {
-            packageList.add(defaultPackage);
-            storePackagesToPreferences(packageList);
-
-            preferencePackage = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_packages), defaultValue);
-        }
-
-        packageList.clear();
-        Gson gson = new Gson();
-        Type type = new TypeToken<ArrayList<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package>>() {
-        }.getType();
-        packageList = gson.fromJson(preferencePackage, type);
-
-        return packageList;
-    }
-
-    public static void storePackagesToPreferences(List<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> packageList) {
-        Gson gson = new Gson();
-        String json = gson.toJson(packageList);
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).edit();
-        editor.putString(MainActivity.getContext().getString(R.string.preferences_preference_packages), json);
-        editor.apply();
-    }
-
-    class ListViewCustomAdapter extends BaseAdapter {
+    private class ListViewCustomAdapter extends BaseAdapter {
         private Context context;
-        private List<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> packages;
-        protected SharedPreferences.OnSharedPreferenceChangeListener mySharedPreferenceslistener;
-        protected SharedPreferences preferences;
+        private List<DataPackage> packages;
 
         public ListViewCustomAdapter(final Activity context, Button button, ListView listView) {
             this.context = context;
 
-            this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
-            this.packages = getPackagesFromPreferences();
-            this.mySharedPreferenceslistener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-                @Override
-                public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                    if (key.equals(context.getString(R.string.preferences_preference_packages))) {
-                        packages = getPackagesFromPreferences();
-                        notifyDataSetChanged();
-                    }
-                }
-            };
-            preferences.registerOnSharedPreferenceChangeListener(this.mySharedPreferenceslistener);
+            packages = DatabaseHelper.getDataPackages();
 
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -108,11 +65,21 @@ public class DatapointFragment extends ListFragment {
                     dialog.setTitle(context.getString(R.string.add_package));
                     LinearLayout layout = new LinearLayout(context);
                     layout.setOrientation(LinearLayout.VERTICAL);
+
                     final EditText tvName = new EditText(getActivity());
-                    final EditText tvKey = new EditText(getActivity());
                     tvName.setHint("Name");
+                    final TextView tvNameDescr = new TextView(getActivity());
+                    tvNameDescr.setText("Name:");
+                    tvNameDescr.setPadding(20, 20, 20, 20);
+                    final EditText tvKey = new EditText(getActivity());
+                    tvKey.setHint("OpenData - ID");
+                    final TextView tvKeyDescr = new TextView(getActivity());
+                    tvKeyDescr.setText("OpenData - ID:");
+                    tvKeyDescr.setPadding(20, 20, 20, 20);
+
+                    layout.addView(tvNameDescr);
                     layout.addView(tvName);
-                    tvKey.setHint("Key");
+                    layout.addView(tvKeyDescr);
                     layout.addView(tvKey);
 
                     dialog.setView(layout);
@@ -123,12 +90,13 @@ public class DatapointFragment extends ListFragment {
                             Log.i(DatapointFragment.class.toString(), "Name: \"" + tvName.getText() + "\", Key: \"" + tvKey.getText() + "\"");
                             if (tvName.getText().toString().compareTo("") != 0) {
                                 if (tvKey.getText().toString().compareTo("") != 0) {
-                                    htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package addPackage = new htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package(tvName.getText().toString(), tvKey.getText().toString());
-
                                     try {
-                                        ArrayList<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> storedPackages = getPackagesFromPreferences();
-                                        storedPackages.add(addPackage);
-                                        storePackagesToPreferences(storedPackages);
+                                        String name = tvName.getText().toString();
+                                        String openDataID = tvKey.getText().toString();
+                                        long packageID = DatabaseHelper.addPackage(openDataID, "", name);
+                                        DataPackage addPackage = new DataPackage(packageID, name, openDataID);
+                                        packages.add(addPackage);
+                                        notifyDataSetChanged();
                                         Toast.makeText(context, "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
                                     } catch (Exception e) {
                                         Toast.makeText(context, "Fehler beim hinzufügen des Packetes", Toast.LENGTH_LONG).show();
@@ -149,13 +117,11 @@ public class DatapointFragment extends ListFragment {
                             String searchName = tvName.getText().toString();
                             if (searchName.compareTo("") == 0) {
                                 Toast.makeText(context, context.getString(R.string.search_package_no_name), Toast.LENGTH_LONG).show();
-                            } /* else {
-                                // new PackageSearcher().execute(tvName.getText().toString());
-                                TODO
-                            } */
+                            } else {
+                                new PackageSearcher().execute(tvName.getText().toString());
+                            }
                         }
                     });
-
                     dialog.show();
                 }
             });
@@ -167,9 +133,9 @@ public class DatapointFragment extends ListFragment {
                     dialog.setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            // new PackageRemover().execute(packages.get(position).getKey()); TODO
+                            DatabaseHelper.deletePackage(packages.get(position).getId());
                             packages.remove(position);
-                            storePackagesToPreferences(packages);
+                            notifyDataSetChanged();
                         }
                     });
                     dialog.setNegativeButton(context.getString(R.string.cancel), null);
@@ -190,9 +156,9 @@ public class DatapointFragment extends ListFragment {
             TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
             TextView tvKey = (TextView) convertView.findViewById(R.id.tvKey);
 
-            htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package actualPackage = packages.get(position);
+            DataPackage actualPackage = packages.get(position);
             tvName.setText(actualPackage.getName());
-            tvKey.setText(actualPackage.getKey());
+            tvKey.setText(actualPackage.getIdOpenData());
 
             return convertView;
         }
@@ -203,7 +169,7 @@ public class DatapointFragment extends ListFragment {
         }
 
         @Override
-        public htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package getItem(int position) {
+        public DataPackage getItem(int position) {
             return packages.get(position);
         }
 
@@ -212,5 +178,82 @@ public class DatapointFragment extends ListFragment {
             return -1L;
         }
     }
-}
 
+    private class PackageSearcher extends AsyncTask<String, String, String> {
+        private AlertDialog searchDialog;
+        private Dialog dialog = new ProgressDialog(getActivity());
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                List<List<String>> foundPackages = OpenDataUtil.searchForPackages(params[0]);
+
+                TableLayout.LayoutParams tableParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
+                TableRow.LayoutParams rowParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT);
+
+                final TableLayout tableLayout = new TableLayout(getActivity());
+                tableLayout.setLayoutParams(tableParams);
+                for (final List<String> packages : foundPackages) {
+                    TableRow row = new TableRow(getActivity());
+                    row.setLayoutParams(rowParams);
+                    row.setPadding(50, 10, 10, 10);
+                    row.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Log.d("Package added", "Name: \"" + packages.get(0) + "\", Key: \"" + packages.get(1) + "\"");
+                            if (!packages.get(0).equals("")) {
+                                if (!packages.get(1).equals("")) {
+                                    try {
+                                        String name = packages.get(0);
+                                        String openDataID = packages.get(1);
+                                        long packageID = DatabaseHelper.addPackage(openDataID, "", name);
+                                        DataPackage addPackage = new DataPackage(packageID, name, openDataID);
+
+                                        DatapointFragment.this.adapter.packages.add(addPackage);
+                                        DatapointFragment.this.adapter.notifyDataSetChanged();
+
+                                        Toast.makeText(getActivity(), "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
+                                    } catch (Exception e) {
+                                        Toast.makeText(getActivity(), "Fehler beim hinzufügen des Packetes", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    searchDialog.dismiss();
+                                }
+                            });
+                        }
+                    });
+                    TextView nameView = new TextView(getActivity());
+                    nameView.setText(packages.get(0));
+                    nameView.setPadding(20, 20, 20, 20);
+
+                    row.addView(nameView);
+
+                    tableLayout.addView(row);
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        AlertDialog.Builder searchDialogBuilder = new AlertDialog.Builder(getActivity());
+                        searchDialogBuilder.setView(tableLayout);
+                        searchDialogBuilder.setTitle(getString(R.string.wait));
+                        searchDialogBuilder.setNegativeButton(getActivity().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
+                        searchDialog = searchDialogBuilder.show();
+                    }
+                });
+            } catch (Exception e) {
+                Log.d(DatapointFragment.class.toString(), "searchForPackages", e);
+            }
+            return null;
+        }
+    }
+}

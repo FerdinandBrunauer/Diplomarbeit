@@ -1,4 +1,4 @@
-package htlhallein.at.serverdatenbrille_rewritten.drawer_menu;
+package htlhallein.at.serverdatenbrille_rewritten.drawer;
 
 public class NsMenuItemModel {
 
