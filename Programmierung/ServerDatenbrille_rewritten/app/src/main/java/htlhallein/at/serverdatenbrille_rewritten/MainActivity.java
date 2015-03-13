@@ -1,6 +1,8 @@
 package htlhallein.at.serverdatenbrille_rewritten;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
@@ -24,6 +26,12 @@ import htlhallein.at.serverdatenbrille_rewritten.drawer_menu.NsMenuItemModel;
 
 public class MainActivity extends Activity {
 
+    // Context
+    private static Context mContext;
+    // Activity
+    private static Activity mActivity;
+    // Class
+    private static Class mClass;
     // Drawer
     private static final int nsMenuItem_ControllerID = 0, nsMenuItem_Packages = 1, nsMenuItem_Datapoints = 2, nsMenuItem_qrcode = 3, nsMenuItem_settings = 4;
     private ListView mDrawerList;
@@ -34,6 +42,13 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_drawer);
+
+        // make context available global
+        mContext = this;
+        // make Activity available global
+        mActivity = this;
+        // make Class available global
+        mClass = getClass();
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         try {
@@ -82,33 +97,11 @@ public class MainActivity extends Activity {
         ActivityHandler.onDestroy(this);
     }
 
-    private void _initMenu() {
-        NsMenuAdapter mAdapter = new NsMenuAdapter(this);
-        mAdapter.addHeader(R.string.drawer_title_activitys);
-        NsMenuItemModel nsItemController = new NsMenuItemModel(R.string.drawer_action_controlling, R.drawable.ic_controller, nsMenuItem_ControllerID);
-        NsMenuItemModel nsItemPackages = new NsMenuItemModel(R.string.drawer_action_packages, R.drawable.ic_packages, nsMenuItem_Packages);
-        // TODO load count
-        nsItemPackages.counter = 1;
-        NsMenuItemModel nsItemDatapoints = new NsMenuItemModel(R.string.drawer_action_datapoints, R.drawable.ic_datapoints, nsMenuItem_Datapoints);
-        // TODO load count
-        nsItemDatapoints.counter = 1;
-        mAdapter.addItem(nsItemController);
-        mAdapter.addItem(nsItemPackages);
-        mAdapter.addItem(nsItemDatapoints);
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
 
-        mAdapter.addHeader(R.string.drawer_title_actions);
-        NsMenuItemModel nsItemQr = new NsMenuItemModel(R.string.drawer_action_qr_code, R.drawable.ic_qr, nsMenuItem_qrcode);
-        mAdapter.addItem(nsItemQr);
-
-        mAdapter.addHeader(R.string.drawer_title_settings);
-        NsMenuItemModel nsItemSettings = new NsMenuItemModel(R.string.drawer_action_settings, R.drawable.ic_action_settings, nsMenuItem_settings);
-        mAdapter.addItem(nsItemSettings);
-
-        mDrawerList = (ListView) findViewById(R.id.drawer);
-        if (mDrawerList != null)
-            mDrawerList.setAdapter(mAdapter);
-
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        ActivityHandler.onNewIntent(intent);
     }
 
     @Override
@@ -135,8 +128,6 @@ public class MainActivity extends Activity {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
-        // Handle your other action bar items...
         return super.onOptionsItemSelected(item);
     }
 
@@ -167,6 +158,47 @@ public class MainActivity extends Activity {
         }
     }
 
+    public static Context getContext() {
+        return mContext;
+    }
+
+    public static Activity getActivity() {
+        return mActivity;
+    }
+
+    public static Class getMClass() {
+        return mClass;
+    }
+
+    private void _initMenu() {
+        NsMenuAdapter mAdapter = new NsMenuAdapter(this);
+        mAdapter.addHeader(R.string.drawer_title_activitys);
+        NsMenuItemModel nsItemController = new NsMenuItemModel(R.string.drawer_action_controlling, R.drawable.ic_controller, nsMenuItem_ControllerID);
+        NsMenuItemModel nsItemPackages = new NsMenuItemModel(R.string.drawer_action_packages, R.drawable.ic_packages, nsMenuItem_Packages);
+        // TODO load count
+        nsItemPackages.counter = 1;
+        NsMenuItemModel nsItemDatapoints = new NsMenuItemModel(R.string.drawer_action_datapoints, R.drawable.ic_datapoints, nsMenuItem_Datapoints);
+        // TODO load count
+        nsItemDatapoints.counter = 1;
+        mAdapter.addItem(nsItemController);
+        mAdapter.addItem(nsItemPackages);
+        mAdapter.addItem(nsItemDatapoints);
+
+        mAdapter.addHeader(R.string.drawer_title_actions);
+        NsMenuItemModel nsItemQr = new NsMenuItemModel(R.string.drawer_action_qr_code, R.drawable.ic_qr, nsMenuItem_qrcode);
+        mAdapter.addItem(nsItemQr);
+
+        mAdapter.addHeader(R.string.drawer_title_settings);
+        NsMenuItemModel nsItemSettings = new NsMenuItemModel(R.string.drawer_action_settings, R.drawable.ic_action_settings, nsMenuItem_settings);
+        mAdapter.addItem(nsItemSettings);
+
+        mDrawerList = (ListView) findViewById(R.id.drawer);
+        if (mDrawerList != null)
+            mDrawerList.setAdapter(mAdapter);
+
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+    }
+
     public static class PrefsFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -179,23 +211,16 @@ public class MainActivity extends Activity {
     private class CustomActionBarDrawerToggle extends ActionBarDrawerToggle {
 
         public CustomActionBarDrawerToggle(Activity mActivity, DrawerLayout mDrawerLayout) {
-            super(
-                    mActivity,
-                    mDrawerLayout,
-                    R.drawable.ic_drawer,
-                    R.string.app_name,
-                    R.string.app_name);
+            super(mActivity, mDrawerLayout, R.drawable.ic_drawer, R.string.app_name, R.string.app_name);
         }
 
         @Override
         public void onDrawerClosed(View view) {
-            //getActionBar().setTitle(getString(R.string.ns_menu_close));
             invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
         }
 
         @Override
         public void onDrawerOpened(View drawerView) {
-            //getActionBar().setTitle(getString(R.string.ns_menu_open));
             invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
         }
     }

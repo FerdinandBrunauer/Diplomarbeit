@@ -2,6 +2,7 @@ package htlhallein.at.serverdatenbrille_rewritten.activityHandler;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import java.util.ArrayList;
@@ -46,6 +47,12 @@ public class ActivityHandler {
     public static synchronized void showQRCode(Context context) {
         for (ActivityListener listener : listeners) {
             listener.showQRCode(context);
+        }
+    }
+
+    public static synchronized void onNewIntent(Intent intent) {
+        for (ActivityListener listener : listeners) {
+            listener.onNewIntent(intent);
         }
     }
 

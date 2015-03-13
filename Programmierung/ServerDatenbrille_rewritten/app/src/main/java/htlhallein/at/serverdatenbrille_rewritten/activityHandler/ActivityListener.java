@@ -2,6 +2,7 @@ package htlhallein.at.serverdatenbrille_rewritten.activityHandler;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 public interface ActivityListener {
@@ -14,6 +15,9 @@ public interface ActivityListener {
 
     public abstract void onDestroy(Context context);
 
-    // QR Specific
+    // QR specific
     public void showQRCode(Context context);
+
+    // NFC specific
+    public void onNewIntent(Intent intent);
 }
