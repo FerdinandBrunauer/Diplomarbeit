@@ -2,11 +2,6 @@ package htlhallein.at.serverdatenbrille_rewritten.event.datapoint;
 
 import java.util.EventObject;
 
-/**
- * Copyright 2015 (C) HTL - Hallein
- * Created on:  13.01.2015
- * Author:      Ferdinand
- */
 public class DatapointEventObject extends EventObject {
     private String htmlText;
 

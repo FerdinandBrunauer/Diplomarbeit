@@ -21,7 +21,7 @@ public class ControllerFragment extends Fragment {
 
     // needed for OnTouchListener
     public static final int MESSAGE_CHECK_BTN_STILL_PRESSED = 1;
-    public static final Handler myLongPressHandler = new Handler() {
+    protected static Handler myLongPressHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {

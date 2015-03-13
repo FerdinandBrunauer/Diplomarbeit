@@ -3,15 +3,13 @@ package htlhallein.at.serverdatenbrille_rewritten;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,20 +17,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-
 import htlhallein.at.serverdatenbrille_rewritten.activityHandler.ActivityHandler;
-import htlhallein.at.serverdatenbrille_rewritten.database.DatabaseConnection;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.GPS;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.NFC;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.QRCode;
 import htlhallein.at.serverdatenbrille_rewritten.drawer_menu.NsMenuAdapter;
 import htlhallein.at.serverdatenbrille_rewritten.drawer_menu.NsMenuItemModel;
-import htlhallein.at.serverdatenbrille_rewritten.server.Server;
 
 public class MainActivity extends Activity {
 
@@ -47,8 +37,6 @@ public class MainActivity extends Activity {
     private ListView mDrawerList;
     private DrawerLayout mDrawer;
     private CustomActionBarDrawerToggle mDrawerToggle;
-    // Server
-    private Server server;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +57,9 @@ public class MainActivity extends Activity {
         mClass = getClass();
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
-        try {
+        if (getActionBar() != null) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
             getActionBar().setHomeButtonEnabled(true);
-        } catch (NullPointerException e) {
-            // There is no Action bar ...
-            Log.e(MainActivity.class.toString(), "Keine ActionBar vorhanden!");
         }
 
         // set Icon when Drawer is opened
@@ -92,9 +77,6 @@ public class MainActivity extends Activity {
         ActivityHandler.addListener(new QRCode());
 
         ActivityHandler.onCreate(this, savedInstanceState);
-
-        this.server = new Server(this);
-        new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
     }
 
     @Override
@@ -150,24 +132,14 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+    public boolean onMenuItemSelected(int featureId, @NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.qr_code_action: {
                 ActivityHandler.showQRCode(this);
                 return true;
             }
             case R.id.sync_action: {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                String preferencePackage = preferences.getString(getString(R.string.preferences_preference_packages), "");
-                Gson gson = new Gson();
-                Type type = new TypeToken<ArrayList<Package>>() {
-                }.getType();
-                ArrayList<Package> storedPackages = gson.fromJson(preferencePackage, type);
-                String[] keys = new String[storedPackages.size()];
-                for (int i = 0; i < keys.length; i++)
-                    keys[i] = storedPackages.get(i).getKey();
-                new PackageCrawler().execute(keys);
-
+                // TODO
                 return true;
             }
             default:
@@ -248,11 +220,10 @@ public class MainActivity extends Activity {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            // mDrawerList.setItemChecked(position, true);
             mDrawer.closeDrawer(mDrawerList);
 
             NsMenuItemModel clickedItem = (NsMenuItemModel) mDrawerList.getItemAtPosition(position);
-            switch (((NsMenuItemModel) mDrawerList.getItemAtPosition(position)).id) {
+            switch (clickedItem.id) {
                 case nsMenuItem_ControllerID: {
                     getFragmentManager()
                             .beginTransaction()

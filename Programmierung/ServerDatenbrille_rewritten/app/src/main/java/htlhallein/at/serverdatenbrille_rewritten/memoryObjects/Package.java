@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package htlhallein.at.serverdatenbrille_rewritten.database.openDataUtilities;
+package htlhallein.at.serverdatenbrille_rewritten.memoryObjects;
 
-public class OpenDataTag {
+import com.google.gson.annotations.SerializedName;
+
+public class Package {
+    @SerializedName("name")
     private String name;
-    private String displayName;
-    private String id;
+    @SerializedName("key")
+    private String key;
 
-    public OpenDataTag(String id) {
-        this.id = id;
+    public Package(String name, String key) {
+        this.name = name;
+        this.key = key;
     }
 
     public String getName() {
@@ -33,21 +37,8 @@ public class OpenDataTag {
         this.name = name;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public String getKey() {
+        return key;
     }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
 
 }

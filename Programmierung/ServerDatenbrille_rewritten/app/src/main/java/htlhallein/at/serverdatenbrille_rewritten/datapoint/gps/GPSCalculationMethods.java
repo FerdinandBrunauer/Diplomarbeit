@@ -16,71 +16,48 @@
 
 package htlhallein.at.serverdatenbrille_rewritten.datapoint.gps;
 
-import htlhallein.at.serverdatenbrille_rewritten.database.Location;
-
 public class GPSCalculationMethods {
     private static final double EARTH_RADIUS = 6378.388d;
 
     /**
      * Calculates the distance between two Locations. The earth is a rectangular, the distance between the latitude is constant
-     *
-     * @param loc1 First location
-     * @param loc2 Second location
-     * @return The distance in kilometers
      */
-    public static double easy(Location loc1, Location loc2) {
-        double dx = 71.5d * (loc1.getLongitude() - loc2.getLongitude());
-        double dy = 111.3d * (loc1.getLatitude() - loc2.getLatitude());
-        double distance = Math.sqrt((dx * dx) + (dy * dy));
-        return distance;
+    public static double easy(double lat1, double lon1, double lat2, double lon2) {
+        double dx = 71.5d * (lon1 - lon2);
+        double dy = 111.3d * (lat1 - lat2);
+        return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
     }
 
     /**
      * Calculates the distance between two Locations. The earth is a rectangular, the distance between the latitude varies
-     *
-     * @param loc1 First location
-     * @param loc2 Second location
-     * @return The distance in kilometers
      */
-    public static double better(Location loc1, Location loc2) {
-        double lat = (loc1.getLatitude() + loc2.getLatitude()) / 2 * 0.01745d;
-        double dx = 111.3d * Math.cos(Math.toRadians(lat)) * (loc1.getLongitude() - loc2.getLongitude());
-        double dy = 111.3d * (loc1.getLatitude() - loc2.getLatitude());
-        double distance = Math.sqrt((dx * dx) + (dy * dy));
-        return distance;
+    public static double better(double lat1, double lon1, double lat2, double lon2) {
+        double lat = (lat1 + lat2) / 2 * 0.01745d;
+        double dx = 111.3d * Math.cos(Math.toRadians(lat)) * (lon1 - lon2);
+        double dy = 111.3d * (lat1 - lat2);
+        return Math.sqrt((dx * dx) + (dy * dy));
     }
 
     /**
      * Calculates the distance between two Locations. The earth is a perfect sphere
-     *
-     * @param loc1 First location
-     * @param loc2 Second location
-     * @return The distance in kilometers
      */
-    public static double haversine(Location loc1, Location loc2) {
-        double dLat = Math.toRadians(loc2.getLatitude() - loc1.getLatitude());
-        double dLon = Math.toRadians(loc2.getLongitude() - loc1.getLongitude());
+    public static double haversine(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
 
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(Math.toRadians(loc1.getLatitude())) * Math.cos(Math.toRadians(loc2.getLatitude()));
-        double c = 2 * Math.asin(Math.sqrt(a));
-        double distance = EARTH_RADIUS * c;
-        return distance;
-
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2));
+        return (2 * Math.asin(Math.sqrt(a))) * EARTH_RADIUS;
     }
 
     /**
      * Calculates the distance between two Locations with the vincenty Method
-     *
-     * @param loc1 First location
-     * @param loc2 Second location
-     * @return The distance in kilometers
      */
-    public static double vincenty(Location loc1, Location loc2) {
+    public static double vincenty(double lat1, double lon1, double lat2, double lon2) {
         double a = 6378137, b = 6356752.314245, f = 1 / 298.257223563; // WGS-84
 
-        double L = Math.toRadians(loc2.getLongitude() - loc1.getLongitude());
-        double U1 = Math.atan((1 - f) * Math.tan(Math.toRadians(loc1.getLatitude())));
-        double U2 = Math.atan((1 - f) * Math.tan(Math.toRadians(loc2.getLatitude())));
+        double L = Math.toRadians(lon2 - lon1);
+        double U1 = Math.atan((1 - f) * Math.tan(Math.toRadians(lat1)));
+        double U2 = Math.atan((1 - f) * Math.tan(Math.toRadians(lat2)));
         double sinU1 = Math.sin(U1), cosU1 = Math.cos(U1);
         double sinU2 = Math.sin(U2), cosU2 = Math.cos(U2);
 
@@ -117,17 +94,13 @@ public class GPSCalculationMethods {
     }
 
     /**
-     * Calculates the course Angle between two Points. NORTH = 0�, EAST = 90�, SOUTH = 180�, WEST = 270�
-     *
-     * @param loc1 First location
-     * @param loc2 Second location
-     * @return The course Angle in degrees
+     * Calculates the course Angle between two Points. NORTH = 0°, EAST = 90°, SOUTH = 180°, WEST = 270°
      */
-    public static double getCourseAngle(Location loc1, Location loc2) {
-        double pos_breite_A = Math.toRadians(loc1.getLatitude());
-        double pos_laenge_A = Math.toRadians(loc1.getLongitude());
-        double pos_breite_B = Math.toRadians(loc2.getLatitude());
-        double pos_laenge_B = Math.toRadians(loc2.getLongitude());
+    public static double getCourseAngle(double lat1, double lon1, double lat2, double lon2) {
+        double pos_breite_A = Math.toRadians(lat1);
+        double pos_laenge_A = Math.toRadians(lon1);
+        double pos_breite_B = Math.toRadians(lat2);
+        double pos_laenge_B = Math.toRadians(lon2);
 
         double length_orthodrome = 2.0 * Math.asin(Math.sqrt(Math.pow(Math.sin((pos_breite_A - pos_breite_B) / 2.0), 2) + Math.cos(pos_breite_A) * Math.cos(pos_breite_B) * Math.pow(Math.sin((pos_laenge_B - pos_laenge_A) / 2.0), 2)));
 

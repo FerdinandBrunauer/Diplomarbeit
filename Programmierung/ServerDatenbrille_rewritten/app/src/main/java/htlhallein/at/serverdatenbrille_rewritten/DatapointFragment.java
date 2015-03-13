@@ -2,15 +2,13 @@ package htlhallein.at.serverdatenbrille_rewritten;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ListFragment;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,8 +20,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,15 +30,12 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import htlhallein.at.serverdatenbrille_rewritten.database.DatabaseConnection;
-import htlhallein.at.serverdatenbrille_rewritten.database.openDataUtilities.OpenDataUtilities;
-
 public class DatapointFragment extends ListFragment {
     ListViewCustomAdapter adapter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_datapoints, null, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_datapoints, container, false);
     }
 
     @Override
@@ -55,10 +48,10 @@ public class DatapointFragment extends ListFragment {
         setListAdapter(adapter);
     }
 
-    public static ArrayList<Package> getPackagesFromPreferences() {
-        ArrayList<Package> packageList = new ArrayList<>();
+    public static ArrayList<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> getPackagesFromPreferences() {
+        ArrayList<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> packageList = new ArrayList<>();
 
-        Package defaultPackage = new Package("Museen", "a5841caf-afe2-4f98-bb68-bd4899e8c9cb");
+        htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package defaultPackage = new htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package("Museen", "a5841caf-afe2-4f98-bb68-bd4899e8c9cb");
 
         final String defaultValue = "undefined JSON Object!";
         String preferencePackage = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_packages), defaultValue);
@@ -71,14 +64,14 @@ public class DatapointFragment extends ListFragment {
 
         packageList.clear();
         Gson gson = new Gson();
-        Type type = new TypeToken<ArrayList<Package>>() {
+        Type type = new TypeToken<ArrayList<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package>>() {
         }.getType();
         packageList = gson.fromJson(preferencePackage, type);
 
         return packageList;
     }
 
-    public static void storePackagesToPreferences(List<Package> packageList) {
+    public static void storePackagesToPreferences(List<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> packageList) {
         Gson gson = new Gson();
         String json = gson.toJson(packageList);
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).edit();
@@ -88,7 +81,7 @@ public class DatapointFragment extends ListFragment {
 
     class ListViewCustomAdapter extends BaseAdapter {
         private Context context;
-        private List<Package> packages;
+        private List<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> packages;
         protected SharedPreferences.OnSharedPreferenceChangeListener mySharedPreferenceslistener;
         protected SharedPreferences preferences;
 
@@ -130,10 +123,10 @@ public class DatapointFragment extends ListFragment {
                             Log.i(DatapointFragment.class.toString(), "Name: \"" + tvName.getText() + "\", Key: \"" + tvKey.getText() + "\"");
                             if (tvName.getText().toString().compareTo("") != 0) {
                                 if (tvKey.getText().toString().compareTo("") != 0) {
-                                    Package addPackage = new Package(tvName.getText().toString(), tvKey.getText().toString());
+                                    htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package addPackage = new htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package(tvName.getText().toString(), tvKey.getText().toString());
 
                                     try {
-                                        ArrayList<Package> storedPackages = getPackagesFromPreferences();
+                                        ArrayList<htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package> storedPackages = getPackagesFromPreferences();
                                         storedPackages.add(addPackage);
                                         storePackagesToPreferences(storedPackages);
                                         Toast.makeText(context, "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
@@ -156,9 +149,10 @@ public class DatapointFragment extends ListFragment {
                             String searchName = tvName.getText().toString();
                             if (searchName.compareTo("") == 0) {
                                 Toast.makeText(context, context.getString(R.string.search_package_no_name), Toast.LENGTH_LONG).show();
-                            } else {
-                                new PackageSearcher().execute(tvName.getText().toString());
-                            }
+                            } /* else {
+                                // new PackageSearcher().execute(tvName.getText().toString());
+                                TODO
+                            } */
                         }
                     });
 
@@ -173,7 +167,7 @@ public class DatapointFragment extends ListFragment {
                     dialog.setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            new PackageRemover().execute(packages.get(position).getKey());
+                            // new PackageRemover().execute(packages.get(position).getKey()); TODO
                             packages.remove(position);
                             storePackagesToPreferences(packages);
                         }
@@ -190,13 +184,13 @@ public class DatapointFragment extends ListFragment {
             if (convertView == null) {
                 LayoutInflater mInflater = (LayoutInflater) context
                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = mInflater.inflate(R.layout.fragment_datapoints_listviewrow, null);
+                convertView = mInflater.inflate(R.layout.fragment_datapoints_listviewrow, parent, false);
             }
 
             TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
             TextView tvKey = (TextView) convertView.findViewById(R.id.tvKey);
 
-            Package actualPackage = packages.get(position);
+            htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package actualPackage = packages.get(position);
             tvName.setText(actualPackage.getName());
             tvKey.setText(actualPackage.getKey());
 
@@ -209,151 +203,13 @@ public class DatapointFragment extends ListFragment {
         }
 
         @Override
-        public Package getItem(int position) {
+        public htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Package getItem(int position) {
             return packages.get(position);
         }
 
         @Override
         public long getItemId(int position) {
             return -1L;
-        }
-    }
-
-    public class PackageRemover extends AsyncTask<String, String, String> {
-        private ProgressDialog dialog = new ProgressDialog(getActivity());
-
-        @Override
-        protected String doInBackground(String... params) {
-            DatabaseConnection.deletePackageInclusiveDatapoints(params[0]);
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            this.dialog.setTitle("Please Wait");
-            this.dialog.show();
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-        }
-    }
-
-    public class PackageSearcher extends AsyncTask<String, String, String> {
-        private AlertDialog searchDialog;
-        private Dialog dialog = new ProgressDialog(getActivity());
-        protected SharedPreferences preferences;
-
-        @Override
-        protected String doInBackground(String... params) {
-            try {
-                List<List<String>> foundPackages = OpenDataUtilities.searchForPackages(params[0]);
-
-                TableLayout.LayoutParams tableParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
-                TableRow.LayoutParams rowParams = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
-
-                final TableLayout tableLayout = new TableLayout(getActivity());
-                tableLayout.setLayoutParams(tableParams);
-                for (final List<String> packages : foundPackages) {
-                    TableRow row = new TableRow(getActivity());
-                    row.setLayoutParams(rowParams);
-                    row.setPadding(50, 10, 10, 10);
-                    row.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.v("Package added", "Name: \"" + packages.get(0) + "\", Key: \"" + packages.get(1) + "\"");
-                            if (!packages.get(0).equals("")) {
-                                if (!packages.get(1).equals("")) {
-                                    Package addPackage = new Package(packages.get(0), packages.get(1));
-
-                                    try {
-                                        ArrayList<Package> storedPackages = getPackagesFromPreferences();
-                                        storedPackages.add(addPackage);
-                                        storePackagesToPreferences(storedPackages);
-                                        Toast.makeText(getActivity(), "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
-                                    } catch (Exception e) {
-                                        Toast.makeText(getActivity(), "Fehler beim hinzufügen des Packetes", Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            }
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    searchDialog.dismiss();
-                                }
-                            });
-                        }
-                    });
-                    TextView nameView = new TextView(getActivity());
-                    nameView.setText(packages.get(0));
-                    nameView.setPadding(20, 20, 20, 20);
-
-                    row.addView(nameView);
-
-                    tableLayout.addView(row);
-                }
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.dismiss();
-                        AlertDialog.Builder searchDialogBuilder = new AlertDialog.Builder(getActivity());
-                        searchDialogBuilder.setView(tableLayout);
-                        searchDialogBuilder.setTitle(getString(R.string.search));
-                        searchDialogBuilder.setNegativeButton(getActivity().getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                            }
-                        });
-                        searchDialog = searchDialogBuilder.show();
-                    }
-                });
-            } catch (Exception e) {
-                Log.d("Error", "searchForPackages", e);
-            }
-            return null;
-        }
-
-        private ArrayList<Package> getPackagesFromPreferences() {
-            ArrayList<Package> packageList = new ArrayList<>();
-
-            Package defaultPackage = new Package("Museen", "a5841caf-afe2-4f98-bb68-bd4899e8c9cb");
-
-            final String defaultValue = "undefined JSON Object!";
-            String preferencePackage = preferences.getString(getActivity().getString(R.string.preferences_preference_packages), defaultValue);
-            if (preferencePackage.equals(defaultValue)) {
-                packageList.add(defaultPackage);
-                storePackagesToPreferences(packageList);
-
-                preferencePackage = preferences.getString(getActivity().getString(R.string.preferences_preference_packages), defaultValue);
-            }
-
-            packageList.clear();
-            Gson gson = new Gson();
-            Type type = new TypeToken<ArrayList<Package>>() {
-            }.getType();
-            packageList = gson.fromJson(preferencePackage, type);
-
-            return packageList;
-        }
-
-        private void storePackagesToPreferences(List<Package> packageList) {
-            Gson gson = new Gson();
-            String json = gson.toJson(packageList);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(getActivity().getString(R.string.preferences_preference_packages), json);
-            editor.apply();
-        }
-
-        @Override
-        protected void onPreExecute() {
-            this.preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            this.dialog.setTitle(getString(R.string.wait));
-            this.dialog.show();
         }
     }
 }
