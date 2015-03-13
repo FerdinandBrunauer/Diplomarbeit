@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="crawler_open_database">Öffne Datenbankverbindung</string>
+    <string name="crawler_load_packageinfo">Lade Packetinformationen herunter</string>
+    <string name="crawler_add_packageinfo">Füge Packetinformationen hinzu</string>
+    <string name="crawler_add_datapoint">Füge Datenpunkte hinzu</string>
+    <string name="craalwer_datapoint">Datenpunkt</string>
+    <string name="crawler_unzip">Entpacke Packetinformationen</string>
+
+</resources>

@@ -3,9 +3,11 @@ package htlhallein.at.serverdatenbrille_rewritten;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,7 +19,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+
 import htlhallein.at.serverdatenbrille_rewritten.activityHandler.ActivityHandler;
+import htlhallein.at.serverdatenbrille_rewritten.database.DatabaseConnection;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.GPS;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.NFC;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.QRCode;
@@ -42,6 +51,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_drawer);
+
+        // Set Controller fragment
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.flContent, new ControllerFragment())
+                .commit();
 
         // make context available global
         mContext = this;
@@ -125,10 +140,7 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -139,7 +151,17 @@ public class MainActivity extends Activity {
                 return true;
             }
             case R.id.sync_action: {
-                // TODO
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                String preferencePackage = preferences.getString(getString(R.string.preferences_preference_packages), "");
+                Gson gson = new Gson();
+                Type type = new TypeToken<ArrayList<Package>>() {
+                }.getType();
+                ArrayList<Package> storedPackages = gson.fromJson(preferencePackage, type);
+                String[] keys = new String[storedPackages.size()];
+                for (int i = 0; i < keys.length; i++)
+                    keys[i] = storedPackages.get(i).getKey();
+                new PackageCrawler().execute(keys);
+
                 return true;
             }
             default:
@@ -171,11 +193,7 @@ public class MainActivity extends Activity {
         mAdapter.addHeader(R.string.drawer_title_activitys);
         NsMenuItemModel nsItemController = new NsMenuItemModel(R.string.drawer_action_controlling, R.drawable.ic_controller, nsMenuItem_ControllerID);
         NsMenuItemModel nsItemPackages = new NsMenuItemModel(R.string.drawer_action_packages, R.drawable.ic_packages, nsMenuItem_Packages);
-        // TODO load count
-        nsItemPackages.counter = 1;
         NsMenuItemModel nsItemDatapoints = new NsMenuItemModel(R.string.drawer_action_datapoints, R.drawable.ic_datapoints, nsMenuItem_Datapoints);
-        // TODO load count
-        nsItemDatapoints.counter = 1;
         mAdapter.addItem(nsItemController);
         mAdapter.addItem(nsItemPackages);
         mAdapter.addItem(nsItemDatapoints);
@@ -224,15 +242,23 @@ public class MainActivity extends Activity {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            mDrawerList.setItemChecked(position, true);
+            // mDrawerList.setItemChecked(position, true);
+            mDrawer.closeDrawer(mDrawerList);
+
             NsMenuItemModel clickedItem = (NsMenuItemModel) mDrawerList.getItemAtPosition(position);
             switch (((NsMenuItemModel) mDrawerList.getItemAtPosition(position)).id) {
                 case nsMenuItem_ControllerID: {
-                    // TODO
+                    getFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.flContent, new ControllerFragment())
+                            .commit();
                     break;
                 }
                 case nsMenuItem_Packages: {
-                    // TODO
+                    getFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.flContent, new DatapointFragment())
+                            .commit();
                     break;
                 }
                 case nsMenuItem_Datapoints: {
@@ -240,7 +266,7 @@ public class MainActivity extends Activity {
                     break;
                 }
                 case nsMenuItem_qrcode: {
-                    // TODO
+                    ActivityHandler.showQRCode(MainActivity.this);
                     break;
                 }
                 case nsMenuItem_settings: {
@@ -251,7 +277,6 @@ public class MainActivity extends Activity {
                     break;
                 }
             }
-            mDrawer.closeDrawer(mDrawerList);
         }
     }
 

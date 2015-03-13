@@ -29,6 +29,10 @@ public class NsMenuAdapter extends ArrayAdapter<NsMenuItemModel> {
         add(itemModel);
     }
 
+    public int getItemCount() {
+        return this.getCount();
+    }
+
     @Override
     public int getViewTypeCount() {
         return 2;
