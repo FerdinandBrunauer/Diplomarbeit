@@ -8,3 +8,6 @@ Lokal gegen nicht lokale Daten der Website
 Beschreibung der Schnittstelle zum Server (Json format ..)
 JSON
 Kommunikation zwischen Server und Client (TCP, UDP)
+
+Produktdokumentation, wenn Produkt fertig ist:
+Benutzerhandbuch mit Beispielen und Zusammenhängen, Komponenten
