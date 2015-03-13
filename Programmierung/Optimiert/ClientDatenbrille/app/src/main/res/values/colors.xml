@@ -3,4 +3,5 @@
 
     <color name="black_overlay">#66000000</color>
     <color name="background">#ffffffff</color>
+    <color name="black">#ff000000</color>
 </resources>
