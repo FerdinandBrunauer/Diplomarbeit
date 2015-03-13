@@ -64,6 +64,10 @@ public class NetworkManager {
     }
 
     public void startConnection(){
+        if(listenerThread.isAlive()){
+            listenerThread.interrupt();
+        }
+
         listenerThread = new Thread(new Runnable() {
             @Override
             public void run() {
