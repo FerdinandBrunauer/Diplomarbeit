@@ -32,6 +32,7 @@ import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.NFC;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.QRCode;
 import htlhallein.at.serverdatenbrille_rewritten.drawer_menu.NsMenuAdapter;
 import htlhallein.at.serverdatenbrille_rewritten.drawer_menu.NsMenuItemModel;
+import htlhallein.at.serverdatenbrille_rewritten.server.Server;
 
 public class MainActivity extends Activity {
 
@@ -46,6 +47,8 @@ public class MainActivity extends Activity {
     private ListView mDrawerList;
     private DrawerLayout mDrawer;
     private CustomActionBarDrawerToggle mDrawerToggle;
+    // Server
+    private Server server;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +92,9 @@ public class MainActivity extends Activity {
         ActivityHandler.addListener(new QRCode());
 
         ActivityHandler.onCreate(this, savedInstanceState);
+
+        this.server = new Server(this);
+        new Thread(this.server).start(); // TODO FOR DEBUGGING DEACTIVATED
     }
 
     @Override

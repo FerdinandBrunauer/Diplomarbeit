@@ -45,7 +45,7 @@ public class TcpServer {
                 try {
                     this.tcpServer.close();
                 } catch (IOException exc) {
-                    System.err.println("An error occurred while closing the TCP server. " + "This may have left the server in an undefined state. " + exc.getMessage());
+                    Log.d("An error occurred while closing the TCP server.", "This may have left the server in an undefined state. ", exc);
                 }
             }
         }
