@@ -3,6 +3,8 @@ package at.htlhallein.clientdatenbrille;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
@@ -15,7 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -25,7 +26,6 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 
 import javax.net.SocketFactory;
 
@@ -34,10 +34,12 @@ import javax.net.SocketFactory;
  */
 public class NetworkManager {
     private static final int PORT = 6484;
-
+    private static final int TIMEOUT = 15000;
     public static final int RUNNING = 2;
     public static final int STOPPED = 1;
     public static final int CLOSED = 0;
+
+    private long lastTimestamp;
 
     private int serverState = STOPPED;
 
@@ -49,8 +51,9 @@ public class NetworkManager {
     private Activity activity;
     private WebView webView;
     private SharedPreferences sharedPreferences;
-
     private Thread listenerThread;
+
+    private String webViewLog = "";
 
     public NetworkManager(Context context, Activity activity, WebView webView) {
         this.context = context;
@@ -61,15 +64,12 @@ public class NetworkManager {
     }
 
     public void startConnection(){
-        setWifiAuthetification();
-        enableWifi();
-        connectToHotspot();
-        final Socket serverConnection = getServerConnection(getRespondingHost(getPhoneIp(getSubnetMask())));
-
         listenerThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                readServerOutput(serverConnection);
+                webViewLog = "";
+                lastTimestamp = System.currentTimeMillis();
+                readServerOutput(getServerConnection(getRespondingHost(getPhoneIp(getSubnetMask()))));
             }
         });
         listenerThread.start();
@@ -77,11 +77,46 @@ public class NetworkManager {
 
     public void closeConnection(){
         if(serverState == RUNNING){
-            while(serverState != CLOSED){
-                stopServer();
+            stopServer();
+            try {
+                listenerThread.join();
+            } catch (InterruptedException e) {
+                Log.e("Close Connection" , "Thread interrupted: " + e);
             }
+            Log.d("Close Connection", "Server State after stopping: " + serverState);
         }
+
+    }
+
+    public void onStart(){
+        listenerThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                webViewLog = "";
+                setHTML(webViewLog);
+                setWifiAuthentication();
+                enableWifi();
+                lastTimestamp = System.currentTimeMillis();
+                readServerOutput(getServerConnection(getRespondingHost(getPhoneIp(getSubnetMask()))));
+            }
+        });
+        listenerThread.start();
+    }
+
+    public void onStop(){
+        closeConnection();
         disableWifi();
+    }
+
+    private static boolean isConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = null;
+        if (connectivityManager != null) {
+            networkInfo =
+                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        }
+        return networkInfo != null && networkInfo.isConnected();
     }
 
     private void stopServer(){
@@ -93,6 +128,40 @@ public class NetworkManager {
             wifiManager.setWifiEnabled(true);
             Log.i("Wifi", "Wifi enabled");
         }
+        if(getNetworkId() == -1){
+            while (addNetwork() == -1){
+                Log.i("Wifi", "Adding Hotspot");
+                addNetwork();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Log.e("Wifi", "Thread interrupted: " + e);
+                }
+            }
+        }
+        while(!isConnected(context)){
+            wifiManager.disconnect();
+            wifiManager.enableNetwork(getNetworkId(),true);
+            wifiManager.reconnect();
+            Log.i("Wifi", "Connecting to Hotspot" + getNetworkId());
+            try {
+                Thread.sleep(TIMEOUT);
+            } catch (InterruptedException e) {
+                Log.e("Wifi", "Thread interrupted: " + e);
+            }
+        }
+
+        Log.i("Wifi", "Connected to Hotspot");
+    }
+
+    private int getNetworkId(){
+        List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
+        for( WifiConfiguration i : list ) {
+            if(i.SSID != null && i.SSID.equals("\"" + wifiName + "\"")) {
+                return i.networkId;
+            }
+        }
+        return -1;
     }
 
     private void disableWifi(){
@@ -103,7 +172,7 @@ public class NetworkManager {
     }
 
 
-    private void setWifiAuthetification(){
+    private void setWifiAuthentication(){
         try {
             this.wifiName = sharedPreferences.getString("preference_wifi_name", this.wifiName);
         } catch (Exception e) {
@@ -116,31 +185,11 @@ public class NetworkManager {
         }
     }
 
-    private void connectToHotspot(){
-        boolean isConnected = false;
-        List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-        for( WifiConfiguration i : list ) {
-            if(i.SSID != null && i.SSID.equals("\"" + wifiName + "\"")) {
-                wifiManager.disconnect();
-                wifiManager.enableNetwork(i.networkId, true);
-                wifiManager.reconnect();
-                Log.i("Wifi", "Connected to Hotspot");
-                isConnected = true;
-                break;
-            }
-        }
-        if(!isConnected){
-            addNetwork();
-            connectToHotspot();
-        }
-    }
-
-    private void addNetwork(){
+    private int addNetwork(){
         WifiConfiguration wifiConfiguration = new WifiConfiguration();
-        wifiConfiguration.SSID = "\\" + wifiName + "\\";
-        wifiConfiguration.preSharedKey = "\\" + wifiPassword + "\\";
-        wifiManager.addNetwork(wifiConfiguration);
-        Log.i("Wifi", "Added Hotspot to configured Networks");
+        wifiConfiguration.SSID = "\"" + wifiName + "\"";
+        wifiConfiguration.preSharedKey = "\"" + wifiPassword + "\"";
+        return  wifiManager.addNetwork(wifiConfiguration);
     }
 
     private String getSubnetMask(){
@@ -154,10 +203,20 @@ public class NetworkManager {
             }catch (InterruptedException subnetInterruptException){
                 Log.e("SubnetMask", "Thread interrupted: " + subnetInterruptException);
             }
-            return getSubnetMask();
+            if(lastTimestamp + TIMEOUT < System.currentTimeMillis()){
+                Log.e("SubnetMask", "Thread Timeout");
+                webViewLog += "Could not get Subnet Mask<br>";
+                setHTML(webViewLog);
+                return null;
+            }else {
+                return getSubnetMask();
+            }
         } else {
             Log.i("SubnetMask", "Obtained Subnet Mask " + subnet);
         }
+        webViewLog += "Obtained Subnet Mask<br>";
+        setHTML(webViewLog);
+        lastTimestamp = System.currentTimeMillis();
         return subnet;
     }
 
@@ -170,6 +229,9 @@ public class NetworkManager {
                 int subnetRaw = this.wifiManager.getDhcpInfo().netmask;
                 String subnet = ipToString(subnetRaw);
                 Log.i("IP-Adress", "IP-Adress: \"" + phoneIP + "\" and Subnetmask: \"" + subnet + "\"");
+                lastTimestamp = System.currentTimeMillis();
+                webViewLog += "Obtained IP-Adress<br>";
+                setHTML(webViewLog);
                 return new IP(phoneIPRaw, phoneIP, subnetRaw, subnet);
             } catch (UnknownHostException e) {
                 Log.e("IP-Adress", "Could not obtain IP-Adress");
@@ -178,7 +240,14 @@ public class NetworkManager {
                 }catch (InterruptedException ipInterruptException){
                     Log.e("IP-Adress", "Thread interrupted: " + ipInterruptException);
                 }
-                return getPhoneIp(subnetMask);
+                if(lastTimestamp + TIMEOUT < System.currentTimeMillis()){
+                    webViewLog += "Could not get IP-Adress<br>";
+                    setHTML(webViewLog);
+                    Log.e("IP-Adress", "Thread Timeout");
+                    return null;
+                }else {
+                    return getPhoneIp(subnetMask);
+                }
             }
         }else{
             return null;
@@ -197,13 +266,20 @@ public class NetworkManager {
                     outputStream.flush();
                     outputStream.write('\r');
                     outputStream.flush();
+
+                    webViewLog += "Connected To Server<br>";
+                    setHTML(webViewLog);
+                    serverState = RUNNING;
+                    return serverConnection;
                 } else {
+                    webViewLog += "Could not connect To Server<br>";
+                    setHTML(webViewLog);
                     Log.e("Server Connection", "Could not connect to IP-Adress: " + respondingHost);
                     return null;
                 }
-                serverState = RUNNING;
-                return serverConnection;
             } catch (IOException e) {
+                webViewLog += "Could not connect To Server<br>";
+                setHTML(webViewLog);
                 Log.e("Server Connection", "Could not connect to IP-Adress: " + e);
                 return null;
             }
@@ -227,6 +303,8 @@ public class NetworkManager {
                 if (data.compareTo("") != 0){
                     Log.i("Server Read", "Read: " + data);
                     validateServerData(data);
+                }else{
+                    continue;
                 }
 
             } catch (IOException e) {
@@ -245,16 +323,14 @@ public class NetworkManager {
                 Log.e("Server Closing", "Error at closing Input Stream: " + e);
             }
             try {
-                serverConnection.getOutputStream().close();
-            } catch (IOException e) {
-                Log.e("Server Closing", "Error at closing Output Stream: " + e);
-            }
-            try {
                 serverConnection.close();
             } catch (IOException e) {
                 Log.e("Server Closing", "Error at closing Server Connection: " + e);
             }
             Log.i("Server Closing", "Connection closed");
+            serverState = CLOSED;
+        }else{
+            Log.i("Listener Thread", "Closed");
         }
         serverState = CLOSED;
     }
@@ -295,6 +371,12 @@ public class NetworkManager {
 
             String respondingHost = null;
             for (String host : hosts) {
+
+                if(lastTimestamp + TIMEOUT < System.currentTimeMillis()){
+                    Log.e("Server Connection", "Testing IP-Adresses Timeout");
+                    return null;
+                }
+
                 Log.i("Server Connection", "Testing IP-Adress:" + host);
                 boolean reachable = isHostReachable(host, ReachableMode.Socket);
 

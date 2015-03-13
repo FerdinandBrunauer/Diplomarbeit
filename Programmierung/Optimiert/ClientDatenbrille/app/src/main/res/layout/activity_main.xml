@@ -9,16 +9,31 @@
     <WebView android:id="@+id/fullscreen_content" android:layout_width="match_parent"
         android:layout_height="match_parent" android:keepScreenOn="true"/>
 
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
-    <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
 
-        <LinearLayout android:id="@+id/fullscreen_content_controls"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay" android:orientation="horizontal"
-            tools:ignore="UselessParent"/>
-    </FrameLayout>
+        <LinearLayout
+            android:id="@+id/fullscreen_content_controls"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:layout_gravity="bottom|center_horizontal" android:orientation="horizontal"
+            tools:ignore="UselessParent"
+            android:gravity="bottom">
+
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:visibility="invisible"
+                android:id="@+id/settings_button"
+                android:background="@drawable/ic_settings"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="10"/>
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+
+                android:visibility="invisible"
+                android:id="@+id/reload_button"
+                android:background="@drawable/ic_reload"/>
+        </LinearLayout>
 
 </FrameLayout>
