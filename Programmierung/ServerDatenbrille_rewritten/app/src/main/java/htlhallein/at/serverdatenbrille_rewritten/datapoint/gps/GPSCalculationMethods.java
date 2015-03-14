@@ -16,6 +16,8 @@
 
 package htlhallein.at.serverdatenbrille_rewritten.datapoint.gps;
 
+import android.location.Location;
+
 public class GPSCalculationMethods {
     private static final double EARTH_RADIUS = 6378.388d;
 
@@ -96,7 +98,12 @@ public class GPSCalculationMethods {
     /**
      * Calculates the course Angle between two Points. NORTH = 0°, EAST = 90°, SOUTH = 180°, WEST = 270°
      */
-    public static double getCourseAngle(double lat1, double lon1, double lat2, double lon2) {
+    public static double getCourseAngle(Location currentPosition, Location destination) {
+        double lat1 = currentPosition.getLatitude();
+        double lon1 = currentPosition.getLongitude();
+        double lat2 = destination.getLatitude();
+        double lon2 = destination.getLongitude();
+
         double pos_breite_A = Math.toRadians(lat1);
         double pos_laenge_A = Math.toRadians(lon1);
         double pos_breite_B = Math.toRadians(lat2);

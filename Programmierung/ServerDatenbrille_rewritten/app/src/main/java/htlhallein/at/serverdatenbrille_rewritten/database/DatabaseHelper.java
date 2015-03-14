@@ -4,11 +4,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.location.Location;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import htlhallein.at.serverdatenbrille_rewritten.MainActivity;
+import htlhallein.at.serverdatenbrille_rewritten.datapoint.gps.GPSDatapointObject;
 import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.DataPackage;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -69,11 +73,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static String getDatapointcontentFromLocation(final double latitude, final double longitude) {
-        Cursor cursor = getInstance().getReadableDatabase().rawQuery("SELECT `content` FROM `Datapoint` WHERE (`latitude` BETWEEN " + (latitude - LOCATION_TOLERANCE) + " AND " + (latitude + LOCATION_TOLERANCE) + ") AND (`longitude` BETWEEN " + (longitude - LOCATION_TOLERANCE) + " AND " + (longitude + LOCATION_TOLERANCE) + ");", null);
+        Cursor cursor = getInstance().getReadableDatabase().rawQuery(
+                "SELECT `content` FROM `Datapoint` WHERE (`latitude` BETWEEN " +
+                        (latitude - LOCATION_TOLERANCE) + " AND " +
+                        (latitude + LOCATION_TOLERANCE) + ") AND (`longitude` BETWEEN " +
+                        (longitude - LOCATION_TOLERANCE) + " AND " +
+                        (longitude + LOCATION_TOLERANCE) + ");", null);
+
         // TODO TEST if that works
         if (cursor.moveToFirst()) {
             return cursor.getString(0);
         } else {
+            return null;
+        }
+    }
+
+    public static List<GPSDatapointObject> getAllDatapoints() {
+        try {
+            List<GPSDatapointObject> list = new LinkedList<>();
+
+            Cursor cursor = getInstance().getReadableDatabase().query(
+                    "Datapoint", new String[]{"idDatapoint", "latitude", "longitude"}, null, null, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    GPSDatapointObject object = new GPSDatapointObject();
+                    object.setId(cursor.getInt(0));
+                    object.setLatitude(cursor.getDouble(1));
+                    object.setLongitude(cursor.getDouble(2));
+                    list.add(object);
+                } while (cursor.moveToNext());
+                return list;
+            }
+
+            return list;
+        } catch (Exception e) {
+            Log.v("DatabaseConnection", "Error while getting all Datapoints", e);
             return null;
         }
     }

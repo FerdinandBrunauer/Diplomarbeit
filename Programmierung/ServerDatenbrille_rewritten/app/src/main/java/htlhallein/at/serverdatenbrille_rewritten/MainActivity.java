@@ -23,6 +23,7 @@ import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.NFC;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.QRCode;
 import htlhallein.at.serverdatenbrille_rewritten.drawer.NsMenuAdapter;
 import htlhallein.at.serverdatenbrille_rewritten.drawer.NsMenuItemModel;
+import htlhallein.at.serverdatenbrille_rewritten.googlePlayServices.GooglePlayService;
 
 public class MainActivity extends Activity {
 
@@ -84,32 +85,32 @@ public class MainActivity extends Activity {
         mDrawer.setDrawerListener(mDrawerToggle);
 
         // Event
-        ActivityHandler.addListener(new GPS());
+        ActivityHandler.addListener(new GooglePlayService());
         ActivityHandler.addListener(new NFC());
         ActivityHandler.addListener(new QRCode());
 
-        ActivityHandler.onCreate(this, savedInstanceState);
+        ActivityHandler.onCreate(savedInstanceState);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        ActivityHandler.onResume(this, this);
+        ActivityHandler.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        ActivityHandler.onPause(this, this);
+        ActivityHandler.onPause();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        ActivityHandler.onDestroy(this);
+        ActivityHandler.onDestroy();
     }
 
     @Override
@@ -147,7 +148,7 @@ public class MainActivity extends Activity {
     public boolean onMenuItemSelected(int featureId, @NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.qr_code_action: {
-                ActivityHandler.showQRCode(this);
+                ActivityHandler.showQRCode();
                 return true;
             }
             case R.id.sync_action: {
@@ -243,7 +244,7 @@ public class MainActivity extends Activity {
                     break;
                 }
                 case nsMenuItem_qrcode: {
-                    ActivityHandler.showQRCode(MainActivity.this);
+                    ActivityHandler.showQRCode();
                     break;
                 }
                 case nsMenuItem_settings: {

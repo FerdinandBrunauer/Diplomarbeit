@@ -16,33 +16,45 @@ public class ActivityHandler {
         listeners.add(listener);
     }
 
-    public static synchronized void onCreate(Context context, Bundle savedInstanceState) {
+    public static synchronized void onCreate(Bundle savedInstanceState) {
         for (ActivityListener listener : listeners) {
-            listener.onCreate(context, savedInstanceState);
+            listener.onCreate(savedInstanceState);
         }
     }
 
-    public static synchronized void onResume(Context context, Activity activity) {
+    public static synchronized void onStart() {
         for (ActivityListener listener : listeners) {
-            listener.onResume(context, activity);
+            listener.onStart();
         }
     }
 
-    public static synchronized void onPause(Context context, Activity activity) {
+    public static synchronized void onResume() {
         for (ActivityListener listener : listeners) {
-            listener.onPause(context, activity);
+            listener.onResume();
         }
     }
 
-    public static synchronized void onDestroy(Context context) {
+    public static synchronized void onPause() {
         for (ActivityListener listener : listeners) {
-            listener.onDestroy(context);
+            listener.onPause();
         }
     }
 
-    public static synchronized void showQRCode(Context context) {
+    public static synchronized void onStop() {
         for (ActivityListener listener : listeners) {
-            listener.showQRCode(context);
+            listener.onStop();
+        }
+    }
+
+    public static synchronized void onDestroy() {
+        for (ActivityListener listener : listeners) {
+            listener.onDestroy();
+        }
+    }
+
+    public static synchronized void showQRCode() {
+        for (ActivityListener listener : listeners) {
+            listener.showQRCode();
         }
     }
 

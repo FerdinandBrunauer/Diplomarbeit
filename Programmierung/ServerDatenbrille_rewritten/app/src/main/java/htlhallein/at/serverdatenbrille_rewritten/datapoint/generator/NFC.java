@@ -88,6 +88,57 @@ public class NFC implements ActivityListener {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        NFCinitialize();
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(mChangeListener);
+    }
+
+    @Override
+    public void onStart() {
+
+    }
+
+    @Override
+    public void onResume() {
+        if (adapter != null) {
+            Resources resources = MainActivity.getContext().getResources();
+            if (mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_nfc_enabled), resources.getBoolean(R.bool.preferences_preference_nfc_enabled_default))) {
+                adapter.enableForegroundDispatch(MainActivity.getActivity(), pendingIntent, intentFilter, techList);
+            }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (adapter != null) {
+            Resources resources = MainActivity.getContext().getResources();
+            if (mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_nfc_enabled), resources.getBoolean(R.bool.preferences_preference_nfc_enabled_default))) {
+                adapter.disableForegroundDispatch(MainActivity.getActivity());
+            }
+        }
+    }
+
+    @Override
+    public void onStop() {
+
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
+    public void showQRCode() {
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+    }
+
+    @Override
     public void onNewIntent(Intent intent) {
         // NFC tag read
         Resources resources = MainActivity.getContext().getResources();
@@ -118,46 +169,5 @@ public class NFC implements ActivityListener {
                 }
             }
         }
-    }
-
-    @Override
-    public void onCreate(Context context, Bundle savedInstanceState) {
-        NFCinitialize();
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(mChangeListener);
-    }
-
-    @Override
-    public void onResume(Context context, Activity activity) {
-        if (adapter != null) {
-            Resources resources = MainActivity.getContext().getResources();
-            if (mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_nfc_enabled), resources.getBoolean(R.bool.preferences_preference_nfc_enabled_default))) {
-                adapter.enableForegroundDispatch(activity, pendingIntent, intentFilter, techList);
-            }
-        }
-    }
-
-    @Override
-    public void onPause(Context context, Activity activity) {
-        if (adapter != null) {
-            Resources resources = MainActivity.getContext().getResources();
-            if (mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_nfc_enabled), resources.getBoolean(R.bool.preferences_preference_nfc_enabled_default))) {
-                adapter.disableForegroundDispatch(activity);
-            }
-        }
-    }
-
-    @Override
-    public void onDestroy(Context context) {
-
-    }
-
-    @Override
-    public void showQRCode(Context context) {
-        // Ignore this in the NFC Generator
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
     }
 }

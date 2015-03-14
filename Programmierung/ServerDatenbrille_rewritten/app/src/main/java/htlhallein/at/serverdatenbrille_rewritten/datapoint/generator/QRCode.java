@@ -23,7 +23,37 @@ import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventO
 public class QRCode implements ActivityListener {
 
     @Override
-    public void showQRCode(Context context) {
+    public void onCreate(Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onStart() {
+
+    }
+
+    @Override
+    public void onResume() {
+
+    }
+
+    @Override
+    public void onPause() {
+
+    }
+
+    @Override
+    public void onStop() {
+
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
+    public void showQRCode() {
         // Very Important
         IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.getActivity());
         List<String> formats = new ArrayList<>();
@@ -48,26 +78,6 @@ public class QRCode implements ActivityListener {
                 }
             }
         }
-    }
-
-    @Override
-    public void onCreate(Context context, Bundle savedInstanceState) {
-
-    }
-
-    @Override
-    public void onResume(Context context, Activity activity) {
-
-    }
-
-    @Override
-    public void onPause(Context context, Activity activity) {
-
-    }
-
-    @Override
-    public void onDestroy(Context context) {
-
     }
 
     @Override
