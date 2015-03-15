@@ -93,8 +93,9 @@ public class DatapointFragment extends ListFragment {
                                     try {
                                         String name = tvName.getText().toString();
                                         String openDataID = tvKey.getText().toString();
-                                        long packageID = DatabaseHelper.addPackage(openDataID, "", name);
-                                        DataPackage addPackage = new DataPackage(packageID, name, openDataID);
+                                        long timestamp = System.currentTimeMillis();
+                                        long packageID = DatabaseHelper.addPackage(openDataID, "", name, timestamp);
+                                        DataPackage addPackage = new DataPackage(packageID, name, openDataID,false,timestamp);
                                         packages.add(addPackage);
                                         notifyDataSetChanged();
                                         Toast.makeText(context, "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
@@ -206,8 +207,9 @@ public class DatapointFragment extends ListFragment {
                                     try {
                                         String name = packages.get(0);
                                         String openDataID = packages.get(1);
-                                        long packageID = DatabaseHelper.addPackage(openDataID, "", name);
-                                        DataPackage addPackage = new DataPackage(packageID, name, openDataID);
+                                        long timestamp = System.currentTimeMillis();
+                                        long packageID = DatabaseHelper.addPackage(openDataID, "", name, timestamp);
+                                        DataPackage addPackage = new DataPackage(packageID, name, openDataID, false, timestamp);
 
                                         DatapointFragment.this.adapter.packages.add(addPackage);
                                         DatapointFragment.this.adapter.notifyDataSetChanged();

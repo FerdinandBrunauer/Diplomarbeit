@@ -34,7 +34,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static long addDatapoint(final long idPackage, final double latitude, final double longitude, final String name, final String content) {
-        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Datapoint`(`idPackage`,`latitude`,`longitude`,`name`,`content`) VALUES (?,?,?,?,?,?);");
+        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Datapoint`(`idPackage`,`latitude`,`longitude`,`name`,`content`) VALUES (?,?,?,?,?);");
         statement.bindLong(1, idPackage);
         statement.bindDouble(2, latitude);
         statement.bindDouble(3, longitude);
@@ -43,12 +43,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return statement.executeInsert();
     }
 
-    public static long addPackage(final String openDataID, final String linkOpenData, final String name) {
+    public static long addPackage(final String openDataID, final String linkOpenData, final String name, final long updated) {
         SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Package`(`idOpenData`,`linkOpenData`,`name`,`updated`, `datapointsInstalled`) VALUES (?,?,?,?);");
         statement.bindString(1, openDataID);
         statement.bindString(2, linkOpenData);
         statement.bindString(3, name);
-        statement.bindString(4, System.currentTimeMillis() + "");
+        statement.bindString(4, updated + "");
         statement.bindString(5, "false");
         return statement.executeInsert();
     }

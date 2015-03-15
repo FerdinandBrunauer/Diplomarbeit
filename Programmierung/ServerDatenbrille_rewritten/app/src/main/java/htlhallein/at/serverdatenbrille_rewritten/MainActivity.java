@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.annotation.NonNull;
@@ -24,6 +25,7 @@ import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.QRCode;
 import htlhallein.at.serverdatenbrille_rewritten.drawer.NsMenuAdapter;
 import htlhallein.at.serverdatenbrille_rewritten.drawer.NsMenuItemModel;
 import htlhallein.at.serverdatenbrille_rewritten.googlePlayServices.GooglePlayService;
+import htlhallein.at.serverdatenbrille_rewritten.opendata.PackageCrawler;
 
 public class MainActivity extends Activity {
 
@@ -152,7 +154,7 @@ public class MainActivity extends Activity {
                 return true;
             }
             case R.id.sync_action: {
-                // TODO sync me
+                new PackageCrawler().execute();
                 return true;
             }
             default:
