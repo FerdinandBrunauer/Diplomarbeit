@@ -9,12 +9,19 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -172,6 +179,43 @@ public class OpenDataUtil {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static void downloadFromUrl(String DownloadUrl, String fileName) {
+
+        try {
+            File root = android.os.Environment.getExternalStorageDirectory();
+
+            File dir = new File (root.getAbsolutePath() + "/datenbrille/download/");
+            if(!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            URL url = new URL(DownloadUrl);
+            File file = new File(dir, fileName);
+
+            Log.d("OpenDataUtil.downloadFromUrl", "downloaded file name:" + fileName);
+
+            URLConnection connection = url.openConnection();
+            InputStream inputStream = connection.getInputStream();
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+
+            ByteArrayBuffer byteArrayBuffer = new ByteArrayBuffer(5000);
+            int current;
+            while ((current = bufferedInputStream.read()) != -1) {
+                byteArrayBuffer.append((byte) current);
+            }
+
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(byteArrayBuffer.toByteArray());
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+        } catch (IOException e) {
+            Log.e("OpenDataUtil.downloadFromUrl", "Error: " + e);
+        }
+
     }
 
 }

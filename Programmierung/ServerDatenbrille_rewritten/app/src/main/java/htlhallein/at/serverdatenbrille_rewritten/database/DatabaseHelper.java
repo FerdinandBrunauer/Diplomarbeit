@@ -34,7 +34,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static long addDatapoint(final long idPackage, final double latitude, final double longitude, final String name, final String content) {
-        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Datapoint`(`idPackage`,`latitude`,`longitude`,`name`,`content`) VALUES (?,?,?,?,?);");
+        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Datapoint`(`idPackage`,`latitude`,`longitude`,`name`,`content`) VALUES (?,?,?,?,?,?);");
         statement.bindLong(1, idPackage);
         statement.bindDouble(2, latitude);
         statement.bindDouble(3, longitude);
@@ -44,21 +44,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static long addPackage(final String openDataID, final String linkOpenData, final String name) {
-        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Package`(`idOpenData`,`linkOpenData`,`name`,`updated`) VALUES (?,?,?,?);");
+        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Package`(`idOpenData`,`linkOpenData`,`name`,`updated`, `datapointsInstalled`) VALUES (?,?,?,?);");
         statement.bindString(1, openDataID);
         statement.bindString(2, linkOpenData);
         statement.bindString(3, name);
         statement.bindString(4, System.currentTimeMillis() + "");
+        statement.bindString(5, "false");
         return statement.executeInsert();
     }
 
     public static List<DataPackage> getDataPackages() {
         List<DataPackage> packages = new ArrayList<DataPackage>();
 
-        Cursor cursor = getInstance().getReadableDatabase().rawQuery("SELECT `idPackage`, `name`, `idOpenData` FROM `Package`;", null);
+        Cursor cursor = getInstance().getReadableDatabase().rawQuery("SELECT `idPackage`, `name`, `idOpenData`, `datapointsInstalled`, `updated` FROM `Package`;", null);
         if (cursor.moveToFirst()) {
             do {
-                packages.add(new DataPackage(cursor.getLong(0), cursor.getString(1), cursor.getString(2)));
+                packages.add(new DataPackage(cursor.getLong(0), cursor.getString(1), cursor.getString(2), Boolean.parseBoolean(cursor.getString(3)), cursor.getLong(4)));
             } while (cursor.moveToNext());
         }
 
@@ -116,7 +117,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE `Datapoint` (`idDatapoint` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `idPackage` INTEGER NOT NULL, `latitude` REAL, `longitude` REAL, `name` TEXT, `content` TEXT);");
-        db.execSQL("CREATE TABLE `Package` (`idPackage` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `idOpenData` TEXT UNIQUE, `linkOpenData` TEXT, `name` TEXT, `updated` INTEGER);");
+        db.execSQL("CREATE TABLE `Package` (`idPackage` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `idOpenData` TEXT UNIQUE, `linkOpenData` TEXT, `name` TEXT, `updated` INTEGER, `datapointsInstalled` TEXT);");
         db.execSQL("CREATE TRIGGER datapointDeleteTrigger AFTER DELETE ON `Package` BEGIN DELETE FROM `Datapoint` WHERE `idPackage`=OLD.`idPackage`; END;");
 
         db.execSQL("INSERT INTO `Package`(`idOpenData`, `linkOpenData`, `name`, `updated`) VALUES ('a5841caf-afe2-4f98-bb68-bd4899e8c9cb', '', 'Museen', 0);");
