@@ -96,32 +96,31 @@ public class OpenDataUtil {
         return foundPackages;
     }
 
-    public static String getRequestResult(String url) {
-        HttpClient httpclient = new DefaultHttpClient();
-        HttpResponse response;
-        String responseString = null;
+    private static HttpClient httpclient = new DefaultHttpClient();
+    private static HttpResponse response;
+    private static ByteArrayOutputStream outputStream;
 
+    public static String getRequestResult(String url) {
         try {
+            System.gc();
             response = httpclient.execute(new HttpGet(url));
-            StatusLine statusLine = response.getStatusLine();
-            if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                response.getEntity().writeTo(out);
-                out.close();
-                responseString = out.toString();
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                outputStream = new ByteArrayOutputStream();
+                response.getEntity().writeTo(outputStream);
+                outputStream.close();
+                return outputStream.toString();
             } else {
-                //Closes the connection.
                 response.getEntity().getContent().close();
-                IOException e = new IOException(statusLine.getReasonPhrase());
-                Log.v("OpenDataUtilities", "URL unreachable! URL: \"" + url + "\"", e);
-                throw e;
+                Log.e("OpenDataUtil.getRequestResult", "URL unreachable! URL: \"" + url);
+                return null;
             }
         } catch (ClientProtocolException e) {
-            Log.wtf("Error", "getRequestResult", e);
+            Log.e("OpenDataUtil.getRequestResult", "ClientProtocolException: " + e);
+            return null;
         } catch (IOException e) {
-            Log.wtf("Error", "getRequestResult", e);
+            Log.e("OpenDataUtil.getRequestResult", "IOException: " + e);
+            return null;
         }
-        return responseString;
     }
 
     public static OpenDataPackage getPackageById(String id) {
