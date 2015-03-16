@@ -8,7 +8,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -24,7 +23,7 @@ import htlhallein.at.serverdatenbrille_rewritten.datapoint.gps.GPSValidator;
 import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventHandler;
 import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventObject;
 
-public class GPS implements ActivityListener, LocationListener {
+public class GPS implements ActivityListener, com.google.android.gms.location.LocationListener {
     private LocationRequest mLocationRequest;
     private SensorManager sensorManager;
     private float currentDegree = 0.0f;
@@ -116,7 +115,7 @@ public class GPS implements ActivityListener, LocationListener {
         if (gpsPreferenceEnabled()) {
             this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
             this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, (com.google.android.gms.location.LocationListener) this);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             Log.d(this.getClass().toString(), "Periodic location updates started");
         }
     }
@@ -124,7 +123,7 @@ public class GPS implements ActivityListener, LocationListener {
     public void stopLocationUpdates() {
         this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
         this.sensorManager.unregisterListener(sensorEventListener);
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, (com.google.android.gms.location.LocationListener) this);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         Log.d(this.getClass().toString(), "Periodic location updates stopped");
     }
 
@@ -137,21 +136,6 @@ public class GPS implements ActivityListener, LocationListener {
         if (datapointEventObject != null) {
             DatapointEventHandler.fireDatapointEvent(datapointEventObject);
         }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
     }
 
     public void setGoogleApiClient(GoogleApiClient mGoogleApiClient) {

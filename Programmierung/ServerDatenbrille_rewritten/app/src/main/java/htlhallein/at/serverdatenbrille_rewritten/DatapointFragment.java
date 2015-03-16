@@ -30,7 +30,9 @@ import java.util.List;
 
 import htlhallein.at.serverdatenbrille_rewritten.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.DataPackage;
+import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.OpenDataResource;
 import htlhallein.at.serverdatenbrille_rewritten.opendata.OpenDataUtil;
+import htlhallein.at.serverdatenbrille_rewritten.opendata.PackageCrawler;
 
 public class DatapointFragment extends ListFragment {
     ListViewCustomAdapter adapter;
@@ -207,7 +209,13 @@ public class DatapointFragment extends ListFragment {
                                     try {
                                         String name = packages.get(0);
                                         String openDataID = packages.get(1);
-                                        long timestamp = System.currentTimeMillis();
+                                        List<OpenDataResource> openDataResources = OpenDataUtil.getPackageById(openDataID).getResources();
+                                        long timestamp = 0;
+                                        for(OpenDataResource openDataResource:openDataResources){
+                                            if(openDataResource.getFormat().toUpperCase().equals("KMZ")){
+                                                timestamp = openDataResource.getCreationTimestamp();
+                                            }
+                                        }
                                         long packageID = DatabaseHelper.addPackage(openDataID, "", name, timestamp);
                                         DataPackage addPackage = new DataPackage(packageID, name, openDataID, false, timestamp);
 

@@ -94,7 +94,7 @@ public class GooglePlayService implements ActivityListener,
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(this.getClass().toString(), "Google Play Services connected");
-        // gps.startLocationUpdates(); TODO error
+        gps.startLocationUpdates();
     }
 
     @Override
