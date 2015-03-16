@@ -14,9 +14,11 @@ import java.nio.charset.Charset;
 import htlhallein.at.serverdatenbrille_rewritten.MainActivity;
 import htlhallein.at.serverdatenbrille_rewritten.R;
 import htlhallein.at.serverdatenbrille_rewritten.activityHandler.ActivityListener;
+import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventHandler;
 import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventListener;
 import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventObject;
 import htlhallein.at.serverdatenbrille_rewritten.event.scroll.ScrollEventDirection;
+import htlhallein.at.serverdatenbrille_rewritten.event.scroll.ScrollEventHandler;
 import htlhallein.at.serverdatenbrille_rewritten.event.scroll.ScrollEventListener;
 import htlhallein.at.serverdatenbrille_rewritten.event.scroll.ScrollEventObject;
 import htlhallein.at.serverdatenbrille_rewritten.server.wifi.WifiApManager;
@@ -37,7 +39,7 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GlobalEventExecutor;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 
 public class DatenbrillenServer implements ActivityListener, DatapointEventListener, ScrollEventListener {
 
@@ -47,6 +49,9 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        ScrollEventHandler.addListener(this);
+        DatapointEventHandler.addListener(this);
+
         new Thread(this.server).start();
 
         this.myWifiManager = new WifiApManager(MainActivity.getContext());
@@ -152,7 +157,7 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
             this.newClientListenerGroup = new NioEventLoopGroup();
             this.clientWorkerGroup = new NioEventLoopGroup();
             this.serverInitializer = new ServerInitializer();
-            this.channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+            this.channelGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
 
             this.serverBootstrap = new ServerBootstrap()
                     .group(newClientListenerGroup, clientWorkerGroup)
@@ -223,12 +228,12 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
 
             @Override
             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                Log.d(DatenbrillenServer.class.toString(), "Message recieved: \"" + msg + "\"");
+                Log.d(DatenbrillenServer.class.toString(), "Message received: \"" + msg + "\"");
             }
 
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                System.err.println(cause.getMessage());
+                Log.d(DatenbrillenServer.class.toString(), "Exception occurred ... " + cause.getMessage(), cause);
 
                 Channel source = ctx.channel();
                 source.close();

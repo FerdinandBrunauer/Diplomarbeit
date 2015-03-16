@@ -1,6 +1,5 @@
 package htlhallein.at.serverdatenbrille_rewritten.datapoint.generator;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,20 +12,14 @@ import android.location.LocationListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.util.List;
-
 import htlhallein.at.serverdatenbrille_rewritten.MainActivity;
 import htlhallein.at.serverdatenbrille_rewritten.R;
 import htlhallein.at.serverdatenbrille_rewritten.activityHandler.ActivityListener;
-import htlhallein.at.serverdatenbrille_rewritten.datapoint.Validator;
-import htlhallein.at.serverdatenbrille_rewritten.datapoint.gps.GPSCalculationMethods;
-import htlhallein.at.serverdatenbrille_rewritten.datapoint.gps.GPSDatapointObject;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.gps.GPSValidator;
 import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventHandler;
 import htlhallein.at.serverdatenbrille_rewritten.event.datapoint.DatapointEventObject;
@@ -120,7 +113,7 @@ public class GPS implements ActivityListener, LocationListener {
     }
 
     public void startLocationUpdates() {
-        if(gpsPreferenceEnabled()) {
+        if (gpsPreferenceEnabled()) {
             this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
             this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, (com.google.android.gms.location.LocationListener) this);
@@ -131,7 +124,7 @@ public class GPS implements ActivityListener, LocationListener {
     public void stopLocationUpdates() {
         this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
         this.sensorManager.unregisterListener(sensorEventListener);
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, (com.google.android.gms.location.LocationListener)this);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, (com.google.android.gms.location.LocationListener) this);
         Log.d(this.getClass().toString(), "Periodic location updates stopped");
     }
 
@@ -141,7 +134,7 @@ public class GPS implements ActivityListener, LocationListener {
         mLastLocation = location;
 
         DatapointEventObject datapointEventObject = GPSValidator.validate(mLastLocation, currentDegree);
-        if(datapointEventObject != null) {
+        if (datapointEventObject != null) {
             DatapointEventHandler.fireDatapointEvent(datapointEventObject);
         }
     }
@@ -161,7 +154,7 @@ public class GPS implements ActivityListener, LocationListener {
 
     }
 
-    public void setGoogleApiClient(GoogleApiClient mGoogleApiClient){
+    public void setGoogleApiClient(GoogleApiClient mGoogleApiClient) {
         this.mGoogleApiClient = mGoogleApiClient;
     }
 }
