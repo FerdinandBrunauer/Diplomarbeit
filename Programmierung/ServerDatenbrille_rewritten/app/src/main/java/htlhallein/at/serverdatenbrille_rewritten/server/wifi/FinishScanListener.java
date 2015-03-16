@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package server.wifiHotspotUtils;
+package htlhallein.at.serverdatenbrille_rewritten.server.wifi;
 
 import java.util.ArrayList;
 

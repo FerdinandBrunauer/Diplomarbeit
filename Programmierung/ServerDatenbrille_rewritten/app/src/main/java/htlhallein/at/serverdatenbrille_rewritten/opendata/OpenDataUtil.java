@@ -4,7 +4,6 @@ import android.util.Log;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -31,6 +30,10 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.OpenDataPackage;
+import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.OpenDataResource;
+import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.OpenDataTag;
 
 public class OpenDataUtil {
 

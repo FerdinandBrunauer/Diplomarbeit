@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package htlhallein.at.serverdatenbrille_rewritten.opendata.kmzUtil;
+package htlhallein.at.serverdatenbrille_rewritten.memoryObjects;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import htlhallein.at.serverdatenbrille_rewritten.opendata.kmzUtil.StringUtils;
 
 public class Placemark {
 

@@ -11,8 +11,9 @@ import java.util.List;
 import htlhallein.at.serverdatenbrille_rewritten.MainActivity;
 import htlhallein.at.serverdatenbrille_rewritten.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.DataPackage;
+import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.OpenDataResource;
 import htlhallein.at.serverdatenbrille_rewritten.opendata.kmzUtil.KmzReader;
-import htlhallein.at.serverdatenbrille_rewritten.opendata.kmzUtil.Placemark;
+import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Placemark;
 import htlhallein.at.serverdatenbrille_rewritten.opendata.kmzUtil.XmlParser;
 
 /**

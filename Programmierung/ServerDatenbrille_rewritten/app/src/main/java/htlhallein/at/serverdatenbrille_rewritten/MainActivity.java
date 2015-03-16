@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.annotation.NonNull;
@@ -19,13 +18,13 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import htlhallein.at.serverdatenbrille_rewritten.activityHandler.ActivityHandler;
-import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.GPS;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.NFC;
 import htlhallein.at.serverdatenbrille_rewritten.datapoint.generator.QRCode;
 import htlhallein.at.serverdatenbrille_rewritten.drawer.NsMenuAdapter;
 import htlhallein.at.serverdatenbrille_rewritten.drawer.NsMenuItemModel;
 import htlhallein.at.serverdatenbrille_rewritten.googlePlayServices.GooglePlayService;
 import htlhallein.at.serverdatenbrille_rewritten.opendata.PackageCrawler;
+import htlhallein.at.serverdatenbrille_rewritten.server.DatenbrillenServer;
 
 public class MainActivity extends Activity {
 
@@ -90,6 +89,7 @@ public class MainActivity extends Activity {
         ActivityHandler.addListener(new GooglePlayService());
         ActivityHandler.addListener(new NFC());
         ActivityHandler.addListener(new QRCode());
+        ActivityHandler.addListener(new DatenbrillenServer());
 
         ActivityHandler.onCreate(savedInstanceState);
     }

@@ -1,4 +1,6 @@
-package htlhallein.at.serverdatenbrille_rewritten.opendata;
+package htlhallein.at.serverdatenbrille_rewritten.memoryObjects;
+
+import htlhallein.at.serverdatenbrille_rewritten.opendata.OpenDataUtil;
 
 public class OpenDataResource {
     private String id;

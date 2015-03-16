@@ -1,4 +1,4 @@
-package htlhallein.at.serverdatenbrille_rewritten.opendata;
+package htlhallein.at.serverdatenbrille_rewritten.memoryObjects;
 
 public class OpenDataTag {
     private String name;

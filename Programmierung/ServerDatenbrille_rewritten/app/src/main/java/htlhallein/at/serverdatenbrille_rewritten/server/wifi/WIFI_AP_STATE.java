@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-package server.wifiHotspotUtils;
+package htlhallein.at.serverdatenbrille_rewritten.server.wifi;
 
-import java.util.ArrayList;
-
-
-public interface FinishScanListener {
-
-
-    /**
-     * Interface called when the scan method finishes. Network operations should not execute on UI thread
-     *
-     * @param clients of {@link ClientScanResult}
-     */
-
-    public void onFinishScan(ArrayList<ClientScanResult> clients);
-
+public enum WIFI_AP_STATE {
+    WIFI_AP_STATE_DISABLING, WIFI_AP_STATE_DISABLED, WIFI_AP_STATE_ENABLING, WIFI_AP_STATE_ENABLED, WIFI_AP_STATE_FAILED
 }

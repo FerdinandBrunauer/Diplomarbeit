@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import htlhallein.at.serverdatenbrille_rewritten.memoryObjects.Placemark;
+
 public class XmlParser {
 
 	public static ArrayList<Placemark> getPlacemarksFromKmlFile(File kmlFile) {

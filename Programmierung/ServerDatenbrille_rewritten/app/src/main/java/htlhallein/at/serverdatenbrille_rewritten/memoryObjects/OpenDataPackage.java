@@ -1,4 +1,4 @@
-package htlhallein.at.serverdatenbrille_rewritten.opendata;
+package htlhallein.at.serverdatenbrille_rewritten.memoryObjects;
 
 import java.util.ArrayList;
 import java.util.List;
