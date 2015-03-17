@@ -62,13 +62,13 @@ public class GooglePlayService implements ActivityListener,
 
     @Override
     public void onStop() {
+        gps.onStop();
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
             Log.d(this.getClass().toString(), "Google Play Services disconnected");
 
             gps.setGoogleApiClient(mGoogleApiClient);
         }
-        gps.onStop();
     }
 
     @Override
@@ -94,6 +94,7 @@ public class GooglePlayService implements ActivityListener,
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(this.getClass().toString(), "Google Play Services connected");
+        gps.setGoogleApiClient(mGoogleApiClient);
         gps.startLocationUpdates();
     }
 

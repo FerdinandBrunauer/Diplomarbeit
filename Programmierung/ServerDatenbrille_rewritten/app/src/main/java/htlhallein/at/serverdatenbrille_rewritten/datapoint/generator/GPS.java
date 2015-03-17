@@ -121,10 +121,12 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
     }
 
     public void stopLocationUpdates() {
-        this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
-        this.sensorManager.unregisterListener(sensorEventListener);
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        Log.d(this.getClass().toString(), "Periodic location updates stopped");
+        if(mGoogleApiClient.isConnected()) {
+            this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
+            this.sensorManager.unregisterListener(sensorEventListener);
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            Log.d(this.getClass().toString(), "Periodic location updates stopped");
+        }
     }
 
     @Override
