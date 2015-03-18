@@ -3,6 +3,7 @@ package htlhallein.at.serverdatenbrille_rewritten.server;
 import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
 import android.os.Bundle;
+import android.os.Process;
 import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
@@ -43,16 +44,19 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 
 public class DatenbrillenServer implements ActivityListener, DatapointEventListener, ScrollEventListener {
 
-    private static final int DEFAULT_PORT = 5555;
-    private Server server = new Server(DEFAULT_PORT);
+    private static final int DEFAULT_PORT = 6484;
+    private Server server;
     private WifiApManager myWifiManager;
+    private Thread serverThread;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         ScrollEventHandler.addListener(this);
         DatapointEventHandler.addListener(this);
 
-        new Thread(this.server).start();
+        server = new Server(DEFAULT_PORT);
+        serverThread = new Thread(this.server);
+        serverThread.start();
 
         this.myWifiManager = new WifiApManager(MainActivity.getContext());
 
@@ -62,6 +66,23 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
         wifiConfiguration.preSharedKey = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_password), MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_password_default));
         wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
         myWifiManager.setWifiApEnabled(wifiConfiguration, true);
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                Log.d(DatenbrillenServer.class.toString(), "Stopping Server ...");
+                server.stop();
+                try {
+                    serverThread.interrupt();
+                } catch (Exception ignore) {
+                }
+
+                Log.d(DatenbrillenServer.class.toString(), "WIFI-AP stopping ... ");
+                myWifiManager.setWifiApEnabled(null, false);
+
+                Process.killProcess(Process.myPid());
+            }
+        });
     }
 
     @Override
@@ -86,10 +107,17 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
 
     @Override
     public void onDestroy() {
-        this.server.stop();
+        Log.d(DatenbrillenServer.class.toString(), "Stopping Server ...");
+        server.stop();
+        try {
+            serverThread.interrupt();
+        } catch (Exception ignore) {
+        }
 
         Log.d(DatenbrillenServer.class.toString(), "WIFI-AP stopping ... ");
         myWifiManager.setWifiApEnabled(null, false);
+
+        Process.killProcess(Process.myPid());
     }
 
     @Override
@@ -169,7 +197,11 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
         public void run() {
             try {
                 Log.d(DatenbrillenServer.class.toString(), "Starting Server ...");
-                serverBootstrap.bind(this.port).sync().channel().closeFuture().sync();
+                try {
+                    serverBootstrap.bind(this.port).sync().channel().closeFuture().sync();
+                } catch (Exception e) {
+                    serverBootstrap.bind(this.port).sync().channel().closeFuture().sync();
+                }
                 Log.d(DatenbrillenServer.class.toString(), "Stopped Server ...");
             } catch (InterruptedException e) {
                 Log.d(DatenbrillenServer.class.toString(), "Server interrupted ... Why?", e);
