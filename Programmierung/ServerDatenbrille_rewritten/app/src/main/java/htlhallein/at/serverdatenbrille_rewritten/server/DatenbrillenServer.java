@@ -251,11 +251,13 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
             @Override
             public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
                 channelGroup.add(ctx.channel());
+                Log.d(DatenbrillenServer.class.toString(), "New Client connected! Clients: \"" + channelGroup.size() + "\"");
             }
 
             @Override
             public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
                 channelGroup.remove(ctx.channel());
+                Log.d(DatenbrillenServer.class.toString(), "Client disconnected! Clients: \"" + channelGroup.size() + "\"");
             }
 
             @Override

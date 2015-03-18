@@ -33,6 +33,6 @@
     <string name="search_package_no_name">Bitte geben sie einen Namen ein, nach welchem gesucht werden kann!</string>
     <string name="new_client_connected">Es hat sich ein neues Gerät verbunden!</string>
 
-    <string name="no_datapoint_at_that_location">Es befindet sich kein Datenpunkt an der angegebenen Position!</string>
+    <string name="no_datapoint_at_that_location">Leider befindet sich kein Datenpunkt an der angegebenen Position!</string>
 
 </resources>
