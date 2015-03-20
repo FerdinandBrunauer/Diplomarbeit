@@ -265,12 +265,6 @@ public class NetworkManager {
                 serverConnection = SocketFactory.getDefault().createSocket(respondingHost, PORT);
                 if (serverConnection.isConnected()) {
                     Log.i("Server Connection", "Connected to Server");
-                    OutputStream outputStream = serverConnection.getOutputStream();
-                    outputStream.write("Datenbrille-Handshake".getBytes());
-                    outputStream.flush();
-                    outputStream.write('\r');
-                    outputStream.flush();
-
                     webViewLog += "Connected To Server<br>";
                     setHTML(webViewLog);
                     serverState = RUNNING;
@@ -293,9 +287,10 @@ public class NetworkManager {
         }
     }
 
+    private String data = "";
+    private byte[] buffer;
+
     private void readServerOutput(Socket serverConnection){
-        String data = "";
-        byte[] buffer;
         while ((serverConnection != null) && this.serverState == RUNNING) {
             try {
                 Thread.sleep(500);
