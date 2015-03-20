@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="htlhallein.at.serverdatenbrille_rewritten">
+    package="htlhallein.at.serverdatenbrille">
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -27,7 +27,7 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.Holo.Light">
         <activity
-            android:name=".MainActivity"
+            android:name="htlhallein.at.serverdatenbrille.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
