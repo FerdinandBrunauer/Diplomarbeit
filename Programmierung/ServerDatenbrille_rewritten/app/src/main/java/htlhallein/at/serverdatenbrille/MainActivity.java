@@ -90,6 +90,7 @@ public class MainActivity extends Activity {
         mDrawer.setDrawerListener(mDrawerToggle);
 
         // Event
+        ActivityHandler.clearListener();
         ActivityHandler.addListener(new GooglePlayService());
         ActivityHandler.addListener(new NFC());
         ActivityHandler.addListener(new QRCode());
