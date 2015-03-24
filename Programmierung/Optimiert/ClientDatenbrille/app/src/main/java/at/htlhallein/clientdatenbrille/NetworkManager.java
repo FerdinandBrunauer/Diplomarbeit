@@ -33,7 +33,7 @@ import javax.net.SocketFactory;
  * Created by Alexander on 11.03.2015.
  */
 public class NetworkManager {
-    private static final int PORT = 6484;
+    private static final int PORT = 12345;
     private static final int TIMEOUT = 15000;
     public static final int RUNNING = 2;
     public static final int STOPPED = 1;
@@ -302,6 +302,7 @@ public class NetworkManager {
                 if (data.compareTo("") != 0){
                     Log.i("Server Read", "Read: " + data);
                     validateServerData(data);
+                    data = "";
                 }else{
                     continue;
                 }
