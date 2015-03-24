@@ -128,7 +128,7 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(this.getClass().toString(), "Location update");
+        Log.d(this.getClass().toString(), "Location update, lat: " + location.getLatitude() + ", long: " + location.getLongitude());
         mLastLocation = location;
 
         DatapointEventObject datapointEventObject = GPSValidator.validate(mLastLocation, currentDegree);

@@ -25,6 +25,7 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        dialog.show();
     }
 
     @Override
@@ -60,6 +61,7 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
+        dialog.dismiss();
     }
 
     private boolean checkForUpdate(DataPackage dataPackage) {
