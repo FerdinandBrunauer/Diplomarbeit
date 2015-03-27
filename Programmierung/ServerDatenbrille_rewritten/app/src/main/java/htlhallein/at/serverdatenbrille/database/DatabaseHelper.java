@@ -17,6 +17,7 @@ import htlhallein.at.serverdatenbrille.activityHandler.ActivityHandler;
 import htlhallein.at.serverdatenbrille.activityHandler.ActivityListener;
 import htlhallein.at.serverdatenbrille.datapoint.gps.GPSDatapointObject;
 import htlhallein.at.serverdatenbrille.memoryObjects.DataPackage;
+import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataPackage;
 
 public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener {
 
@@ -57,6 +58,14 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
         return statement.executeInsert();
     }
 
+    public static long installPackage(String openDataId, long updateTimestamp){
+        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("UPDATE `Package` SET `updated` = ?, `datapointsInstalled` = ? WHERE `idOpenData` = ?;");
+        statement.bindLong(1, updateTimestamp);
+        statement.bindString(2, "true");
+        statement.bindString(3, openDataId);
+        return statement.executeInsert();
+    }
+
     public static List<DataPackage> getDataPackages() {
         List<DataPackage> packages = new ArrayList<DataPackage>();
 
@@ -90,6 +99,22 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
             return cursor.getString(0);
         } else {
             return null;
+        }
+    }
+
+    public static boolean checkForUpdate(String openDataId, long timestamp){
+        Cursor cursor = getInstance().getReadableDatabase().rawQuery(
+                "SELECT `updated` FROM `Package` WHERE `idOpenData` = " + openDataId + ";", null);
+
+        if (cursor.moveToFirst()) {
+            if(timestamp > cursor.getLong(0)){
+                return true;
+            }else{
+                return false;
+            }
+
+        } else {
+            return true;
         }
     }
 

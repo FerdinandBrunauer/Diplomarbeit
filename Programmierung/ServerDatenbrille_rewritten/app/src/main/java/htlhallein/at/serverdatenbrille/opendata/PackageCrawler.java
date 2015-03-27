@@ -12,6 +12,7 @@ import htlhallein.at.serverdatenbrille.MainActivity;
 import htlhallein.at.serverdatenbrille.R;
 import htlhallein.at.serverdatenbrille.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille.memoryObjects.DataPackage;
+import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataPackage;
 import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataResource;
 import htlhallein.at.serverdatenbrille.memoryObjects.Placemark;
 import htlhallein.at.serverdatenbrille.opendata.kmzUtil.KmzReader;
@@ -86,7 +87,8 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
 
     private boolean checkForUpdate(DataPackage dataPackage) {
         OpenDataResource kmzFile = getKmzFile(dataPackage);
-        if (kmzFile.checkForUpdate()) {
+        //TODO: test
+        if (DatabaseHelper.checkForUpdate(dataPackage.getIdOpenData(),kmzFile.getCreationTimestamp())) {
             return true;
         }
         return false;
@@ -127,7 +129,8 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
                         dialog.setProgress(dialog.getProgress() + 1);
                         datapointCounter++;
                     }
-                    //TODO: set Package installed and updateTimestampt in database
+                    //TODO: test if installs
+                    DatabaseHelper.installPackage(dataPackage.getIdOpenData(),kmzResource.getCreationTimestamp());
                 }
             }
         }
