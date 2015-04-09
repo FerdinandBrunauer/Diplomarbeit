@@ -3,26 +3,19 @@
 
     <string name="app_name">Server Datenbrille</string>
     <string name="action_settings">Einstellungen</string>
-
     <string name="drawer_title_activitys">Ansichten</string>
     <string name="drawer_action_controlling">Steuerung</string>
     <string name="drawer_action_packages">Datenpakete</string>
     <string name="drawer_action_datapoints">Datenpunkte</string>
-
     <string name="drawer_title_actions">Aktionen</string>
     <string name="drawer_action_qr_code">QR - Code</string>
-
     <string name="drawer_title_settings">Einstellungen</string>
     <string name="drawer_action_settings">Einstellungen</string>
-
     <string name="nfc_disabled">NFC ist nicht aktiviert! Bitte aktivieren sie NFC um diese Funktion nutzen zu können!</string>
     <string name="nfc_tag_read">NFC Tag erfasst!</string>
-
     <string name="qr_code_scanned">QR - Code scanned!</string>
     <string name="qr_code_canceled">Qr - Code abgebrochen!</string>
-
     <string name="arrow_description">Pfeil</string>
-
     <string name="add_package">Package hinzufügen</string>
     <string name="add">Hinzufügen</string>
     <string name="cancel">Abbrechen</string>
@@ -32,7 +25,7 @@
     <string name="ok">OK</string>
     <string name="search_package_no_name">Bitte geben sie einen Namen ein, nach welchem gesucht werden kann!</string>
     <string name="new_client_connected">Es hat sich ein neues Gerät verbunden!</string>
-
     <string name="no_datapoint_at_that_location">Leider befindet sich kein Datenpunkt an der angegebenen Position!</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

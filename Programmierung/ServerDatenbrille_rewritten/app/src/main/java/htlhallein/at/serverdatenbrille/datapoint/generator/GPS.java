@@ -15,7 +15,9 @@ import android.util.Log;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 
+import htlhallein.at.serverdatenbrille.GoogleMapFragment;
 import htlhallein.at.serverdatenbrille.MainActivity;
 import htlhallein.at.serverdatenbrille.R;
 import htlhallein.at.serverdatenbrille.activityHandler.ActivityListener;
@@ -44,7 +46,7 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
     };
     private SharedPreferences preferences;
     private GoogleApiClient mGoogleApiClient;
-    private Location mLastLocation;
+    public static Location mLastLocation;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

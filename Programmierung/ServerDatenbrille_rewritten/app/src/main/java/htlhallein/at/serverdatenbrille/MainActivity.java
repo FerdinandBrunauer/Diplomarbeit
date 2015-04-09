@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -30,7 +31,7 @@ import htlhallein.at.serverdatenbrille.opendata.OpenDataUtil;
 import htlhallein.at.serverdatenbrille.opendata.PackageCrawler;
 import htlhallein.at.serverdatenbrille.server.DatenbrillenServer;
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
     // Drawer
     private static final int nsMenuItem_ControllerID = 0, nsMenuItem_Packages = 1, nsMenuItem_Datapoints = 2, nsMenuItem_qrcode = 3, nsMenuItem_settings = 4;
@@ -274,7 +275,10 @@ public class MainActivity extends Activity {
                     break;
                 }
                 case nsMenuItem_Datapoints: {
-                    // TODO show map with points
+                    getFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.flContent, new GoogleMapFragment())
+                            .commit();
                     break;
                 }
                 case nsMenuItem_qrcode: {
