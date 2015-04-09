@@ -1,7 +1,7 @@
-GPS
-QR
-NFC
-Bluetooth
+GPS - erledigt
+QR - erledigt
+NFC - erledigt
+Bluetooth - vorteile/nachteile
 Epson Moverio BT-100
 Raspberry Pi gegen Android als Server
 Wlan schnittstelle gegen Chinch
