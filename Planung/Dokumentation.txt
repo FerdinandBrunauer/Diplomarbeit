@@ -1,14 +1,14 @@
 GPS - erledigt
 QR - erledigt
 NFC - erledigt
-Bluetooth - vorteile/nachteile
+Bluetooth - erledigt
 Epson Moverio BT-100
 Raspberry Pi gegen Android als Server
 Wlan schnittstelle gegen Chinch
 Lokal gegen nicht lokale Daten der Website
 Beschreibung der Schnittstelle zum Server (Json format ..)
 JSON
-Kommunikation zwischen Server und Client (TCP, UDP)
+Kommunikation zwischen Server und Client (TCP, UDP, Auswahl (Warum?))
 
 Produktdokumentation, wenn Produkt fertig ist:
 Benutzerhandbuch mit Beispielen und Zusammenhängen, Komponenten
