@@ -20,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import htlhallein.at.serverdatenbrille.activityHandler.ActivityHandler;
+import htlhallein.at.serverdatenbrille.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille.datapoint.generator.NFC;
 import htlhallein.at.serverdatenbrille.datapoint.generator.QRCode;
 import htlhallein.at.serverdatenbrille.drawer.NsMenuAdapter;
@@ -188,6 +189,11 @@ public class MainActivity extends FragmentActivity {
             }
             case R.id.sync_action: {
                 new PackageCrawler().execute();
+                return true;
+            }
+            //TODO: deactivate
+            case R.id.debug_action: {
+                DatabaseHelper.addDatapoint(1,47.682668092966395,13.098099678754807,"debug","Hello World!");
                 return true;
             }
             default:

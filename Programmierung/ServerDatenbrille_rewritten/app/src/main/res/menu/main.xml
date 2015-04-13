@@ -12,4 +12,9 @@
         android:showAsAction="ifRoom"
         android:title="Sync" />
 
+    <item
+        android:id="@+id/debug_action"
+        android:title="Debug"/>
+
+
 </menu>

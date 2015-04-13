@@ -17,7 +17,6 @@ import htlhallein.at.serverdatenbrille.activityHandler.ActivityHandler;
 import htlhallein.at.serverdatenbrille.activityHandler.ActivityListener;
 import htlhallein.at.serverdatenbrille.datapoint.gps.GPSDatapointObject;
 import htlhallein.at.serverdatenbrille.memoryObjects.DataPackage;
-import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataPackage;
 
 public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener {
 

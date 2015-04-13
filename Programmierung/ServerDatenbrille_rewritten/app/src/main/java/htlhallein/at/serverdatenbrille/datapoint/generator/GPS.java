@@ -15,9 +15,7 @@ import android.util.Log;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 
-import htlhallein.at.serverdatenbrille.GoogleMapFragment;
 import htlhallein.at.serverdatenbrille.MainActivity;
 import htlhallein.at.serverdatenbrille.R;
 import htlhallein.at.serverdatenbrille.activityHandler.ActivityListener;
@@ -35,8 +33,7 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
     private SensorEventListener sensorEventListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            float degree = Math.round(event.values[0]);
-            currentDegree = degree;
+            currentDegree = Math.round(event.values[0]);
         }
 
         @Override

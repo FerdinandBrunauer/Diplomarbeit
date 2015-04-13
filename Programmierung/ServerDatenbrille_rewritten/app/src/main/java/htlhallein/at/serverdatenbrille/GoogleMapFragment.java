@@ -1,5 +1,6 @@
 package htlhallein.at.serverdatenbrille;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -11,9 +12,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +36,6 @@ import htlhallein.at.serverdatenbrille.datapoint.gps.GPSDatapointObject;
 
 public class GoogleMapFragment extends Fragment implements LocationListener {
     private static Location currentLoc;
-    private PolygonOptions polygonOptions;
     private Polygon polygon = null;
     private GoogleMap map;
     private static View view;
@@ -49,12 +47,11 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
     int maxDistance;
     long lastTimestamp = 0;
     HashMap<Integer, Integer> meters;
-    private SensorManager sensorManager;
     private SensorEventListener sensorEventListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            float degree = Math.round(event.values[0]);
-            currentDegree = degree;
+
+            currentDegree = Math.round(event.values[0]);
             if(lastTimestamp + 5000 < System.currentTimeMillis()){
                 lastTimestamp = System.currentTimeMillis();
                 currentLoc = GPS.mLastLocation;
@@ -70,6 +67,7 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
 
 
     @Override
+    @SuppressWarnings({"deprecation"})
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         /*meters = new HashMap<>();
@@ -84,8 +82,8 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
         meters.put(80, 111660);
         meters.put(90, 111690);*/
 
-        this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
-        this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
+        SensorManager sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
 
         viewAngleTolerance = Integer.parseInt(preferences.getString(
@@ -107,7 +105,7 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
         }
         try {
             view = inflater.inflate(R.layout.fragment_map, container, false);
-        } catch (InflateException e) {
+        } catch (InflateException ignored) {
         }
         MapFragment mapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map);
         map = mapFragment.getMap();
@@ -149,6 +147,7 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
 
     }
 
+    //TODO: dodalalala
     private void drawTriangle(){
         if(currentLoc != null) {
             float angle = currentDegree;
@@ -234,7 +233,7 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
                 }
 
 
-                polygonOptions = new PolygonOptions()
+                PolygonOptions polygonOptions = new PolygonOptions()
                         .add(new LatLng(currentLoc.getLatitude(), currentLoc.getLongitude()),
                                 new LatLng(B.getLatitude(), B.getLongitude()),
                                 new LatLng(C.getLatitude(), C.getLongitude()),
