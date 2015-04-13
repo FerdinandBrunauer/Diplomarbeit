@@ -288,17 +288,16 @@ public class NetworkManager {
     }
 
     private String data = "";
-    private byte[] buffer;
+    private byte[] buffer = new byte[512];
 
     private void readServerOutput(Socket serverConnection){
         while ((serverConnection != null) && this.serverState == RUNNING) {
             try {
-                Thread.sleep(500);
                 while (serverConnection.getInputStream().available() > 0) {
-                    buffer = new byte[serverConnection.getInputStream().available()];
-                    serverConnection.getInputStream().read(buffer);
-                    data += new String(buffer);
+                    int read = serverConnection.getInputStream().read(buffer);
+                    data += new String(buffer, 0, read);
                 }
+
                 if (data.compareTo("") != 0){
                     Log.i("Server Read", "Read: " + data);
                     validateServerData(data);
@@ -310,8 +309,6 @@ public class NetworkManager {
             } catch (IOException e) {
                 Log.e("Server Read", "IOError while reading Data from the Server: " + e);
                 break;
-            } catch (InterruptedException e){
-                Log.e("Server Read", "Thread interrupted: " + e);
             } catch (Exception e) {
                 Log.e("Server Read", "Undefined Error while reading Data from the Server: " + e);
             }

@@ -107,6 +107,7 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
         mLocationRequest.setSmallestDisplacement(displacement);
     }
 
+    @SuppressWarnings("deprecation")
     public void startLocationUpdates() {
         if (gpsPreferenceEnabled()) {
             this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);

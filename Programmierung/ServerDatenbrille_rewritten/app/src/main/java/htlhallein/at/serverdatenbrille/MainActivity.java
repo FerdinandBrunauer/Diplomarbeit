@@ -137,7 +137,6 @@ public class MainActivity extends FragmentActivity {
 
         Log.d("MainActivity", "Cleaned!");
 
-        // TODO maybe do some more cleanup ??
         ActivityHandler.clearListener();
         ScrollEventHandler.clearListener();
         DatapointEventHandler.clearListener();

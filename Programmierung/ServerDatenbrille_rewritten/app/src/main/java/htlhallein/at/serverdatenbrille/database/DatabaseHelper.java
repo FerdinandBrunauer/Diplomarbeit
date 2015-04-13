@@ -66,7 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
     }
 
     public static List<DataPackage> getDataPackages() {
-        List<DataPackage> packages = new ArrayList<DataPackage>();
+        List<DataPackage> packages = new ArrayList<>();
 
         Cursor cursor = getInstance().getReadableDatabase().rawQuery("SELECT `idPackage`, `name`, `idOpenData`, `datapointsInstalled`, `updated` FROM `Package`;", null);
         if (cursor.moveToFirst()) {
@@ -92,8 +92,6 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
                         (latitude + LOCATION_TOLERANCE) + ") AND (`longitude` BETWEEN " +
                         (longitude - LOCATION_TOLERANCE) + " AND " +
                         (longitude + LOCATION_TOLERANCE) + ");", null);
-
-        // TODO TEST if that works
         if (cursor.moveToFirst()) {
             return cursor.getString(0);
         } else {
@@ -105,16 +103,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
         Cursor cursor = getInstance().getReadableDatabase().rawQuery(
                 "SELECT `updated` FROM `Package` WHERE `idOpenData` = " + openDataId + ";", null);
 
-        if (cursor.moveToFirst()) {
-            if(timestamp > cursor.getLong(0)){
-                return true;
-            }else{
-                return false;
-            }
-
-        } else {
-            return true;
-        }
+        return (!cursor.moveToFirst() || (timestamp > cursor.getLong(0)));
     }
 
     public static List<GPSDatapointObject> getAllDatapoints() {

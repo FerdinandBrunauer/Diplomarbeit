@@ -86,7 +86,6 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
 
     private boolean checkForUpdate(DataPackage dataPackage) {
         OpenDataResource kmzFile = getKmzFile(dataPackage);
-        //TODO: test
         if (DatabaseHelper.checkForUpdate(dataPackage.getIdOpenData(),kmzFile.getCreationTimestamp())) {
             return true;
         }
