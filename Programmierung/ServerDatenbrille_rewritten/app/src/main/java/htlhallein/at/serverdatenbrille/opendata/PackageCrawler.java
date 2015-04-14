@@ -17,9 +17,6 @@ import htlhallein.at.serverdatenbrille.memoryObjects.Placemark;
 import htlhallein.at.serverdatenbrille.opendata.kmzUtil.KmzReader;
 import htlhallein.at.serverdatenbrille.opendata.kmzUtil.XmlParser;
 
-/**
- * Created by Alexander on 14.03.2015.
- */
 public class PackageCrawler extends AsyncTask<String, String, String> {
     private ProgressDialog dialog = new ProgressDialog(MainActivity.getContext());
     private int packageCounter;
@@ -55,13 +52,13 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
                         updatePackage(dataPackage);
                     }
                 } catch (Exception e) {
-                    Log.e("PackageCrawler.doInBackground", "Unknown error: " + e);
+                    Log.e(PackageCrawler.class.toString(), "doInBackground Unknown error: " + e);
                 }
             } else {
                 try {
                     installPackage(dataPackage);
                 } catch (Exception e) {
-                    Log.e("PackageCrawler.doInBackground", "Unknown error: " + e);
+                    Log.e(PackageCrawler.class.toString(), "doInBackground Unknown error: " + e);
                 }
             }
             dialog.setProgress(dialog.getProgress() + 30);
@@ -79,17 +76,14 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
-        if(dialog.isShowing()) {
+        if (dialog.isShowing()) {
             dialog.dismiss();
         }
     }
 
     private boolean checkForUpdate(DataPackage dataPackage) {
         OpenDataResource kmzFile = getKmzFile(dataPackage);
-        if (DatabaseHelper.checkForUpdate(dataPackage.getIdOpenData(),kmzFile.getCreationTimestamp())) {
-            return true;
-        }
-        return false;
+        return DatabaseHelper.checkForUpdate(dataPackage.getIdOpenData(), kmzFile.getCreationTimestamp());
     }
 
     private void updatePackage(DataPackage dataPackage) {
@@ -110,8 +104,8 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
                 dialog.setProgress(dialog.getProgress() + 30);
                 dialog.setMax(dialog.getMax() + datapointsCount);
 
-                if (placemarks != null) {
-                    for (Placemark placemark : placemarks) {
+                for (Placemark placemark : placemarks) {
+                    try {
                         setDialogTitle(
                                 MainActivity.getContext().getString(R.string.crawler_add_datapoint) +
                                         " (" + (packageCounter) + "/" + packagesCount + ")\n"
@@ -121,14 +115,16 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
                                 dataPackage.getId(),
                                 placemark.getLocation().getLatitude(),
                                 placemark.getLocation().getLongitude(),
-                                placemark.getName(), // TODO parser
-                                OpenDataUtil.getRequestResult(placemark.getLink()));
+                                placemark.getName(),
+                                OpenDataParser.parseWebsite(OpenDataUtil.getRequestResult(placemark.getLink())));
                         Log.d(this.getClass().toString(), "Added Datapoint: " + placemark.getName());
                         dialog.setProgress(dialog.getProgress() + 1);
-                        datapointCounter++;
+                    } catch (Exception e) {
+                        Log.d(PackageCrawler.class.toString(), "Error while adding Datapoint! Error: \"" + e.getMessage() + "\"");
                     }
-                    DatabaseHelper.installPackage(dataPackage.getIdOpenData(),kmzResource.getCreationTimestamp());
+                    datapointCounter++;
                 }
+                DatabaseHelper.installPackage(dataPackage.getIdOpenData(), kmzResource.getCreationTimestamp());
             }
         }
     }

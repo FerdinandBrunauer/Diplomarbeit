@@ -32,6 +32,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'com.google.android.gms:play-services:7.0.0'
     compile 'io.netty:netty-all:4.1.0.Beta3'
+    compile 'org.jsoup:jsoup:1.8.1'
+
 
     // JSON Library from Google
     compile 'com.google.code.gson:gson:2.3'
