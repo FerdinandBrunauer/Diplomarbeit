@@ -2,7 +2,7 @@ GPS - erledigt
 QR - erledigt
 NFC - erledigt
 Bluetooth - erledigt
-Epson Moverio BT-100
+Epson Moverio BT-100 - erledigt?
 Raspberry Pi gegen Android als Server
 Wlan schnittstelle gegen Chinch
 Lokal gegen nicht lokale Daten der Website
