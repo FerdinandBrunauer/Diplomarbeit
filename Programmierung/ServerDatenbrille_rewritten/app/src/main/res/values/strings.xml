@@ -27,5 +27,6 @@
     <string name="new_client_connected">Es hat sich ein neues Gerät verbunden!</string>
     <string name="no_datapoint_at_that_location">Leider befindet sich kein Datenpunkt an der angegebenen Position!</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="webrequestValidatorDialogTitle">Bitte warten Sie, bis der Inhalt der Website heruntergeladen wurde!</string>
 
 </resources>

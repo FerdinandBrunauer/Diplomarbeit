@@ -1,10 +1,12 @@
 package htlhallein.at.serverdatenbrille.datapoint;
 
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import htlhallein.at.serverdatenbrille.MainActivity;
 import htlhallein.at.serverdatenbrille.R;
@@ -35,9 +37,19 @@ public class Validator {
                         }
                     }
                     case "webdata": {
-                        // TODO get content from webdata (Validator)
-                        // Temperature from PI or something like that
-                        return null;
+                        if(jsonMap.containsKey("link")) {
+                            String link = (String) jsonMap.get("link");
+                            try {
+                                String webContent = new ValidatorWebrequestTask().execute(link).get(10000, TimeUnit.MILLISECONDS);
+                                // Toast.makeText(MainActivity.getContext(), "Inhalt geschickt!", Toast.LENGTH_LONG).show();
+                                Log.d(Validator.class.toString(), "Sended Content of Link: \"" + jsonMap.get("link").toString());
+                            } catch (Exception e) {
+                                Toast.makeText(MainActivity.getContext(), "Fehler beim Herunterladen des Inhaltes des angegebenen Linkes!", Toast.LENGTH_LONG).show();
+                                Log.d(Validator.class.toString(), "Error loading content. Link: \"" + jsonMap.get("link").toString() + "\" Error: \"" + e.getMessage() + "\"");
+                            }
+                        } else {
+                            return null;
+                        }
                     }
                     default: {
                         return null;
