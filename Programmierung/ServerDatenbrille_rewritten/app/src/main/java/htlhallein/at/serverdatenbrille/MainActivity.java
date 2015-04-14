@@ -22,6 +22,7 @@ import android.widget.ListView;
 import htlhallein.at.serverdatenbrille.activityHandler.ActivityHandler;
 import htlhallein.at.serverdatenbrille.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille.datapoint.generator.NFC;
+import htlhallein.at.serverdatenbrille.datapoint.generator.OrientationSensor;
 import htlhallein.at.serverdatenbrille.datapoint.generator.QRCode;
 import htlhallein.at.serverdatenbrille.drawer.NsMenuAdapter;
 import htlhallein.at.serverdatenbrille.drawer.NsMenuItemModel;
@@ -93,6 +94,7 @@ public class MainActivity extends FragmentActivity {
 
         // Event
         ActivityHandler.clearListener();
+        ActivityHandler.addListener(new OrientationSensor());
         ActivityHandler.addListener(new GooglePlayService());
         ActivityHandler.addListener(new NFC());
         ActivityHandler.addListener(new QRCode());
