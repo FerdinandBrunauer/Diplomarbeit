@@ -11,6 +11,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -28,22 +29,15 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
     private static int fastestInterval;
     private static int displacement;
     private LocationRequest mLocationRequest;
-    private SensorManager sensorManager;
-    private float currentDegree = 0.0f;
-    private SensorEventListener sensorEventListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            currentDegree = Math.round(event.values[0]);
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    };
     private SharedPreferences preferences;
     private GoogleApiClient mGoogleApiClient;
     public static Location mLastLocation;
+
+    private float currentDegree;
+
+    private static SensorManager sensorService;
+    private Sensor sensor;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,6 +46,19 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
         fastestInterval = preferences.getInt("gps_fastest_interval", 2000);
         displacement = preferences.getInt("gps_displacement", 1);
         createLocationRequest();
+
+        sensorService = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        if (sensor != null) {
+            sensorService.registerListener(mySensorEventListener, sensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+            Log.d(this.getClass().toString(), "Registerered for ORIENTATION Sensor");
+
+        } else {
+            Log.e(this.getClass().toString(), "Registerered for ORIENTATION Sensor");
+            Toast.makeText(MainActivity.getActivity(), "ORIENTATION Sensor not found",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -76,7 +83,9 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
 
     @Override
     public void onDestroy() {
-
+        if (sensor != null) {
+            sensorService.unregisterListener(mySensorEventListener);
+        }
     }
 
     @Override
@@ -110,8 +119,6 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
     @SuppressWarnings("deprecation")
     public void startLocationUpdates() {
         if (gpsPreferenceEnabled()) {
-            this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
-            this.sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             Log.d(this.getClass().toString(), "Periodic location updates started");
         }
@@ -119,8 +126,6 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
 
     public void stopLocationUpdates() {
         if (mGoogleApiClient.isConnected()) {
-            this.sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
-            this.sensorManager.unregisterListener(sensorEventListener);
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             Log.d(this.getClass().toString(), "Periodic location updates stopped");
         }
@@ -140,4 +145,20 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
     public void setGoogleApiClient(GoogleApiClient mGoogleApiClient) {
         this.mGoogleApiClient = mGoogleApiClient;
     }
+
+    private SensorEventListener mySensorEventListener = new SensorEventListener() {
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            // angle between the magnetic north directio
+            // 0=North, 90=East, 180=South, 270=West
+            float azimuth = event.values[0];
+            currentDegree = azimuth;
+            Log.d(this.getClass().toString(),currentDegree + "");
+        }
+    };
 }
