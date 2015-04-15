@@ -42,10 +42,13 @@ public class Validator {
                             try {
                                 String webContent = new ValidatorWebrequestTask().execute(link).get(10000, TimeUnit.MILLISECONDS);
                                 // Toast.makeText(MainActivity.getContext(), "Inhalt geschickt!", Toast.LENGTH_LONG).show();
+
                                 Log.d(Validator.class.toString(), "Sended Content of Link: \"" + jsonMap.get("link").toString());
+                                return new DatapointEventObject(webContent);
                             } catch (Exception e) {
                                 Toast.makeText(MainActivity.getContext(), "Fehler beim Herunterladen des Inhaltes des angegebenen Linkes!", Toast.LENGTH_LONG).show();
-                                Log.d(Validator.class.toString(), "Error loading content. Link: \"" + jsonMap.get("link").toString() + "\" Error: \"" + e.getMessage() + "\"");
+                                Log.e(Validator.class.toString(), "Error loading content. Link: \"" + jsonMap.get("link").toString() + "\" Error: \"" + e.getMessage() + "\"");
+                                return null;
                             }
                         } else {
                             return null;
