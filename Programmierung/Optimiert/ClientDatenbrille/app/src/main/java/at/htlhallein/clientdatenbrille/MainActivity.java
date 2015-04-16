@@ -15,7 +15,9 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -92,6 +94,12 @@ public class MainActivity extends Activity {
 
 
         webView = (WebView) findViewById(R.id.fullscreen_content);
+        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebViewClient(new WebViewClient());
+        webView.clearCache(true);
+        webView.clearHistory();
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
 
 
         mSystemUiHider = SystemUiHider.getInstance(this, webView, HIDER_FLAGS);
