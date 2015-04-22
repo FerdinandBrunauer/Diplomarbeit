@@ -26,6 +26,9 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ServiceConfigurationError;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.net.SocketFactory;
 
@@ -300,10 +303,7 @@ public class NetworkManager {
 
                 if (data.compareTo("") != 0){
                     Log.i("Server Read", "Read: " + data);
-                    validateServerData(data);
-                    data = "";
-                }else{
-                    continue;
+                    data = validateServerData(data);
                 }
 
             } catch (IOException e) {
@@ -332,31 +332,57 @@ public class NetworkManager {
         serverState = CLOSED;
     }
 
-    private void validateServerData(String data){
+    private String validateServerData(String data){
         try{
-            JSONObject mainObject = new JSONObject(data);
-            if (mainObject.has("operationType")) {
-                switch (mainObject.getString("operationType")) {
-                    case "HTML": {
-                        String htmlRaw = mainObject.getString("HTML");
-                        String html = new String(Base64.decode(htmlRaw.getBytes(), Base64.NO_WRAP));
-                        setHTML(html);
-                        Log.i("Validate", "HTML detected: " + html);
-                        break;
-                    }
-                    case "SCROLL": {
-                        scrollToPosition(mainObject.getInt("percent"));
-                        Log.i("Validate", "SCROLL detected");
-                        break;
-                    }
-                    default: {
-                        Log.e("Validate", "Undefined Mode: \"" + mainObject.getString("operationType") + "\"");
-                        break;
+            Pattern p = Pattern.compile("\\[start\\]\\s*(((?!\\[start\\]|\\[end\\]).)+)\\s*\\[end\\]");
+            Matcher m = p.matcher(data);
+            ArrayList<String> serverMessages = new ArrayList<>();
+            String message = "";
+            while(m.find()){
+                String temp = m.group();
+                serverMessages.add(temp);
+                message += temp + "\n";
+            }
+
+            for(String serverMessage : serverMessages) {
+
+                serverMessage = serverMessage.substring(serverMessage.indexOf("[start]")+7,serverMessage.indexOf("[end]"));
+                JSONObject mainObject = new JSONObject(serverMessage);
+                if (mainObject.has("operationType")) {
+                    switch (mainObject.getString("operationType")) {
+                        case "HTML": {
+                            String htmlRaw = mainObject.getString("HTML");
+                            String html = new String(Base64.decode(htmlRaw.getBytes(), Base64.NO_WRAP));
+                            setHTML(html);
+                            Log.i("Validate", "HTML detected: " + html);
+                            break;
+                        }
+                        case "SCROLL": {
+                            scrollToPosition(mainObject.getInt("percent"));
+                            Log.i("Validate", "SCROLL detected");
+                            break;
+                        }
+                        default: {
+                            Log.e("Validate", "Undefined Mode: \"" + mainObject.getString("operationType") + "\"");
+                            break;
+                        }
                     }
                 }
             }
+
+
+            if(message.compareTo(data) != 0){
+                if(data.indexOf(message) == 0){
+                    return data.substring(message.length());
+                }else{
+                    return data.substring(0,data.indexOf(message)) + data.substring(data.indexOf(message)+message.length());
+                }
+            }else{
+                return "";
+            }
         } catch (JSONException e) {
             Log.e("Validate", "Could not parse server data: " + e);
+            return "";
         }
     }
 

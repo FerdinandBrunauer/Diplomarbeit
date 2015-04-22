@@ -126,7 +126,7 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
             }
             String htmlTextEncoded = new String(jsonMessageBase64);
             object.put("HTML", htmlTextEncoded);
-            this.server.writeMessage(object.toString());
+            this.server.writeMessage("[start]" + object.toString() + "[end]");
         } catch (Exception e) {
             Log.v("DatenbrillenServer", "JSON Object Error - Datapoint", e);
         }
@@ -142,7 +142,7 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
             else
                 object.put("direction", "DOWN");
             object.put("percent", eventObject.getPercent());
-            this.server.writeMessage(object.toString());
+            this.server.writeMessage("[start]" + object.toString() + "[end]");
         } catch (Exception e) {
             Log.d("DatenbrillenServer", "JSON Object Error - Scrollevent", e);
         }
