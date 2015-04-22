@@ -98,7 +98,7 @@ public class MainActivity extends FragmentActivity {
         ActivityHandler.addListener(new GooglePlayService());
         ActivityHandler.addListener(new NFC());
         ActivityHandler.addListener(new QRCode());
-        ActivityHandler.addListener(new DatenbrillenServer());
+        //ActivityHandler.addListener(new DatenbrillenServer());
 
         ActivityHandler.onCreate(savedInstanceState);
     }

@@ -4,31 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tvScrollIndex"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <ImageView
-        android:id="@+id/ivArrowTop"
+    <htlhallein.at.serverdatenbrille.ObservableWebView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/tvScrollIndex"
+        android:id="@+id/controllerWebView"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:contentDescription="@string/arrow_description"
-        android:src="@drawable/up" />
-
-    <ImageView
-        android:id="@+id/ivArrowBottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_below="@+id/tvScrollIndex"
-        android:layout_centerHorizontal="true"
-        android:contentDescription="@string/arrow_description"
-        android:src="@drawable/down" />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>
