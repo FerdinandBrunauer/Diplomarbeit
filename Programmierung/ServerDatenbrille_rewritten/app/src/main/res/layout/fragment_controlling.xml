@@ -1,34 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fragment_first_controlling_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvScrollIndex"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <ImageView
-        android:id="@+id/ivArrowTop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/tvScrollIndex"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:contentDescription="@string/arrow_description"
-        android:src="@drawable/up" />
+    <htlhallein.at.serverdatenbrille.ObservableWebView
+        android:layout_width="fill_parent"
+        android:id="@+id/controllerWebView"
+        android:layout_height="0dp"
+        android:layout_weight="2"/>
 
-    <ImageView
-        android:id="@+id/ivArrowBottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@+id/tvScrollIndex"
-        android:layout_centerHorizontal="true"
-        android:contentDescription="@string/arrow_description"
-        android:src="@drawable/down" />
-</RelativeLayout>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="100dp">
+
+        <ImageView
+            android:id="@+id/ivArrowTop"
+            android:layout_width="0dp"
+            android:layout_weight="40"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/arrow_description"
+            android:src="@drawable/up" />
+
+        <TextView
+            android:id="@+id/tvScrollIndex"
+            android:layout_width="0dp"
+            android:layout_weight="20"
+            android:layout_height="fill_parent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:gravity="center" />
+
+
+
+        <ImageView
+            android:id="@+id/ivArrowBottom"
+            android:layout_width="0dp"
+            android:layout_weight="40"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/arrow_description"
+            android:src="@drawable/down" />
+    </LinearLayout>
+
+
+</LinearLayout>
