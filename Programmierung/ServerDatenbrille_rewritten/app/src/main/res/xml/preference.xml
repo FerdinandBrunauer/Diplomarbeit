@@ -50,6 +50,10 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preferences_category_wifi">
+        <CheckBoxPreference
+            android:defaultValue="@bool/preferences_preference_datenbrille_enabled_default"
+            android:key="@string/preferences_preference_datenbrille_enabled"
+            android:title="@string/preferences_preference_datenbrille_enabled" />
         <EditTextPreference
             android:defaultValue="@string/preferences_preference_wifihotspot_name_default"
             android:key="@string/preferences_preference_wifihotspot_name"
@@ -58,9 +62,6 @@
             android:defaultValue="@string/preferences_preference_wifihotspot_password_default"
             android:key="@string/preferences_preference_wifihotspot_password"
             android:title="@string/preferences_preference_wifihotspot_password" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/preferences_category_scroll">
         <ListPreference
             android:defaultValue="@string/preferences_preference_scroll_distance_per_click_default"
             android:entries="@array/preferences_preference_scroll_distance_per_click_entries"
@@ -68,5 +69,7 @@
             android:key="@string/preferences_preference_scroll_distance_per_click"
             android:title="@string/preferences_preference_scroll_distance_per_click" />
     </PreferenceCategory>
+
+
 
 </PreferenceScreen>

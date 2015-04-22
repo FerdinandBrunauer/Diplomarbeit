@@ -1,6 +1,8 @@
 package htlhallein.at.serverdatenbrille.server;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.wifi.WifiConfiguration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -48,24 +50,30 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
     private Server server;
     private WifiApManager myWifiManager;
     private Thread serverThread;
+    private SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        ScrollEventHandler.addListener(this);
-        DatapointEventHandler.addListener(this);
+        Resources resources = MainActivity.getContext().getResources();
+        boolean datenbrilleEnabled = mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_datenbrille_enabled), resources.getBoolean(R.bool.preferences_preference_datenbrille_enabled_default));
+        if (datenbrilleEnabled) {
+            ScrollEventHandler.addListener(this);
+            DatapointEventHandler.addListener(this);
 
-        server = new Server(DEFAULT_PORT);
-        serverThread = new Thread(this.server);
-        serverThread.start();
+            server = new Server(DEFAULT_PORT);
+            serverThread = new Thread(this.server);
+            serverThread.start();
 
-        this.myWifiManager = new WifiApManager(MainActivity.getContext());
+            this.myWifiManager = new WifiApManager(MainActivity.getContext());
 
-        Log.d("DatenbrillenServer", "WIFI-AP starting ...");
-        WifiConfiguration wifiConfiguration = new WifiConfiguration();
-        wifiConfiguration.SSID = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_name), MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_name_default));
-        wifiConfiguration.preSharedKey = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_password), MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_password_default));
-        wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-        myWifiManager.setWifiApEnabled(wifiConfiguration, true);
+            Log.d("DatenbrillenServer", "WIFI-AP starting ...");
+            WifiConfiguration wifiConfiguration = new WifiConfiguration();
+            wifiConfiguration.SSID = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_name), MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_name_default));
+            wifiConfiguration.preSharedKey = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_password), MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_password_default));
+            wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            myWifiManager.setWifiApEnabled(wifiConfiguration, true);
+        }
     }
 
     @Override

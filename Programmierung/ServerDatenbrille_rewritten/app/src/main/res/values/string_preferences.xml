@@ -103,15 +103,19 @@
     <string name="preferences_category_nfc">NFC</string>
     <string name="preferences_preference_nfc_enabled">NFC ein/aus</string>
     <bool name="preferences_preference_nfc_enabled_default">true</bool>
-    <!-- WIFI -->
-    <string name="preferences_category_wifi">WLAN - Hotspot</string>
-    <string name="preferences_preference_wifihotspot_name">Name</string>
+    <!-- Datenbrille -->
+    <string name="preferences_category_wifi">Datenbrille</string>
+
+    <string name="preferences_preference_datenbrille_enabled">Datenbrille ein/aus</string>
+    <bool name="preferences_preference_datenbrille_enabled_default">false</bool>
+
+    <string name="preferences_preference_wifihotspot_name">Hotspot-Name</string>
     <string name="preferences_preference_wifihotspot_name_default">Datenbrille</string>
-    <string name="preferences_preference_wifihotspot_password">Passwort</string>
+    <string name="preferences_preference_wifihotspot_password">Hotspot-Passwort</string>
     <string name="preferences_preference_wifihotspot_password_default">Passwort1!</string>
+
     <!-- Scrolling -->
-    <string name="preferences_category_scroll">Brillensteuerung</string>
-    <string name="preferences_preference_scroll_distance_per_click">Prozent pro Klick</string>
+    <string name="preferences_preference_scroll_distance_per_click">Scroll Prozent pro Klick</string>
     <string-array name="preferences_preference_scroll_distance_per_click_entries">
         <item>1%</item>
         <item>2%</item>

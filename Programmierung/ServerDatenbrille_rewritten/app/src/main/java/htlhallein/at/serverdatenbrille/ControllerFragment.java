@@ -10,6 +10,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,6 +20,13 @@ import htlhallein.at.serverdatenbrille.event.scroll.ScrollEventHandler;
 import htlhallein.at.serverdatenbrille.event.scroll.ScrollEventObject;
 
 public class ControllerFragment extends Fragment {
+    public static ObservableWebView webView;
+    public static String text = "<h3>Herzlich wilkommen zur Digital Salzburg App</h3><br>"
+            + "Für weitere Optionen wischen Sie von links nach rechts.<br><br>"
+            + "Wichtig beim ersten Start ist das Drücken des Synchronisieren Buttons, der sich oben rechts befindet."
+            + "Dadurch wird das Standard Paket \"Museen im Land Salzburg\" (derzeit das einzige unterstützte, demnächst werden alle GeoPackages der Stadt Salzburg unterstützt) heruntergeladen und lokal gespeichert.<br><br>"
+            + "Eine Internetverbindung ist nur beim Herunterladen der Open Data Packages "
+            + "erforderlich oder beim Einscannen von Webdaten wie zum Beispiel \"Wetter in Hallein\".<br>";
 
     // needed for OnTouchListener
     public static final int MESSAGE_CHECK_BTN_STILL_PRESSED = 1;
@@ -64,6 +73,16 @@ public class ControllerFragment extends Fragment {
         this.scrollIndex = (TextView) rootView.findViewById(R.id.tvScrollIndex);
         this.scrollIndex.setText(scrollPercentage + "%");
 
+
+        webView = (ObservableWebView) rootView.findViewById(R.id.controllerWebView);
+        webView.loadDataWithBaseURL(null, text, "text/html", "utf-8", null);
+        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebViewClient(new WebViewClient());
+        webView.clearCache(true);
+        webView.clearHistory();
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+
         ImageView myArrowTop = (ImageView) rootView.findViewById(R.id.ivArrowTop);
         myArrowTop.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,6 +93,7 @@ public class ControllerFragment extends Fragment {
                 scrollIndex.setText(scrollPercentage + "%");
 
                 ScrollEventObject eventObject = new ScrollEventObject(this, ScrollEventDirection.UP, scrollPercentage);
+                scrollToPosition(scrollPercentage);
                 ScrollEventHandler.fireScrollEvent(eventObject);
             }
         });
@@ -112,6 +132,7 @@ public class ControllerFragment extends Fragment {
                 scrollIndex.setText(scrollPercentage + "%");
 
                 ScrollEventObject eventObject = new ScrollEventObject(this, ScrollEventDirection.DOWN, scrollPercentage);
+                scrollToPosition(scrollPercentage);
                 ScrollEventHandler.fireScrollEvent(eventObject);
             }
         });
@@ -141,5 +162,13 @@ public class ControllerFragment extends Fragment {
         });
 
         return rootView;
+    }
+
+    private void scrollToPosition(final int percent) {
+        double height = webView.getContentHeight();
+        double windowHeight = webView.getHeight();
+        if(height>windowHeight) {
+            webView.scrollTo(0, (int) ((height + windowHeight) / 100 * percent));
+        }
     }
 }

@@ -28,7 +28,6 @@ public class OrientationSensor implements ActivityListener, SensorEventListener 
 
     private static double mAzimuth = Double.NaN;
 
-    TextView debug;
     long lastupdate = 0;
 
 
@@ -49,9 +48,6 @@ public class OrientationSensor implements ActivityListener, SensorEventListener 
 
     @Override
     public void onStart() {
-
-        debug = (TextView) MainActivity.getActivity().findViewById(R.id.tvScrollIndex);
-
         mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_UI);
         mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_UI);
 
@@ -123,7 +119,6 @@ public class OrientationSensor implements ActivityListener, SensorEventListener 
                 currentAngle = mAzimuth;
             }
             if(lastupdate + 1000 < System.currentTimeMillis()) {
-                debug.setText("" + currentAngle);
                 lastupdate = System.currentTimeMillis();
             }
         }
