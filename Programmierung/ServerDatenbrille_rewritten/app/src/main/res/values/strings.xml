@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Server Datenbrille</string>
+    <string name="app_name">Digital Salzburg</string>
     <string name="action_settings">Einstellungen</string>
     <string name="drawer_title_activitys">Ansichten</string>
     <string name="drawer_action_controlling">Steuerung</string>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ClientDatenbrille</string>
+    <string name="app_name">Client Datenbrille</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_network">NetworkActivity</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">Client Datenbrille</string>
     <string name="title_activity_fullscreen">FullscreenActivity</string>
     <string name="title_activity_settings">Einstellungen</string>
 
