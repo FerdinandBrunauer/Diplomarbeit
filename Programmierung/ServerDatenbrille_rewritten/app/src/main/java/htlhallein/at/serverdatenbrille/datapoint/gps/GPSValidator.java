@@ -22,6 +22,7 @@ import htlhallein.at.serverdatenbrille.event.datapoint.DatapointEventObject;
 public class GPSValidator {
     public static DatapointEventObject validate(Location location) {
         List<GPSDatapointObject> datapointObjects = DatabaseHelper.getAllDatapoints();
+
         Log.d("GPS Validator", "Datapoints in database: " + datapointObjects.size());
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());

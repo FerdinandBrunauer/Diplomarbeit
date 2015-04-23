@@ -17,6 +17,7 @@ import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataPackage;
 import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataResource;
 import htlhallein.at.serverdatenbrille.memoryObjects.Placemark;
 import htlhallein.at.serverdatenbrille.opendata.kmzUtil.KmzReader;
+import htlhallein.at.serverdatenbrille.opendata.kmzUtil.StringUtils;
 import htlhallein.at.serverdatenbrille.opendata.kmzUtil.XmlParser;
 
 public class PackageCrawler extends AsyncTask<String, String, String> {
@@ -166,7 +167,7 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
                         placemark.getLocation().getLatitude(),
                         placemark.getLocation().getLongitude(),
                         placemark.getName(),
-                        placemark.getDescription());
+                        StringUtils.unescapeHtml3(placemark.getDescription()));
                 Log.d(this.getClass().toString(), "Added Datapoint: " + placemark.getName());
                 dialog.setProgress(dialog.getProgress() + 1);
             } catch (Exception e) {

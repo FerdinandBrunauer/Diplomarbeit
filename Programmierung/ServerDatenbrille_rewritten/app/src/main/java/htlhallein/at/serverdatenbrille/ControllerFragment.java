@@ -24,7 +24,7 @@ public class ControllerFragment extends Fragment {
     public static String text = "<h3>Herzlich wilkommen zur Digital Salzburg App</h3><br>"
             + "Für weitere Optionen wischen Sie von links nach rechts.<br><br>"
             + "Wichtig beim ersten Start ist das Drücken des Synchronisieren Buttons, der sich oben rechts befindet."
-            + "Dadurch wird das Standard Paket \"Museen im Land Salzburg\" (derzeit das einzige unterstützte, demnächst werden alle GeoPackages der Stadt Salzburg unterstützt) heruntergeladen und lokal gespeichert.<br><br>"
+            + "Dadurch wird das Standard Paket \"Museen im Land Salzburg\" (es wird außerdem jedes GeoPackage der Stadt Salzburg unterstützt) heruntergeladen und lokal gespeichert.<br><br>"
             + "Eine Internetverbindung ist nur beim Herunterladen der Open Data Packages "
             + "erforderlich oder beim Einscannen von Webdaten wie zum Beispiel \"Wetter in Hallein\".<br>";
 

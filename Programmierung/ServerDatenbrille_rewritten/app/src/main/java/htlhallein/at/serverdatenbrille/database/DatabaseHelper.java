@@ -116,15 +116,16 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
             List<GPSDatapointObject> list = new LinkedList<>();
 
             Cursor cursor = getInstance().getReadableDatabase().query(
-                    "Datapoint", new String[]{"idDatapoint", "latitude", "longitude", "name"}, null, null, null, null, null);
+                    "Datapoint", new String[]{"idPackage","idDatapoint", "latitude", "longitude", "name"}, null, null, null, null, null);
 
             if (cursor.moveToFirst()) {
                 do {
                     GPSDatapointObject object = new GPSDatapointObject();
-                    object.setId(cursor.getInt(0));
-                    object.setLatitude(cursor.getDouble(1));
-                    object.setLongitude(cursor.getDouble(2));
-                    object.setTitle(cursor.getString(3));
+                    object.setODId(cursor.getLong(0));
+                    object.setId(cursor.getInt(1));
+                    object.setLatitude(cursor.getDouble(2));
+                    object.setLongitude(cursor.getDouble(3));
+                    object.setTitle(cursor.getString(4));
                     list.add(object);
                 } while (cursor.moveToNext());
                 return list;

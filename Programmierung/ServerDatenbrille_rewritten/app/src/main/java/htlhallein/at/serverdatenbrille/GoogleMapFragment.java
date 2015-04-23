@@ -22,6 +22,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -115,14 +116,28 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
         map.setMyLocationEnabled(true);
 
         List<GPSDatapointObject> datapointObjects = DatabaseHelper.getAllDatapoints();
+        List<DataPackage> dataPackages = DatabaseHelper.getDataPackages();
+
+        float[] colors = {BitmapDescriptorFactory.HUE_AZURE,BitmapDescriptorFactory.HUE_RED,BitmapDescriptorFactory.HUE_BLUE,BitmapDescriptorFactory.HUE_GREEN,
+        BitmapDescriptorFactory.HUE_MAGENTA, BitmapDescriptorFactory.HUE_CYAN,  BitmapDescriptorFactory.HUE_ORANGE, BitmapDescriptorFactory.HUE_ROSE,
+        BitmapDescriptorFactory.HUE_VIOLET,BitmapDescriptorFactory.HUE_YELLOW};
 
 
-        for(GPSDatapointObject datapointObject:datapointObjects){
-            Marker m = map.addMarker(new MarkerOptions().position(new LatLng(datapointObject.getLatitude(), datapointObject.getLongitude()))
-                    .title(datapointObject.getTitle()));
+            for (GPSDatapointObject datapointObject : datapointObjects) {
+                for(int i=0;i<dataPackages.size();i++) {
+                    if(dataPackages.get(i).getId()==datapointObject.getODId()){
+                        float markerColor;
+                        if(i>colors.length){
+                            markerColor = colors[(i%colors.length)];
+                        }else {
+                            markerColor = colors[i];
+                        }
+                        map.addMarker(new MarkerOptions().position(new LatLng(datapointObject.getLatitude(), datapointObject.getLongitude()))
+                                .title(datapointObject.getTitle()).icon(BitmapDescriptorFactory.defaultMarker(markerColor)));
+                    }
 
-
-        }
+                }
+            }
 
         return view;
 

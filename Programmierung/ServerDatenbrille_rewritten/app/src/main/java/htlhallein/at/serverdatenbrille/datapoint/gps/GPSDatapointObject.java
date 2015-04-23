@@ -22,15 +22,17 @@ public class GPSDatapointObject {
     private double latitude;
     private double longitude;
     private String title;
+    private long openDataId;
 
     public GPSDatapointObject() {
     }
 
-    public GPSDatapointObject(int id, double latitude, double longitude,String title) {
+    public GPSDatapointObject(int id, double latitude, double longitude,String title,long openDataId) {
         this.id = id;
         this.latitude = latitude;
         this.longitude = longitude;
         this.title = title;
+        this.openDataId = openDataId;
     }
 
     public int getId() {
@@ -63,5 +65,13 @@ public class GPSDatapointObject {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void setODId(long openDataId) {
+        this.openDataId = openDataId;
+    }
+
+    public long getODId(){
+        return openDataId;
     }
 }
