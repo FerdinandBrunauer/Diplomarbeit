@@ -2,6 +2,7 @@ package htlhallein.at.serverdatenbrille.opendata;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import htlhallein.at.serverdatenbrille.MainActivity;
 import htlhallein.at.serverdatenbrille.R;
 import htlhallein.at.serverdatenbrille.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille.memoryObjects.DataPackage;
+import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataPackage;
 import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataResource;
 import htlhallein.at.serverdatenbrille.memoryObjects.Placemark;
 import htlhallein.at.serverdatenbrille.opendata.kmzUtil.KmzReader;
@@ -82,7 +84,7 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
     }
 
     private boolean checkForUpdate(DataPackage dataPackage) {
-        OpenDataResource kmzFile = getKmzFile(dataPackage);
+        OpenDataResource kmzFile = getSupportedFile(dataPackage);
         return DatabaseHelper.checkForUpdate(dataPackage.getIdOpenData(), kmzFile.getCreationTimestamp());
     }
 
@@ -92,48 +94,98 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
     }
 
     private void installPackage(DataPackage dataPackage) {
-        OpenDataResource kmzResource = getKmzFile(dataPackage);
-        if (kmzResource != null) {
-            OpenDataUtil.downloadFromUrl(kmzResource.getUrl(), kmzResource.getId() + ".kmz");
-            setDialogTitle(MainActivity.getContext().getString(R.string.crawler_unzip) + " (" + (packageCounter) + "/" + packagesCount + ") ");
-            File kmlFile = KmzReader.getKmlFile(kmzResource.getId() + ".kmz");
-            if (kmlFile != null) {
-                ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
-                int datapointCounter = 1;
-                int datapointsCount = placemarks.size();
-                dialog.setProgress(dialog.getProgress() + 30);
-                dialog.setMax(dialog.getMax() + datapointsCount);
+        OpenDataResource supportedResource = getSupportedFile(dataPackage);
+        if (supportedResource != null) {
+            setDialogTitle(MainActivity.getContext().getString(R.string.crawler_download) + " (" + (packageCounter) + "/" + packagesCount + ") ");
+            OpenDataUtil.downloadFromUrl(supportedResource.getUrl(),supportedResource.getId() + "." + supportedResource.getFormat().toLowerCase());
+            String filepath = Environment.getExternalStorageDirectory() + "/datenbrille/download/" + supportedResource.getId() + "." + supportedResource.getFormat().toLowerCase();
 
-                for (Placemark placemark : placemarks) {
-                    try {
-                        setDialogTitle(
-                                MainActivity.getContext().getString(R.string.crawler_add_datapoint) +
-                                        " (" + (packageCounter) + "/" + packagesCount + ")\n"
-                                        + MainActivity.getContext().getString(R.string.crawler_datapoint)
-                                        + ": " + (datapointCounter) + "/" + placemarks.size());
-                        DatabaseHelper.addDatapoint(
-                                dataPackage.getId(),
-                                placemark.getLocation().getLatitude(),
-                                placemark.getLocation().getLongitude(),
-                                placemark.getName(),
-                                OpenDataParser.parseWebsite(OpenDataUtil.getRequestResult(placemark.getLink())));
-                        Log.d(this.getClass().toString(), "Added Datapoint: " + placemark.getName());
-                        dialog.setProgress(dialog.getProgress() + 1);
-                    } catch (Exception e) {
-                        Log.d(PackageCrawler.class.toString(), "Error while adding Datapoint! Error: \"" + e.getMessage() + "\"");
-                    }
-                    datapointCounter++;
+            switch (supportedResource.getFormat().toUpperCase()){
+                case "KMZ":{
+                    installKmz(supportedResource,dataPackage);
                 }
-                DatabaseHelper.installPackage(dataPackage.getIdOpenData(), kmzResource.getCreationTimestamp());
+                case "KML":{
+                    installKml(supportedResource,filepath,dataPackage);
+                }
             }
         }
     }
 
-    private OpenDataResource getKmzFile(DataPackage dataPackage) {
+    private void installKmz(OpenDataResource kmzResource, DataPackage dataPackage){
+        setDialogTitle(MainActivity.getContext().getString(R.string.crawler_unzip) + " (" + (packageCounter) + "/" + packagesCount + ") ");
+        File kmlFile = KmzReader.getKmlFile(kmzResource.getId() + ".kmz");
+        if (kmlFile != null) {
+            ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
+            int datapointCounter = 1;
+            int datapointsCount = placemarks.size();
+            dialog.setProgress(dialog.getProgress() + 30);
+            dialog.setMax(dialog.getMax() + datapointsCount);
+
+            for (Placemark placemark : placemarks) {
+                try {
+                    setDialogTitle(
+                            MainActivity.getContext().getString(R.string.crawler_add_datapoint) +
+                                    " (" + (packageCounter) + "/" + packagesCount + ")\n"
+                                    + MainActivity.getContext().getString(R.string.crawler_datapoint)
+                                    + ": " + (datapointCounter) + "/" + placemarks.size());
+                    DatabaseHelper.addDatapoint(
+                            dataPackage.getId(),
+                            placemark.getLocation().getLatitude(),
+                            placemark.getLocation().getLongitude(),
+                            placemark.getName(),
+                            OpenDataParser.parseWebsite(OpenDataUtil.getRequestResult(placemark.getLink())));
+                    Log.d(this.getClass().toString(), "Added Datapoint: " + placemark.getName());
+                    dialog.setProgress(dialog.getProgress() + 1);
+                } catch (Exception e) {
+                    Log.d(PackageCrawler.class.toString(), "Error while adding Datapoint! Error: \"" + e.getMessage() + "\"");
+                }
+                datapointCounter++;
+            }
+            DatabaseHelper.installPackage(dataPackage.getIdOpenData(), kmzResource.getCreationTimestamp());
+        }
+    }
+
+    private void installKml(OpenDataResource kmlResource, String path, DataPackage dataPackage){
+
+        File kmlFile = new File(path);
+        ArrayList<Placemark> placemarks = XmlParser.getPlacemarksFromKmlFile(kmlFile);
+        int datapointCounter = 1;
+        int datapointsCount = placemarks.size();
+        dialog.setProgress(dialog.getProgress() + 30);
+        dialog.setMax(dialog.getMax() + datapointsCount);
+
+        for (Placemark placemark : placemarks) {
+            try {
+                setDialogTitle(
+                        MainActivity.getContext().getString(R.string.crawler_add_datapoint) +
+                                " (" + (packageCounter) + "/" + packagesCount + ")\n"
+                                + MainActivity.getContext().getString(R.string.crawler_datapoint)
+                                + ": " + (datapointCounter) + "/" + placemarks.size());
+                DatabaseHelper.addDatapoint(
+                        dataPackage.getId(),
+                        placemark.getLocation().getLatitude(),
+                        placemark.getLocation().getLongitude(),
+                        placemark.getName(),
+                        placemark.getDescription());
+                Log.d(this.getClass().toString(), "Added Datapoint: " + placemark.getName());
+                dialog.setProgress(dialog.getProgress() + 1);
+            } catch (Exception e) {
+                Log.d(PackageCrawler.class.toString(), "Error while adding Datapoint! Error: \"" + e.getMessage() + "\"");
+            }
+            datapointCounter++;
+        }
+        DatabaseHelper.installPackage(dataPackage.getIdOpenData(), kmlResource.getCreationTimestamp());
+    }
+
+
+
+    private OpenDataResource getSupportedFile(DataPackage dataPackage) {
         List<OpenDataResource> openDataResources = OpenDataUtil.getPackageById(dataPackage.getIdOpenData()).getResources();
         for (OpenDataResource openDataResource : openDataResources) {
-            if (openDataResource.getFormat().toUpperCase().equals("KMZ")) {
-                return openDataResource;
+            for(String supportedFile : OpenDataUtil.supportedFiles) {
+                if (openDataResource.getFormat().toUpperCase().equals(supportedFile)) {
+                    return openDataResource;
+                }
             }
         }
         return null;

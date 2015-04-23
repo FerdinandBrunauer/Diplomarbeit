@@ -7,5 +7,6 @@
     <string name="crawler_add_datapoint">Füge Datenpunkte hinzu</string>
     <string name="crawler_datapoint">Datenpunkt</string>
     <string name="crawler_unzip">Entpacke Packetinformationen</string>
+    <string name="crawler_download">Lade Resourcen herunter</string>
 
 </resources>

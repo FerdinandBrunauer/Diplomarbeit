@@ -30,7 +30,7 @@ public class Location {
     }
 
     public Location(String stringBetween) {
-        Pattern locationPattern = Pattern.compile("(\\d+\\.\\d+),(\\d+\\.\\d+),\\d", Pattern.CASE_INSENSITIVE);
+        Pattern locationPattern = Pattern.compile("(\\d+\\.\\d+),(\\d+\\.\\d+)", Pattern.CASE_INSENSITIVE);
         Matcher locationMatcher = locationPattern.matcher(stringBetween);
         while (locationMatcher.find()) {
             this.latitude = Double.parseDouble(locationMatcher.group(1));

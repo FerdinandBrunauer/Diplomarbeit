@@ -36,7 +36,7 @@ import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataResource;
 import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataTag;
 
 public class OpenDataUtil {
-
+    public static final String[] supportedFiles = {"KMZ","KML"};
     private static final String OPENDATAURL = "https://www.data.gv.at/katalog/api/3/action/";
     private static final String PACKAGE_LIST = "package_list";
     private static final String TAG_SHOW = "tag_show?id=";
@@ -140,7 +140,7 @@ public class OpenDataUtil {
                 OpenDataResource resource = new OpenDataResource(resourceObject.getString("id"));
                 resource.setFormat(resourceObject.getString("format"));
                 resource.setUrl(resourceObject.getString("url"));
-                resource.setCreationTimestamp(getTimestampFromDate("yyyy-MM-dd;HH:mm:ss.S", resourceObject.getString("created").replaceAll("T", ";")));
+                resource.setCreationTimestamp(getTimestampFromDate("yyyy-MM-dd;HH:mm:ss", resourceObject.getString("created").replaceAll("T", ";")));
                 odPackage.addResource(resource);
             }
 
@@ -180,7 +180,7 @@ public class OpenDataUtil {
         }
     }
 
-    public static void downloadFromUrl(String DownloadUrl, String fileName) {
+    public static String downloadFromUrl(String DownloadUrl, String fileName) {
 
         try {
             File root = android.os.Environment.getExternalStorageDirectory();
@@ -211,8 +211,11 @@ public class OpenDataUtil {
             fileOutputStream.flush();
             fileOutputStream.close();
 
+            return file.getAbsolutePath();
+
         } catch (IOException e) {
             Log.e(OpenDataUtil.class.toString(), "downloadFromUrl Error: " + e);
+            return null;
         }
     }
 

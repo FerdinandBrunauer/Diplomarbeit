@@ -23,6 +23,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
@@ -33,6 +34,7 @@ import java.util.List;
 import htlhallein.at.serverdatenbrille.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille.datapoint.generator.GPS;
 import htlhallein.at.serverdatenbrille.datapoint.gps.GPSDatapointObject;
+import htlhallein.at.serverdatenbrille.memoryObjects.DataPackage;
 
 public class GoogleMapFragment extends Fragment implements LocationListener {
     private static Location currentLoc;
@@ -114,9 +116,12 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
 
         List<GPSDatapointObject> datapointObjects = DatabaseHelper.getAllDatapoints();
 
+
         for(GPSDatapointObject datapointObject:datapointObjects){
-            map.addMarker(new MarkerOptions().position(new LatLng(datapointObject.getLatitude(),datapointObject.getLongitude()))
-            .title(datapointObject.getTitle()));
+            Marker m = map.addMarker(new MarkerOptions().position(new LatLng(datapointObject.getLatitude(), datapointObject.getLongitude()))
+                    .title(datapointObject.getTitle()));
+
+
         }
 
         return view;

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -26,7 +27,12 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.concurrent.CountDownLatch;
 
 import htlhallein.at.serverdatenbrille.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille.memoryObjects.DataPackage;
@@ -206,13 +212,35 @@ public class DatapointFragment extends ListFragment {
                             if (!packages.get(0).equals("")) {
                                 if (!packages.get(1).equals("")) {
                                     try {
+                                        Dialog dialog = new ProgressDialog(getActivity());
+                                        dialog.setTitle(MainActivity.getContext().getString(R.string.wait));
+                                        dialog.setCancelable(false);
+                                        dialog.setCanceledOnTouchOutside(false);
+                                        dialog.show();
                                         String name = packages.get(0);
-                                        String openDataID = packages.get(1);
-                                        List<OpenDataResource> openDataResources = OpenDataUtil.getPackageById(openDataID).getResources();
+                                        final String openDataID = packages.get(1);
+                                        final CountDownLatch latch = new CountDownLatch(1);
+                                        final List<OpenDataResource> openDataResources = new ArrayList<>();
+                                        Thread searchThread = new HandlerThread("searchThread"){
+                                            @Override
+                                            public void run(){
+                                                for(OpenDataResource res:OpenDataUtil.getPackageById(openDataID).getResources()){
+                                                    openDataResources.add(res);
+                                                }
+                                                latch.countDown();
+                                            }
+                                        };
+                                        searchThread.start();
+                                        latch.await();
+                                        if (dialog.isShowing())
+                                            dialog.dismiss();
+
                                         long timestamp = 0;
                                         for (OpenDataResource openDataResource : openDataResources) {
-                                            if (openDataResource.getFormat().toUpperCase().equals("KMZ")) {
-                                                timestamp = openDataResource.getCreationTimestamp();
+                                            for(String format:OpenDataUtil.supportedFiles) {
+                                                if (openDataResource.getFormat().toUpperCase().equals(format)) {
+                                                    timestamp = openDataResource.getCreationTimestamp();
+                                                }
                                             }
                                         }
                                         long packageID = DatabaseHelper.addPackage(openDataID, "", name, timestamp);
@@ -268,6 +296,8 @@ public class DatapointFragment extends ListFragment {
         @Override
         protected void onPreExecute() {
             dialog.setTitle(MainActivity.getContext().getString(R.string.wait));
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
 

@@ -48,13 +48,18 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
     }
 
     public static long addPackage(final String openDataID, final String linkOpenData, final String name, final long updated) {
-        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Package`(`idOpenData`,`linkOpenData`,`name`,`updated`, `datapointsInstalled`) VALUES (?,?,?,?);");
-        statement.bindString(1, openDataID);
-        statement.bindString(2, linkOpenData);
-        statement.bindString(3, name);
-        statement.bindString(4, updated + "");
-        statement.bindString(5, "false");
-        return statement.executeInsert();
+        try {
+            SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Package`(`idOpenData`,`linkOpenData`,`name`,`updated`, `datapointsInstalled`) VALUES (?,?,?,?,?);");
+            statement.bindString(1, openDataID);
+            statement.bindString(2, linkOpenData);
+            statement.bindString(3, name);
+            statement.bindLong(4, updated);
+            statement.bindString(5, "false");
+            return statement.executeInsert();
+        }catch (Exception e){
+            Log.e("DatabaseHelper", "Error: " + e);
+            return -1;
+        }
     }
 
     public static long installPackage(String openDataId, long updateTimestamp){
@@ -101,7 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
 
     public static boolean checkForUpdate(String openDataId, long timestamp){
         Cursor cursor = getInstance().getReadableDatabase().rawQuery(
-                "SELECT `updated` FROM `Package` WHERE `idOpenData` = " + openDataId + ";", null);
+                "SELECT `updated` FROM `Package` WHERE `idOpenData` = '" + openDataId + "';", null);
 
         return (!cursor.moveToFirst() || (timestamp > cursor.getLong(0)));
     }

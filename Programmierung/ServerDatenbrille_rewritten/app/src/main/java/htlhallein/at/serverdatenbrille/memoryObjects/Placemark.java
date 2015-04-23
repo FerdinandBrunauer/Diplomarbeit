@@ -16,6 +16,8 @@
 
 package htlhallein.at.serverdatenbrille.memoryObjects;
 
+import android.util.Log;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,9 +29,10 @@ public class Placemark {
     private String name;
     private String link;
     private Location location;
+    private String description;
 
     public Placemark(String rawPlacemark) {
-        Pattern idPattern = Pattern.compile("<Placemark id=\"(ID\\_\\d+)\"\\>");
+        Pattern idPattern = Pattern.compile("<Placemark id=\\\"([\\s\\S]+)\\\">");
         Matcher matcher = idPattern.matcher(rawPlacemark);
         matcher.find();
         this.id = matcher.group(1);
@@ -43,10 +46,21 @@ public class Placemark {
             this.name = "";
         }
 
-        this.link = StringUtils.unescapeHtml3(getStringBetween(rawPlacemark, "\\<td\\>\\<a target\\=\\\"\\_blank\\\" href\\=\\\"", "\\\"\\>http\\:\\/\\/"));
+        Pattern descriptionPattern = Pattern.compile("<description>([\\s\\S]*?)<\\/description>");
+        matcher = descriptionPattern.matcher(rawPlacemark);
+        matcher.find();
+        this.description = matcher.group(1);
+
+        try {
+            this.link = StringUtils.unescapeHtml3(getStringBetween(rawPlacemark, "\\<td\\>\\<a target\\=\\\"\\_blank\\\" href\\=\\\"", "\\\"\\>http\\:\\/\\/"));
+        }catch (Exception e){
+            Log.d(this.getClass().toString(), "No Link in description");
+            this.link = "";
+        }
+
         String s = getStringBetween(rawPlacemark, "\\<coordinates\\>", "\\<\\/coordinates\\>");
         String[] temp = s.split(",");
-        String t = temp[1].trim() + "," + temp[0].trim() + "," + temp[2].trim();
+        String t = temp[1].trim() + "," + temp[0].trim();
         this.location = new Location(t);
     }
 
@@ -72,6 +86,8 @@ public class Placemark {
     public Location getLocation() {
         return location;
     }
+
+    public String getDescription() { return description; }
 
     public void print() {
         String leftAlignFormat = "| %-15s | %-50s |%n";
