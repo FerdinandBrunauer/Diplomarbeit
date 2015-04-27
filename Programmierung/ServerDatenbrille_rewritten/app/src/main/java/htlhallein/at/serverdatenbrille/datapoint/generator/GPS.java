@@ -51,6 +51,7 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
                 boolean gpsEnabled = mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_nfc_enabled), resources.getBoolean(R.bool.preferences_preference_nfc_enabled_default));
 
                 if (gpsEnabled && gpsState == STOPPED) {
+                    ActivityHandler.onStop(GPS.class);
                     ActivityHandler.removeListenerClass(GPS.class);
                 }else if(!gpsEnabled && (gpsState == RUNNING)){
                     ActivityHandler.addListener(new GPS());

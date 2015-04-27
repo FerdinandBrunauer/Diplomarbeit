@@ -68,10 +68,10 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
 
         }
     };
+    private SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
+    private boolean gpsEnabled;
 
 
-    @Override
-    @SuppressWarnings({"deprecation"})
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         /*meters = new HashMap<>();
@@ -85,10 +85,23 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
         meters.put(70, 111560);
         meters.put(80, 111660);
         meters.put(90, 111690);*/
+        SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                gpsEnabled = preferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_gps_enabled), MainActivity.getContext().getResources().getBoolean(R.bool.preferences_preference_gps_enabled_default));
+                if(gpsEnabled){
+                    map.setMyLocationEnabled(true);
+                }else{
+                    map.setMyLocationEnabled(false);
+                }
+            }
+        };
+        preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        gpsEnabled = preferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_gps_enabled), MainActivity.getContext().getResources().getBoolean(R.bool.preferences_preference_gps_enabled_default));
 
         SensorManager sensorManager = (SensorManager) MainActivity.getContext().getSystemService(Context.SENSOR_SERVICE);
         sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
+
 
         viewAngleTolerance = Integer.parseInt(preferences.getString(
                 MainActivity.getContext().getString(R.string.preferences_preference_gps_viewangletolerance),
@@ -114,7 +127,11 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
         MapFragment mapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map);
         map = mapFragment.getMap();
         map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        map.setMyLocationEnabled(true);
+        if(gpsEnabled){
+            map.setMyLocationEnabled(true);
+        }else{
+            map.setMyLocationEnabled(false);
+        }
         map.clear();
 
 

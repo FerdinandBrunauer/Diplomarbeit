@@ -30,7 +30,7 @@ public class ActivityHandler {
         Log.d(ActivityHandler.class.toString(), "onCreate");
         ActivityListener[] listeners = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
         for (ActivityListener listener : listeners) {
-            if (listenerClass == DatenbrillenServer.class) {
+            if (listenerClass == listener.getClass()) {
                 listener.onCreate(savedInstanceState);
             }
         }
@@ -56,7 +56,7 @@ public class ActivityHandler {
         Log.d(ActivityHandler.class.toString(), "onResume");
         ActivityListener[] listeners = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
         for (ActivityListener listener : listeners) {
-            if (listenerClass == DatenbrillenServer.class) {
+            if (listenerClass == listener.getClass()) {
                 listener.onResume();
             }
         }
@@ -75,6 +75,16 @@ public class ActivityHandler {
         ActivityListener[] listeners = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
         for (ActivityListener listener : listeners) {
             listener.onStop();
+        }
+    }
+
+    public static synchronized void onStop(Class listenerClass) {
+        Log.d(ActivityHandler.class.toString(), "onStop");
+        ActivityListener[] listeners = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
+        for (ActivityListener listener : listeners) {
+            if (listenerClass == listener.getClass()) {
+                listener.onStop();
+            }
         }
     }
 
@@ -119,16 +129,11 @@ public class ActivityHandler {
 
         ActivityListener[] listener = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
         for (ActivityListener actualListener : listener) {
-            if (listenerClass == DatenbrillenServer.class) {
+            if (actualListener.getClass() == listenerClass) {
                 listeners.remove(actualListener);
                 actualListener.onPause();
                 actualListener.onStop();
                 actualListener.onDestroy();
-            }else if(listenerClass == GPS.class){
-                actualListener.onPause();
-                actualListener.onStop();
-                actualListener.onDestroy();
-                listeners.remove(actualListener);
             }
 
         }

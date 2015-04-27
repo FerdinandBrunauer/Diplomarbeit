@@ -2,11 +2,11 @@
 <resources>
 
     <string name="crawler_open_database">Öffne Datenbankverbindung</string>
-    <string name="crawler_load_packageinfo">Lade Packetinformationen herunter</string>
-    <string name="crawler_add_packageinfo">Füge Packetinformationen hinzu</string>
+    <string name="crawler_load_packageinfo">Lade Paketinformationen</string>
+    <string name="crawler_add_packageinfo">Füge Paketinformationen hinzu</string>
     <string name="crawler_add_datapoint">Füge Datenpunkte hinzu</string>
     <string name="crawler_datapoint">Datenpunkt</string>
-    <string name="crawler_unzip">Entpacke Packetinformationen</string>
-    <string name="crawler_download">Lade Resourcen herunter</string>
+    <string name="crawler_unzip">Entpacke Paketinformationen</string>
+    <string name="crawler_download">Lade Ressourcen</string>
 
 </resources>

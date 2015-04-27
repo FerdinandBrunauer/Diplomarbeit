@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:ns2="http://www.google.com/kml/ext/2.2" xmlns:ns3="http://www.w3.org/2005/Atom" xmlns:ns4="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+    <Document>
+        <LookAt>
+            <longitude>13.05426702105818</longitude>
+            <latitude>47.8029647658854</latitude>
+            <altitude>21325.0063127364</altitude>
+            <heading>0.0</heading>
+            <tilt>0.0</tilt>
+            <range>17231.723632891564</range>
+            <altitudeMode>clampToGround</altitudeMode>
+        </LookAt>
+        <Folder>
+            <name>ogdsbg:volksschule</name>
+            <LookAt>
+                <longitude>65.19400119072961</longitude>
+                <latitude>2.9767200311189015</latitude>
+                <altitude>1.4820965583855255E7</altitude>
+                <heading>0.0</heading>
+                <tilt>0.0</tilt>
+                <range>1.1976117576155579E7</range>
+                <altitudeMode>clampToGround</altitudeMode>
+            </LookAt>
+            <Placemark id="volksschule.138">
+                <name>volksschule.138</name>
+                <description>&lt;h4&gt;volksschule&lt;/h4&gt;
+
+&lt;ul class=&quot;textattributes&quot;&gt;
+  
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;BEZEICHNUNG&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;&lt;div id=&quot;datapoint-name&quot;&gt; VS Schallmoos (Heinrich Salfenauer Volksschule)&lt;/div&gt;&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;ADRESSE&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;&lt;div id=&quot;datapoint-adress&quot;&gt;Meierhofweg 4&lt;/div&gt;&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;STRASSE_ID&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;508&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;STRASSENNAME&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;Meierhofweg&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;HAUSNR&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;4&lt;/span&gt;&lt;/li&gt;
+  
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;LEITERBEZEICHNUNG&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;Direktor&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;LEITER&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;Klaus Erich Grabuschnig&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;TELEFON&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;&lt;div id=&quot;datapoint-telephone&quot;&gt;+43 662 879646&lt;/div&gt;&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;FAX&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;&lt;div id=&quot;datapoint-fax&quot;&gt;+43 662 879646 75&lt;/div&gt;&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;MAIL&lt;/span&gt;:&lt;/strong&gt; &lt;span class=&quot;atr-value&quot;&gt;&lt;div id=&quot;datapoint-email&quot;&gt;direktion@vs-schallmoos.salzburg.at&lt;/div&gt;&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;span class=&quot;atr-name&quot;&gt;BESCHREIBUNG&lt;/span&gt;:&lt;/span&gt; &lt;span class=&quot;atr-value&quot;&gt;
+	&lt;div id=&quot;datapoint-description&quot;&gt;
+		&lt;div class=&quot;item-page&quot;&gt;
+	&lt;h2&gt;
+					
+			Team
+			&lt;/h2&gt;
+
+
+&lt;p&gt;Lehrer im Schuljahr 2014/15&lt;/p&gt;
+&lt;h2&gt;KlassenlehrerInnen:&lt;/h2&gt;
+&lt;table class=&quot;table table-condensed&quot; border=&quot;1&quot; cellpadding=&quot;5&quot; cellspacing=&quot;5&quot;&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;text-decoration: underline;&quot;&gt;&lt;strong&gt;Name&lt;/strong&gt;&lt;/span&gt;&lt;/td&gt;
+&lt;td style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;text-decoration: underline;&quot;&gt;&lt;strong&gt;Klasse&lt;/strong&gt;&lt;/span&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VL Dorit Fahrner&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Vorschulklasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VOL Gudrun Kroi&#223;&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;1a Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Gabriele Steidl&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;1b Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Kerstin Steinbacher, SOL Ingrid Frauenschuh&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;1c Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VOL Doris Fanninger, VL Christina Skalitzky&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;2a Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Astrid R&#246;ck&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;2b Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VOL Regina Zwinger-Haberl, VL Tanja Traxler&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;2c Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Christina Schimpl&lt;/td&gt;
+&lt;td&gt;3a Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VOL Nicolette Teufl&lt;/td&gt;
+&lt;td&gt;3b Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VOL Caroline Steiner&lt;/td&gt;
+&lt;td&gt;3c Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VOL Margit Hitsch&lt;/td&gt;
+&lt;td&gt;4a Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Gritt B&#246;hr&lt;/td&gt;
+&lt;td&gt;4b Klasse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;h2&gt;Gruppenlehrerinnen (alphabetisch gereiht)&lt;/h2&gt;
+&lt;table class=&quot;table table-condensed&quot; border=&quot;1&quot; cellpadding=&quot;5&quot; cellspacing=&quot;5&quot;&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;VL N&#252;khet Akal&amp;nbsp;&lt;/td&gt;
+&lt;td&gt;Muttersprache t&#252;rkisch&amp;nbsp;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Saskja Bradl&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Schulversuch Englisch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Sabine Brandst&#228;tter&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Besonderer F&#246;rderunterricht Deutsch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Barbara Dittmer&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Sprachheillehrerin&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Draga Djokic&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Religion serbisch orthodox&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Alija&amp;nbsp; Halilovic&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Religion islamisch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Mag. Armida Halo&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Muttersprache albanisch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;VL Cazim&amp;nbsp; Lutvia&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Muttersprache bosn./kroat/serbisch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;nbsp;RL Gertrude Pircher&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;Religion katholisch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VOL Ursula Staudinger&lt;/td&gt;
+&lt;td&gt;Beratungslehrerin&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VL Tanja Traxler&lt;/td&gt;
+&lt;td&gt;Werkunterricht&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;RL Karin Wegmayr-Strohbach&lt;/td&gt;
+&lt;td&gt;Religion evangelisch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VL Andrea Wohlmuth&lt;/td&gt;
+&lt;td&gt;Besonderer F&#246;rderunterricht Deutsch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VOL Regina Zwinger-Haberl&lt;/td&gt;
+&lt;td&gt;Besonderer F&#246;rderunterricht Deutsch&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt; 
+
+
+
+	
+
+&lt;/div&gt;
+	&lt;/div&gt;
+  &lt;/span&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+                <LookAt>
+                    <longitude>13.055921306739677</longitude>
+                    <latitude>47.82250512033039</latitude>
+                    <altitude>0.0</altitude>
+                    <heading>0.0</heading>
+                    <tilt>0.0</tilt>
+                    <range>0.0</range>
+                    <altitudeMode>clampToGround</altitudeMode>
+                </LookAt>
+                <Style>
+                    <IconStyle>
+                        <color>ffffffff</color>
+                        <scale>1.5</scale>
+                        <heading>0.0</heading>
+                        <Icon>
+                            <refreshInterval>0.0</refreshInterval>
+                            <viewRefreshTime>0.0</viewRefreshTime>
+                            <viewBoundScale>0.0</viewBoundScale>
+                        </Icon>
+                    </IconStyle>
+                    <LabelStyle>
+                        <color>00ffffff</color>
+                        <scale>0.0</scale>
+                    </LabelStyle>
+                </Style>
+                <Point>
+                    <coordinates>13.055921306739679,47.822505120330405</coordinates>
+                </Point>
+            </Placemark>
+            
+        </Folder>
+    </Document>
+</kml>

@@ -193,11 +193,6 @@ public class MainActivity extends FragmentActivity {
                 new PackageCrawler().execute();
                 return true;
             }
-            //TODO: deactivate
-            case R.id.debug_action: {
-                DatabaseHelper.addDatapoint(1,47.682668092966395,13.098099678754807,"debug","Hello World!");
-                return true;
-            }
             default:
                 return super.onMenuItemSelected(featureId, item);
         }

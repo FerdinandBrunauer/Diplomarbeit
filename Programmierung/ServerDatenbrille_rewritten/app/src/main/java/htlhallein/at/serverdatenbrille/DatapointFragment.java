@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -266,12 +267,14 @@ public class DatapointFragment extends ListFragment {
                 TableLayout.LayoutParams tableParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
                 TableRow.LayoutParams rowParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT);
 
+                final ScrollView scrollView = new ScrollView(getActivity());
                 final TableLayout tableLayout = new TableLayout(getActivity());
                 tableLayout.setLayoutParams(tableParams);
+                scrollView.addView(tableLayout);
                 for (final List<String> packages : foundPackages) {
                     TableRow row = new TableRow(getActivity());
                     row.setLayoutParams(rowParams);
-                    row.setPadding(50, 10, 10, 10);
+                    row.setPadding(5, 5, 5, 5);
                     row.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -349,7 +352,7 @@ public class DatapointFragment extends ListFragment {
                     });
                     TextView nameView = new TextView(getActivity());
                     nameView.setText(packages.get(0));
-                    nameView.setPadding(20, 20, 20, 20);
+                    nameView.setPadding(5, 10, 5, 10);
 
                     row.addView(nameView);
 
@@ -360,7 +363,7 @@ public class DatapointFragment extends ListFragment {
                     public void run() {
                         dialog.dismiss();
                         AlertDialog.Builder searchDialogBuilder = new AlertDialog.Builder(getActivity());
-                        searchDialogBuilder.setView(tableLayout);
+                        searchDialogBuilder.setView(scrollView);
                         searchDialogBuilder.setTitle(getString(R.string.wait));
                         searchDialogBuilder.setNegativeButton(getActivity().getString(R.string.cancel), new DialogInterface.OnClickListener() {
                             @Override
