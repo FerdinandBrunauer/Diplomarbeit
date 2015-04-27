@@ -41,32 +41,61 @@ public class PackageCrawler extends AsyncTask<String, String, String> {
         dialog.setProgressNumberFormat(null);
         dialog.setProgressPercentFormat(null);
         dialog.setTitle(MainActivity.getContext().getString(R.string.crawler_open_database));
-        dialog.setMax(params.length * 30);
+        dialog.setMax(30);
 
         List<DataPackage> packageList = DatabaseHelper.getDataPackages();
 
         packageCounter = 1;
-        packagesCount = packageList.size();
-        for (DataPackage dataPackage : packageList) {
-            setDialogTitle(MainActivity.getContext().getString(R.string.crawler_load_packageinfo) + " (" + (packageCounter) + "/" + packageList.size() + ") ");
-            if (dataPackage.isDatapointsInstalled()) {
-                try {
-                    if (checkForUpdate(dataPackage)) {
-                        updatePackage(dataPackage);
+
+        if(params.length == 0){
+            packagesCount = packageList.size();
+            for (DataPackage dataPackage : packageList) {
+                setDialogTitle(MainActivity.getContext().getString(R.string.crawler_load_packageinfo) + " (" + (packageCounter) + "/" + packageList.size() + ") ");
+                if (dataPackage.isDatapointsInstalled()) {
+                    try {
+                        if (checkForUpdate(dataPackage)) {
+                            updatePackage(dataPackage);
+                        }
+                    } catch (Exception e) {
+                        Log.e(PackageCrawler.class.toString(), "doInBackground Unknown error: " + e);
                     }
-                } catch (Exception e) {
-                    Log.e(PackageCrawler.class.toString(), "doInBackground Unknown error: " + e);
+                } else {
+                    try {
+                        installPackage(dataPackage);
+                    } catch (Exception e) {
+                        Log.e(PackageCrawler.class.toString(), "doInBackground Unknown error: " + e);
+                    }
                 }
-            } else {
-                try {
-                    installPackage(dataPackage);
-                } catch (Exception e) {
-                    Log.e(PackageCrawler.class.toString(), "doInBackground Unknown error: " + e);
+                dialog.setProgress(dialog.getProgress() + 30);
+                packageCounter++;
+            }
+        }else{
+            packagesCount = 1;
+            for (DataPackage dataPackage : packageList) {
+                if(dataPackage.getIdOpenData().compareTo(params[0]) == 0){
+                    setDialogTitle(MainActivity.getContext().getString(R.string.crawler_load_packageinfo) + " (" + (packageCounter) + "/" + packagesCount + ") ");
+                    dialog.setProgress(dialog.getProgress() + 30);
+                    if (dataPackage.isDatapointsInstalled()) {
+                        try {
+                            if (checkForUpdate(dataPackage)) {
+                                updatePackage(dataPackage);
+                            }
+                        } catch (Exception e) {
+                            Log.e(PackageCrawler.class.toString(), "doInBackground Unknown error: " + e);
+                        }
+                    } else {
+                        try {
+                            installPackage(dataPackage);
+                        } catch (Exception e) {
+                            Log.e(PackageCrawler.class.toString(), "doInBackground Unknown error: " + e);
+                        }
+                    }
+                    packageCounter++;
+
                 }
             }
-            dialog.setProgress(dialog.getProgress() + 30);
-            packageCounter++;
         }
+
         dialog.setProgress(dialog.getMax());
         return null;
     }

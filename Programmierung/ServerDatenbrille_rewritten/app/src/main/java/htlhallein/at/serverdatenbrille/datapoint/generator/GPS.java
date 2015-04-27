@@ -3,6 +3,7 @@ package htlhallein.at.serverdatenbrille.datapoint.generator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -23,6 +24,7 @@ import com.google.android.gms.location.LocationServices;
 
 import htlhallein.at.serverdatenbrille.MainActivity;
 import htlhallein.at.serverdatenbrille.R;
+import htlhallein.at.serverdatenbrille.activityHandler.ActivityHandler;
 import htlhallein.at.serverdatenbrille.activityHandler.ActivityListener;
 import htlhallein.at.serverdatenbrille.datapoint.gps.GPSValidator;
 import htlhallein.at.serverdatenbrille.event.datapoint.DatapointEventHandler;
@@ -33,18 +35,38 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
     private static int fastestInterval;
     private static int displacement;
     private LocationRequest mLocationRequest;
-    private SharedPreferences preferences;
     private GoogleApiClient mGoogleApiClient;
     public static Location mLastLocation;
+    private int gpsState = 1;
+    private static final int RUNNING = 0;
+    private static final int STOPPED = 0;
 
+    private SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
 
+    private SharedPreferences.OnSharedPreferenceChangeListener mChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (key.compareTo(MainActivity.getContext().getString(R.string.preferences_preference_nfc_enabled)) == 0) {
+                Resources resources = MainActivity.getContext().getResources();
+                boolean gpsEnabled = mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_nfc_enabled), resources.getBoolean(R.bool.preferences_preference_nfc_enabled_default));
+
+                if (gpsEnabled && gpsState == STOPPED) {
+                    ActivityHandler.removeListenerClass(GPS.class);
+                }else if(!gpsEnabled && (gpsState == RUNNING)){
+                    ActivityHandler.addListener(new GPS());
+                    ActivityHandler.onCreate(null,GPS.class);
+                    ActivityHandler.onResume(GPS.class);
+                }
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
-        updateInterval = preferences.getInt("gps_update_interval", 5000);
-        fastestInterval = preferences.getInt("gps_fastest_interval", 2000);
-        displacement = preferences.getInt("gps_displacement", 1);
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
+        updateInterval = mSharedPreferences.getInt("gps_update_interval", 5000);
+        fastestInterval = mSharedPreferences.getInt("gps_fastest_interval", 2000);
+        displacement = mSharedPreferences.getInt("gps_displacement", 1);
 
         createLocationRequest();
     }
@@ -88,7 +110,7 @@ public class GPS implements ActivityListener, com.google.android.gms.location.Lo
     }
 
     private boolean gpsPreferenceEnabled() {
-        return preferences.getBoolean(MainActivity.getActivity().getString(R.string.preferences_preference_gps_enabled),
+        return mSharedPreferences.getBoolean(MainActivity.getActivity().getString(R.string.preferences_preference_gps_enabled),
                 MainActivity.getContext().getResources().getBoolean(R.bool.preferences_preference_gps_enabled_default));
     }
 

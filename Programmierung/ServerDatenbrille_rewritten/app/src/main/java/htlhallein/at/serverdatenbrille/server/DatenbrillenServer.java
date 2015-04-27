@@ -15,6 +15,7 @@ import java.nio.charset.Charset;
 
 import htlhallein.at.serverdatenbrille.MainActivity;
 import htlhallein.at.serverdatenbrille.R;
+import htlhallein.at.serverdatenbrille.activityHandler.ActivityHandler;
 import htlhallein.at.serverdatenbrille.activityHandler.ActivityListener;
 import htlhallein.at.serverdatenbrille.event.datapoint.DatapointEventHandler;
 import htlhallein.at.serverdatenbrille.event.datapoint.DatapointEventListener;
@@ -47,14 +48,36 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 public class DatenbrillenServer implements ActivityListener, DatapointEventListener, ScrollEventListener {
 
     private static final int DEFAULT_PORT = 12345;
+    private static final int RUNNING = 0;
+    private static final int STOPPED = 1;
+    private int serverState = 1;
     private Server server;
     private WifiApManager myWifiManager;
     private Thread serverThread;
     private SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext());
 
+    private SharedPreferences.OnSharedPreferenceChangeListener mChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (key.compareTo(MainActivity.getContext().getString(R.string.preferences_preference_datenbrille_enabled)) == 0) {
+                Resources resources = MainActivity.getContext().getResources();
+                boolean datenbrilleEnabled = mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_datenbrille_enabled), resources.getBoolean(R.bool.preferences_preference_datenbrille_enabled_default));
+
+                if (datenbrilleEnabled && serverState == STOPPED) {
+                    ActivityHandler.removeListenerClass(DatenbrillenServer.class);
+                    ActivityHandler.addListener(new DatenbrillenServer());
+                    ActivityHandler.onCreate(null, DatenbrillenServer.class);
+                }else if(!datenbrilleEnabled && (serverState == RUNNING)){
+                    ActivityHandler.removeListenerClass(DatenbrillenServer.class);
+                }
+            }
+        }
+    };
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(mChangeListener);
         Resources resources = MainActivity.getContext().getResources();
         boolean datenbrilleEnabled = mSharedPreferences.getBoolean(MainActivity.getContext().getString(R.string.preferences_preference_datenbrille_enabled), resources.getBoolean(R.bool.preferences_preference_datenbrille_enabled_default));
         if (datenbrilleEnabled) {
@@ -73,6 +96,8 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
             wifiConfiguration.preSharedKey = PreferenceManager.getDefaultSharedPreferences(MainActivity.getContext()).getString(MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_password), MainActivity.getContext().getString(R.string.preferences_preference_wifihotspot_password_default));
             wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
             myWifiManager.setWifiApEnabled(wifiConfiguration, true);
+
+            serverState = RUNNING;
         }
     }
 
@@ -98,11 +123,17 @@ public class DatenbrillenServer implements ActivityListener, DatapointEventListe
 
     @Override
     public void onDestroy() {
-        Log.d("DatenbrillenServer", "Stopping Server ...");
-        server.stop();
+        if(server != null){
+            Log.d("DatenbrillenServer", "Stopping Server ...");
+            server.stop();
+        }
 
-        Log.d("DatenbrillenServer", "WIFI-AP stopping ... ");
-        myWifiManager.setWifiApEnabled(null, false);
+        if(myWifiManager != null) {
+
+            Log.d("DatenbrillenServer", "WIFI-AP stopping ... ");
+            myWifiManager.setWifiApEnabled(null, false);
+        }
+        serverState = STOPPED;
     }
 
     @Override

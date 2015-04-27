@@ -6,13 +6,17 @@ public class DataPackage {
     private String idOpenData;
     private boolean datapointsInstalled;
     private long updated;
+    private int color;
+    private int displayed;
 
-    public DataPackage(long id, String name, String idOpenData, boolean datapointsInstalled, long updated) {
+    public DataPackage(long id, String name, String idOpenData, boolean datapointsInstalled, long updated, int color, int displayed) {
         this.id = id;
         this.name = name;
         this.idOpenData = idOpenData;
         this.datapointsInstalled = datapointsInstalled;
         this.updated = updated;
+        this.color = color;
+        this.displayed = displayed;
     }
 
     public String getName() {
@@ -45,5 +49,21 @@ public class DataPackage {
 
     public void setDatapointsInstalled(boolean datapointsInstalled) {
         this.datapointsInstalled = datapointsInstalled;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
+    }
+
+    public int getDisplayed() {
+        return displayed;
+    }
+
+    public void setDisplayed(int displayed) {
+        this.displayed = displayed;
     }
 }

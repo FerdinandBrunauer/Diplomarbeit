@@ -7,6 +7,7 @@ import android.app.ListFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.HandlerThread;
@@ -19,9 +20,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -38,6 +43,8 @@ import htlhallein.at.serverdatenbrille.database.DatabaseHelper;
 import htlhallein.at.serverdatenbrille.memoryObjects.DataPackage;
 import htlhallein.at.serverdatenbrille.memoryObjects.OpenDataResource;
 import htlhallein.at.serverdatenbrille.opendata.OpenDataUtil;
+import htlhallein.at.serverdatenbrille.opendata.PackageCrawler;
+import yuku.ambilwarna.AmbilWarnaDialog;
 
 public class DatapointFragment extends ListFragment {
     ListViewCustomAdapter adapter;
@@ -98,14 +105,28 @@ public class DatapointFragment extends ListFragment {
                             if (tvName.getText().toString().compareTo("") != 0) {
                                 if (tvKey.getText().toString().compareTo("") != 0) {
                                     try {
-                                        String name = tvName.getText().toString();
-                                        String openDataID = tvKey.getText().toString();
-                                        long timestamp = System.currentTimeMillis();
-                                        long packageID = DatabaseHelper.addPackage(openDataID, "", name, timestamp);
-                                        DataPackage addPackage = new DataPackage(packageID, name, openDataID, false, timestamp);
-                                        packages.add(addPackage);
-                                        notifyDataSetChanged();
-                                        Toast.makeText(context, "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
+                                        final String name = tvName.getText().toString();
+                                        final String openDataID = tvKey.getText().toString();
+                                        final long timestamp = System.currentTimeMillis();
+                                        AmbilWarnaDialog.OnAmbilWarnaListener listener = new AmbilWarnaDialog.OnAmbilWarnaListener() {
+                                            @Override
+                                            public void onCancel(AmbilWarnaDialog dialog) {
+
+                                            }
+
+                                            @Override
+                                            public void onOk(AmbilWarnaDialog dialog, int color) {
+                                                long packageID = DatabaseHelper.addPackage(openDataID, "", name, timestamp,color);
+                                                DataPackage addPackage = new DataPackage(packageID, name, openDataID, false, timestamp,color, 1);
+                                                packages.add(addPackage);
+                                                notifyDataSetChanged();
+                                                Toast.makeText(context, "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
+                                            }
+                                        };
+
+                                        AmbilWarnaDialog ambilWarnaDialog = new AmbilWarnaDialog(MainActivity.getContext(), 0xffffffff, listener);
+                                        ambilWarnaDialog.show();
+
                                     } catch (Exception e) {
                                         Toast.makeText(context, "Fehler beim hinzufügen des Packetes", Toast.LENGTH_LONG).show();
                                     }
@@ -133,12 +154,32 @@ public class DatapointFragment extends ListFragment {
                     dialog.show();
                 }
             });
-            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+        }
+
+
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                LayoutInflater mInflater = (LayoutInflater) context
+                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                convertView = mInflater.inflate(R.layout.fragment_datapoints_listviewrow, parent, false);
+            }
+
+            LinearLayout ll = (LinearLayout) convertView.findViewById(R.id.textlayout);
+            CheckBox tvDisplayed = (CheckBox) convertView.findViewById(R.id.tvCheckBox);
+            TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
+            TextView tvKey = (TextView) convertView.findViewById(R.id.tvKey);
+            final ImageView tvImage = (ImageView) convertView.findViewById(R.id.tvImage);
+
+            final DataPackage actualPackage = packages.get(position);
+
+            ll.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
-                public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                public boolean onLongClick(View v) {
                     AlertDialog.Builder dialog = new AlertDialog.Builder(context);
                     dialog.setTitle(context.getString(R.string.delete_Package));
-                    dialog.setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             DatabaseHelper.deletePackage(packages.get(position).getId());
@@ -146,28 +187,54 @@ public class DatapointFragment extends ListFragment {
                             notifyDataSetChanged();
                         }
                     });
-                    dialog.setNegativeButton(context.getString(R.string.cancel), null);
+                    dialog.setNegativeButton("abbrechen", null);
                     dialog.show();
                     return true;
                 }
             });
-        }
 
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                LayoutInflater mInflater = (LayoutInflater) context
-                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = mInflater.inflate(R.layout.fragment_datapoints_listviewrow, parent, false);
+            if(actualPackage.getDisplayed() == 1){
+                tvDisplayed.setChecked(true);
+            }else{
+                tvDisplayed.setChecked(false);
             }
 
-            TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
-            TextView tvKey = (TextView) convertView.findViewById(R.id.tvKey);
-
-            DataPackage actualPackage = packages.get(position);
             tvName.setText(actualPackage.getName());
             tvKey.setText(actualPackage.getIdOpenData());
+            tvImage.setBackgroundColor(actualPackage.getColor());
+            tvImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AmbilWarnaDialog.OnAmbilWarnaListener listener = new AmbilWarnaDialog.OnAmbilWarnaListener() {
+                        @Override
+                        public void onCancel(AmbilWarnaDialog dialog) {
 
+                        }
+
+                        @Override
+                        public void onOk(AmbilWarnaDialog dialog, int color) {
+                            DatabaseHelper.editPackageColor(packages.get(position).getId(), color);
+                            packages = DatabaseHelper.getDataPackages();
+                            tvImage.setBackgroundColor(color);
+                        }
+                    };
+
+                    AmbilWarnaDialog ambilWarnaDialog = new AmbilWarnaDialog(MainActivity.getContext(), packages.get(position).getColor(), listener);
+                    ambilWarnaDialog.show();
+                }
+            });
+
+            tvDisplayed.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked) {
+                        DatabaseHelper.editPackageDispalyed(actualPackage.getId(), 1);
+                    }else{
+                        DatabaseHelper.editPackageDispalyed(actualPackage.getId(), 0);
+                    }
+                    packages = DatabaseHelper.getDataPackages();
+                }
+            });
             return convertView;
         }
 
@@ -217,7 +284,7 @@ public class DatapointFragment extends ListFragment {
                                         dialog.setCancelable(false);
                                         dialog.setCanceledOnTouchOutside(false);
                                         dialog.show();
-                                        String name = packages.get(0);
+                                        final String name = packages.get(0);
                                         final String openDataID = packages.get(1);
                                         final CountDownLatch latch = new CountDownLatch(1);
                                         final List<OpenDataResource> openDataResources = new ArrayList<>();
@@ -232,8 +299,6 @@ public class DatapointFragment extends ListFragment {
                                         };
                                         searchThread.start();
                                         latch.await();
-                                        if (dialog.isShowing())
-                                            dialog.dismiss();
 
                                         long timestamp = 0;
                                         for (OpenDataResource openDataResource : openDataResources) {
@@ -243,13 +308,32 @@ public class DatapointFragment extends ListFragment {
                                                 }
                                             }
                                         }
-                                        long packageID = DatabaseHelper.addPackage(openDataID, "", name, timestamp);
-                                        DataPackage addPackage = new DataPackage(packageID, name, openDataID, false, timestamp);
+                                        if (dialog.isShowing())
+                                            dialog.dismiss();
 
-                                        DatapointFragment.this.adapter.packages.add(addPackage);
-                                        DatapointFragment.this.adapter.notifyDataSetChanged();
+                                        final long finalTimestamp = timestamp;
 
-                                        Toast.makeText(getActivity(), "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
+                                        AmbilWarnaDialog.OnAmbilWarnaListener listener = new AmbilWarnaDialog.OnAmbilWarnaListener() {
+                                            @Override
+                                            public void onCancel(AmbilWarnaDialog dialog) {
+
+                                            }
+
+                                            @Override
+                                            public void onOk(AmbilWarnaDialog dialog, int color) {
+                                                long packageID = DatabaseHelper.addPackage(openDataID, "", name, finalTimestamp,color);
+                                                DataPackage addPackage = new DataPackage(packageID, name, openDataID, false, finalTimestamp,color,1);
+
+                                                new PackageCrawler().execute(addPackage.getIdOpenData());
+                                                DatapointFragment.this.adapter.packages.add(addPackage);
+                                                DatapointFragment.this.adapter.notifyDataSetChanged();
+
+                                                Toast.makeText(getActivity(), "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
+                                            }
+                                        };
+
+                                        AmbilWarnaDialog ambilWarnaDialog = new AmbilWarnaDialog(MainActivity.getContext(), 0xffffffff, listener);
+                                        ambilWarnaDialog.show();
                                     } catch (Exception e) {
                                         Toast.makeText(getActivity(), "Fehler beim hinzufügen des Packetes", Toast.LENGTH_LONG).show();
                                     }

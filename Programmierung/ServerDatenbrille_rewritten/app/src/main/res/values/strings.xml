@@ -21,7 +21,9 @@
     <string name="cancel">Abbrechen</string>
     <string name="search">Suchen</string>
     <string name="wait">Bitte warten</string>
-    <string name="delete_Package">Package wirklich löschen?</string>
+    <string name="delete_Package">Paket löschen</string>
+    <string name="delete">löschen</string>
+    <string name="edit">bearbeiten</string>
     <string name="ok">OK</string>
     <string name="search_package_no_name">Bitte geben sie einen Namen ein, nach welchem gesucht werden kann!</string>
     <string name="new_client_connected">Es hat sich ein neues Gerät verbunden!</string>

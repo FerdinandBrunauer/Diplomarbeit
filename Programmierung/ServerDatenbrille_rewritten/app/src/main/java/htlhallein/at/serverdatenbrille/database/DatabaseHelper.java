@@ -47,14 +47,16 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
         return statement.executeInsert();
     }
 
-    public static long addPackage(final String openDataID, final String linkOpenData, final String name, final long updated) {
+    public static long addPackage(final String openDataID, final String linkOpenData, final String name, final long updated,final int color) {
         try {
-            SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Package`(`idOpenData`,`linkOpenData`,`name`,`updated`, `datapointsInstalled`) VALUES (?,?,?,?,?);");
+            SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("INSERT INTO `Package`(`idOpenData`,`linkOpenData`,`name`,`updated`, `datapointsInstalled`,`color`, `displayed`) VALUES (?,?,?,?,?,?,?);");
             statement.bindString(1, openDataID);
             statement.bindString(2, linkOpenData);
             statement.bindString(3, name);
             statement.bindLong(4, updated);
             statement.bindString(5, "false");
+            statement.bindLong(6,color);
+            statement.bindLong(7,1);
             return statement.executeInsert();
         }catch (Exception e){
             Log.e("DatabaseHelper", "Error: " + e);
@@ -73,10 +75,10 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
     public static List<DataPackage> getDataPackages() {
         List<DataPackage> packages = new ArrayList<>();
 
-        Cursor cursor = getInstance().getReadableDatabase().rawQuery("SELECT `idPackage`, `name`, `idOpenData`, `datapointsInstalled`, `updated` FROM `Package`;", null);
+        Cursor cursor = getInstance().getReadableDatabase().rawQuery("SELECT `idPackage`, `name`, `idOpenData`, `datapointsInstalled`, `updated`, `color` , `displayed` FROM `Package`;", null);
         if (cursor.moveToFirst()) {
             do {
-                packages.add(new DataPackage(cursor.getLong(0), cursor.getString(1), cursor.getString(2), Boolean.parseBoolean(cursor.getString(3)), cursor.getLong(4)));
+                packages.add(new DataPackage(cursor.getLong(0), cursor.getString(1), cursor.getString(2), Boolean.parseBoolean(cursor.getString(3)), cursor.getLong(4), cursor.getInt(5), cursor.getInt(6)));
             } while (cursor.moveToNext());
         }
 
@@ -141,10 +143,12 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE `Datapoint` (`idDatapoint` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `idPackage` INTEGER NOT NULL, `latitude` REAL, `longitude` REAL, `name` TEXT, `content` TEXT);");
-        db.execSQL("CREATE TABLE `Package` (`idPackage` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `idOpenData` TEXT UNIQUE, `linkOpenData` TEXT, `name` TEXT, `updated` INTEGER, `datapointsInstalled` TEXT);");
+        db.execSQL("CREATE TABLE `Package` (`idPackage` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `idOpenData` TEXT UNIQUE, `linkOpenData` TEXT, `name` TEXT, `updated` INTEGER, `datapointsInstalled` TEXT, `color` INTEGER, `displayed` INTEGER);");
         db.execSQL("CREATE TRIGGER datapointDeleteTrigger AFTER DELETE ON `Package` BEGIN DELETE FROM `Datapoint` WHERE `idPackage`=OLD.`idPackage`; END;");
 
-        db.execSQL("INSERT INTO `Package`(`idOpenData`, `linkOpenData`, `name`, `updated`) VALUES ('a5841caf-afe2-4f98-bb68-bd4899e8c9cb', '', 'Museen', 0);");
+
+        db.execSQL("INSERT INTO `Package`(`idOpenData`, `linkOpenData`, `name`, `updated`, `datapointsInstalled`, `color`,  `displayed`) VALUES ('abcd-1234', '', 'Fachhochschule Salzburg',0, 'true', -6289107, 1);");
+        db.execSQL("INSERT INTO `Datapoint`(`idPackage`, `latitude`, `longitude`, `name`,`content`) VALUES (1,47.72337822992805,13.087143525481224, 'Fachhochschule Salzburg', '" + fhtext + "');");
     }
 
     @Override
@@ -198,4 +202,34 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
     public void onNewIntent(Intent intent) {
 
     }
+
+    public static long editPackageColor(long id, int color) {
+        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("UPDATE `Package` SET `color` = ? WHERE `idPackage` = ?;");
+        statement.bindLong(2, id);
+        statement.bindLong(1, color);
+        return statement.executeInsert();
+    }
+
+    public static long editPackageDispalyed(long id, int displayed) {
+        SQLiteStatement statement = getInstance().getWritableDatabase().compileStatement("UPDATE `Package` SET `displayed` = ? WHERE `idPackage` = ?;");
+        statement.bindLong(2, id);
+        statement.bindLong(1, displayed);
+        return statement.executeInsert();
+    }
+
+    private static String fhtext = "<div class=\"content_box\"><div id=\"c1652\" class=\"csc-default\"><header class=\"csc-header csc-header-n1\"><h2 class=\"title_pattern uppercase\"><span>Forschung am Studiengang Informationstechnik &amp; System-Management</span></h2></header><div class=\"csc-textpic-text\"><p class=\"bodytext\"><b>Digital und lebensnah</b><br>Informationstechnologien werden immer intelligenter<i><br></i>\n" +
+            "</p>\n" +
+            "<p class=\"bodytext\"><i>Im Informationszeitalter wird die Qualität eines Produkts durch seine Software bestimmt. So wie sich Lebewesen ihrer Umgebung anpassen, richten sich intelligente Systeme nach dem Verhalten ihrer Nutzerinnen und Nutzer. Sechs praxisnahe Wissenslinien für IT-Profis der Zukunft ...</i>\n" +
+            "</p>\n" +
+            "<p class=\"bodytext\">Software von morgen besteht aus verschiedenen Komponenten, die den Bedürfnissen ihrer Verwenderinnen und Verwender optimal entsprechen. Die Konzeption und Umsetzung solch hochflexibler Systeme steht im Zentrum der Wissenslinie Informatik und Softwaretechnik.\n" +
+            "</p>\n" +
+            "<p class=\"bodytext\">Im modernen Wirtschaftsleben wird mobile Datenübertragung immer wichtiger. Dieser steigende Informationsfluss stellt jedoch wachsende Anforderungen an die Sicherheit von Netzwerken. Gemeinsam mit dem Advanced Networking Center der Salzburg Research befasst sich der Schwerpunkt Netzwerktechnologien und -Security mit der wissenschaftlichen Analyse und Optimierung hochvolumiger Datenströme.\n" +
+            "</p>\n" +
+            "<p class=\"bodytext\">Erfolgreiche Unternehmen brauchen Innovationen und optimierte Prozesse. Die Basis dafür liefern die Informationstechnologien: sei es im Bereich von Simulation, Entwicklung und automatisiertem Testen oder bei Produktion und Qualitätssteigerung. Überall wo ein intelligentes Produkt entsteht, sind komplexe IT-Prozesse im Spiel. Die Wissenslinie Industrielle Systeme und Signalverarbeitung liefert dafür ein praxisnahes Fundament.\n" +
+            "</p>\n" +
+            "<p class=\"bodytext\">Wer aus empirischen Daten die richtigen Schlüsse ziehen kann, nutzt das eigentliche Potential der modernen vernetzen IT. Neben den vielfältigen Techniken zur Gewinnung von Information aus Rohdaten mittels Statistik und Data-Mining untersucht der Studienschwerpunkt Datenanalyse und e-Health besonders auch deren Anwendung im Bereich der Medizin. Das Forschungsspektrum reicht von 3D-Simulation von Implantaten über Qualitätssicherung und kostensparenden Systemem für den Umgang mit sensiblen Patientendaten bis hin zu Proteinklassifikation und zur Analyse von Börseninstrumenten.\n" +
+            "</p>\n" +
+            "<p class=\"bodytext\">Globale Zukunftsarbeit funktioniert virtuell. Immer öfter wird länderübergreifend an Forschungs- und Ausbildungsprojekten gearbeitet. Nur wenn die internationalen Arbeitsgruppen optimal miteinander vernetzt sind, kann das Ergebnis der Kooperation überzeugen. Die Wissenslinie IT-Management und Wirtschaft liefert das Know-how für ertragreiche internationale Zusammenarbeit.\n" +
+            "</p>\n" +
+            "<p class=\"bodytext\">Die Zusammenarbeit in einem globalisierten Umfeld erfordert fundierte Kenntnisse in der internationalen \"Arbeitssprache\" Englisch. Teamarbeit in multinationalen Projekten setzt voraus, dass alle Miglieder gegenüber kulturellen Unterschieden sensibilisiert sind und damit konstruktiv umgehen können. Der Schwerpunkt Englisch und interkullturelle Kommunikation fördert den sprachlichen Komptenzerwerb und liefert das nötige Rüstzeug für international erfolgreiche Kooperation.</p></div></div></div>";
 }

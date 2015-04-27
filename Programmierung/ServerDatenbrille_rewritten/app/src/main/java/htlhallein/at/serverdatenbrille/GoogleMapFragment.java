@@ -13,6 +13,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -114,26 +115,29 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
         map = mapFragment.getMap();
         map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         map.setMyLocationEnabled(true);
+        map.clear();
+
 
         List<GPSDatapointObject> datapointObjects = DatabaseHelper.getAllDatapoints();
         List<DataPackage> dataPackages = DatabaseHelper.getDataPackages();
 
-        float[] colors = {BitmapDescriptorFactory.HUE_AZURE,BitmapDescriptorFactory.HUE_RED,BitmapDescriptorFactory.HUE_BLUE,BitmapDescriptorFactory.HUE_GREEN,
-        BitmapDescriptorFactory.HUE_MAGENTA, BitmapDescriptorFactory.HUE_CYAN,  BitmapDescriptorFactory.HUE_ORANGE, BitmapDescriptorFactory.HUE_ROSE,
-        BitmapDescriptorFactory.HUE_VIOLET,BitmapDescriptorFactory.HUE_YELLOW};
+
 
 
             for (GPSDatapointObject datapointObject : datapointObjects) {
-                for(int i=0;i<dataPackages.size();i++) {
-                    if(dataPackages.get(i).getId()==datapointObject.getODId()){
-                        float markerColor;
-                        if(i>colors.length){
-                            markerColor = colors[(i%colors.length)];
-                        }else {
-                            markerColor = colors[i];
+                for(DataPackage dataPackage:dataPackages) {
+                    if(dataPackage.getId()==datapointObject.getODId()){
+                        if(dataPackage.getDisplayed() == 1) {
+                            int markerColor = dataPackage.getColor();
+                            int red = Color.red(markerColor);
+                            int green = Color.green(markerColor);
+                            int blue = Color.blue(markerColor);
+                            float[] hsv = new float[3];
+                            android.graphics.Color.RGBToHSV(red, green, blue, hsv);
+
+                            map.addMarker(new MarkerOptions().position(new LatLng(datapointObject.getLatitude(), datapointObject.getLongitude()))
+                                    .title(datapointObject.getTitle()).icon(BitmapDescriptorFactory.defaultMarker(hsv[0])));
                         }
-                        map.addMarker(new MarkerOptions().position(new LatLng(datapointObject.getLatitude(), datapointObject.getLongitude()))
-                                .title(datapointObject.getTitle()).icon(BitmapDescriptorFactory.defaultMarker(markerColor)));
                     }
 
                 }

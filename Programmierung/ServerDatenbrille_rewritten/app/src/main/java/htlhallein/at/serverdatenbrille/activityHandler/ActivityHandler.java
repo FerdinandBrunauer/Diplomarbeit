@@ -4,7 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+
+import htlhallein.at.serverdatenbrille.datapoint.generator.GPS;
+import htlhallein.at.serverdatenbrille.server.DatenbrillenServer;
 
 public class ActivityHandler {
     private static ArrayList<ActivityListener> listeners = new ArrayList<>();
@@ -22,6 +26,16 @@ public class ActivityHandler {
         }
     }
 
+    public static synchronized void onCreate(Bundle savedInstanceState, Class listenerClass) {
+        Log.d(ActivityHandler.class.toString(), "onCreate");
+        ActivityListener[] listeners = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
+        for (ActivityListener listener : listeners) {
+            if (listenerClass == DatenbrillenServer.class) {
+                listener.onCreate(savedInstanceState);
+            }
+        }
+    }
+
     public static synchronized void onStart() {
         Log.d(ActivityHandler.class.toString(), "onStart");
         ActivityListener[] listeners = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
@@ -35,6 +49,16 @@ public class ActivityHandler {
         ActivityListener[] listeners = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
         for (ActivityListener listener : listeners) {
             listener.onResume();
+        }
+    }
+
+    public static synchronized void onResume(Class listenerClass) {
+        Log.d(ActivityHandler.class.toString(), "onResume");
+        ActivityListener[] listeners = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
+        for (ActivityListener listener : listeners) {
+            if (listenerClass == DatenbrillenServer.class) {
+                listener.onResume();
+            }
         }
     }
 
@@ -89,5 +113,24 @@ public class ActivityHandler {
     public static synchronized void clearListener() {
         Log.d(ActivityHandler.class.toString(), "clearListener");
         listeners.clear();
+    }
+
+    public static void removeListenerClass(Class listenerClass) {
+
+        ActivityListener[] listener = ActivityHandler.listeners.toArray(new ActivityListener[ActivityHandler.listeners.size()]);
+        for (ActivityListener actualListener : listener) {
+            if (listenerClass == DatenbrillenServer.class) {
+                listeners.remove(actualListener);
+                actualListener.onPause();
+                actualListener.onStop();
+                actualListener.onDestroy();
+            }else if(listenerClass == GPS.class){
+                actualListener.onPause();
+                actualListener.onStop();
+                actualListener.onDestroy();
+                listeners.remove(actualListener);
+            }
+
+        }
     }
 }

@@ -92,6 +92,7 @@ public class MainActivity extends FragmentActivity {
         mDrawerToggle = new CustomActionBarDrawerToggle(this, mDrawer);
         mDrawer.setDrawerListener(mDrawerToggle);
 
+
         // Event
         ActivityHandler.clearListener();
         ActivityHandler.addListener(new OrientationSensor());
