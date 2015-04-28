@@ -1,7 +1,9 @@
 package htlhallein.at.serverdatenbrille;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -18,7 +20,9 @@ import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,13 +34,20 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import htlhallein.at.serverdatenbrille.database.DatabaseHelper;
+import htlhallein.at.serverdatenbrille.datapoint.Validator;
 import htlhallein.at.serverdatenbrille.datapoint.generator.GPS;
 import htlhallein.at.serverdatenbrille.datapoint.gps.GPSDatapointObject;
+import htlhallein.at.serverdatenbrille.datapoint.gps.GPSValidator;
+import htlhallein.at.serverdatenbrille.event.datapoint.DatapointEventHandler;
+import htlhallein.at.serverdatenbrille.event.datapoint.DatapointEventListener;
+import htlhallein.at.serverdatenbrille.event.datapoint.DatapointEventObject;
 import htlhallein.at.serverdatenbrille.memoryObjects.DataPackage;
+import htlhallein.at.serverdatenbrille.server.DatenbrillenServer;
 
 public class GoogleMapFragment extends Fragment implements LocationListener {
     private static Location currentLoc;
@@ -72,7 +83,7 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
     private boolean gpsEnabled;
 
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         /*meters = new HashMap<>();
         meters.put(0, 110570);
@@ -124,7 +135,7 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
             view = inflater.inflate(R.layout.fragment_map, container, false);
         } catch (InflateException ignored) {
         }
-        MapFragment mapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map);
+        final MapFragment mapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map);
         map = mapFragment.getMap();
         map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         if(gpsEnabled){
@@ -134,12 +145,25 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
         }
         map.clear();
 
+       map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+           @Override
+           public void onInfoWindowClick(Marker marker) {
+                String html = DatabaseHelper.getDatapointcontentFromLocation(marker.getPosition().latitude,marker.getPosition().longitude);
+               if(html != null){
+                   DatapointEventHandler.fireDatapointEvent(new DatapointEventObject(html));
+
+                   getFragmentManager()
+                           .beginTransaction()
+                           .replace(R.id.flContent, new ControllerFragment())
+                           .commit();
+               }else{
+                   Toast.makeText(getActivity(),getString(R.string.google_map_marker_description_null),Toast.LENGTH_SHORT).show();
+               }
+           }
+       });
 
         List<GPSDatapointObject> datapointObjects = DatabaseHelper.getAllDatapoints();
         List<DataPackage> dataPackages = DatabaseHelper.getDataPackages();
-
-
-
 
             for (GPSDatapointObject datapointObject : datapointObjects) {
                 for(DataPackage dataPackage:dataPackages) {
@@ -153,7 +177,7 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
                             android.graphics.Color.RGBToHSV(red, green, blue, hsv);
 
                             map.addMarker(new MarkerOptions().position(new LatLng(datapointObject.getLatitude(), datapointObject.getLongitude()))
-                                    .title(datapointObject.getTitle()).icon(BitmapDescriptorFactory.defaultMarker(hsv[0])));
+                                    .title(datapointObject.getTitle()).icon(BitmapDescriptorFactory.defaultMarker(hsv[0])).snippet(getString(R.string.google_map_marker_description)));
                         }
                     }
 

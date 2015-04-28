@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -121,7 +122,7 @@ public class DatapointFragment extends ListFragment {
                                                 DataPackage addPackage = new DataPackage(packageID, name, openDataID, false, timestamp,color, 1);
                                                 packages.add(addPackage);
                                                 notifyDataSetChanged();
-                                                Toast.makeText(context, "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(context, "Paket erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
                                             }
                                         };
 

@@ -75,6 +75,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements ActivityListener
     public static List<DataPackage> getDataPackages() {
         List<DataPackage> packages = new ArrayList<>();
 
+
         Cursor cursor = getInstance().getReadableDatabase().rawQuery("SELECT `idPackage`, `name`, `idOpenData`, `datapointsInstalled`, `updated`, `color` , `displayed` FROM `Package`;", null);
         if (cursor.moveToFirst()) {
             do {

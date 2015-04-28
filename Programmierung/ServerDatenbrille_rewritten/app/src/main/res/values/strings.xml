@@ -31,4 +31,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="webrequestValidatorDialogTitle">Bitte warten Sie, bis der Inhalt der Website heruntergeladen wurde!</string>
 
+    <string name="google_map_marker_description">Für weitere Infos hier drücken</string>
+    <string name="google_map_marker_description_null">Keine Beschreibung gefunden</string>
+
 </resources>

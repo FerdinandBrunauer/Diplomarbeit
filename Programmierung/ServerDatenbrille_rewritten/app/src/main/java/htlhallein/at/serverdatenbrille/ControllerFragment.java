@@ -89,12 +89,7 @@ public class ControllerFragment extends Fragment {
 
         webView = (ObservableWebView) rootView.findViewById(R.id.controllerWebView);
         webView.loadDataWithBaseURL(null, text, "text/html", "utf-8", null);
-        webView.setWebChromeClient(new WebChromeClient());
-        webView.setWebViewClient(new WebViewClient());
-        webView.clearCache(true);
-        webView.clearHistory();
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+
 
         if(datenbrilleEnabled) {
             buttonLayout.setVisibility(View.VISIBLE);
