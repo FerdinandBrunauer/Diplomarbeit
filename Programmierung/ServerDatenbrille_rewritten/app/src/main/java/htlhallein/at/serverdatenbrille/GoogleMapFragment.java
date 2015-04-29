@@ -176,8 +176,12 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
                             float[] hsv = new float[3];
                             android.graphics.Color.RGBToHSV(red, green, blue, hsv);
 
+                            String title = getString(R.string.google_map_marker_no_title);
+                            if(datapointObject.getTitle() != null && datapointObject.getTitle().compareTo("") != 0){
+                                title = datapointObject.getTitle();
+                            }
                             map.addMarker(new MarkerOptions().position(new LatLng(datapointObject.getLatitude(), datapointObject.getLongitude()))
-                                    .title(datapointObject.getTitle()).icon(BitmapDescriptorFactory.defaultMarker(hsv[0])).snippet(getString(R.string.google_map_marker_description)));
+                                    .title(title).icon(BitmapDescriptorFactory.defaultMarker(hsv[0])).snippet(getString(R.string.google_map_marker_description)));
                         }
                     }
 
