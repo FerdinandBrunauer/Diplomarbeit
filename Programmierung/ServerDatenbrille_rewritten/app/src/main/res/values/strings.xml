@@ -35,4 +35,6 @@
     <string name="google_map_marker_description_null">Keine Beschreibung gefunden</string>
     <string name="google_map_marker_no_title">Kein Titel</string>
 
+    <string name="package_searcher_cancel">Beende Suchvorgang</string>
+
 </resources>

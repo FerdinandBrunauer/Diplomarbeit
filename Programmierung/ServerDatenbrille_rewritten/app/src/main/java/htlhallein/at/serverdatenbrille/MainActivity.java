@@ -273,7 +273,7 @@ public class MainActivity extends FragmentActivity {
                 case nsMenuItem_Packages: {
                     getFragmentManager()
                             .beginTransaction()
-                            .replace(R.id.flContent, new DatapointFragment())
+                            .replace(R.id.flContent, new DatapointFragment(), "DatapointFragment")
                             .commit();
                     break;
                 }

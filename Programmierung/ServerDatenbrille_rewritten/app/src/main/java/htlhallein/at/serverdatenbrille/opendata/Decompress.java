@@ -26,17 +26,23 @@ public class Decompress {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 Log.d(this.getClass().toString(), "Unzipping " + zipEntry.getName());
+                if(PackageCrawler.isRunning) {
 
-                if (zipEntry.isDirectory()) {
-                    dirChecker(zipEntry.getName());
-                } else {
-                    FileOutputStream fileOutputStream = new FileOutputStream(location + zipEntry.getName());
-                    for (int c = zipInputStream.read(); c != -1; c = zipInputStream.read()) {
-                        fileOutputStream.write(c);
+                    if (zipEntry.isDirectory()) {
+                        dirChecker(zipEntry.getName());
+                    } else {
+                        FileOutputStream fileOutputStream = new FileOutputStream(location + zipEntry.getName());
+                        for (int c = zipInputStream.read(); c != -1; c = zipInputStream.read()) {
+                            if (PackageCrawler.isRunning) {
+                                fileOutputStream.write(c);
+                            }else{
+                                break;
+                            }
+                        }
+
+                        zipInputStream.closeEntry();
+                        fileOutputStream.close();
                     }
-
-                    zipInputStream.closeEntry();
-                    fileOutputStream.close();
                 }
 
             }

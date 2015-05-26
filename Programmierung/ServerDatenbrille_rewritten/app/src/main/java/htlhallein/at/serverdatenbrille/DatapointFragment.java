@@ -258,13 +258,17 @@ public class DatapointFragment extends ListFragment {
 
     private class PackageSearcher extends AsyncTask<String, String, String> {
         private AlertDialog searchDialog;
-        private Dialog dialog = new ProgressDialog(getActivity());
+        private ProgressDialog dialog = new ProgressDialog(getActivity());
+        private boolean isRunning = true;
 
         @Override
         protected String doInBackground(String... params) {
             try {
                 List<List<String>> foundPackages = OpenDataUtil.searchForPackages(params[0]);
 
+                if(!isRunning){
+                    return "";
+                }
                 TableLayout.LayoutParams tableParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
                 TableRow.LayoutParams rowParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT);
 
@@ -331,15 +335,13 @@ public class DatapointFragment extends ListFragment {
                                                 new PackageCrawler().execute(addPackage.getIdOpenData());
                                                 DatapointFragment.this.adapter.packages.add(addPackage);
                                                 DatapointFragment.this.adapter.notifyDataSetChanged();
-
-                                                Toast.makeText(getActivity(), "Packet erfolgreich hinzugefügt!", Toast.LENGTH_LONG).show();
                                             }
                                         };
 
                                         AmbilWarnaDialog ambilWarnaDialog = new AmbilWarnaDialog(MainActivity.getContext(), 0xffffffff, listener);
                                         ambilWarnaDialog.show();
                                     } catch (Exception e) {
-                                        Toast.makeText(getActivity(), "Fehler beim hinzufügen des Packetes", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getActivity(), "Fehler beim hinzufügen des Paketes", Toast.LENGTH_LONG).show();
                                     }
                                 }
                             }
@@ -386,7 +388,20 @@ public class DatapointFragment extends ListFragment {
             dialog.setTitle(MainActivity.getContext().getString(R.string.wait));
             dialog.setCancelable(false);
             dialog.setCanceledOnTouchOutside(false);
+            dialog.setButton(DialogInterface.BUTTON_NEUTRAL, MainActivity.getContext().getString(R.string.cancel), (DialogInterface.OnClickListener) null);
             dialog.show();
+            final Button dialogButton = dialog.getButton( DialogInterface.BUTTON_NEUTRAL );
+            dialogButton.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick ( View view ) {
+                    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    dialog.setTitle(MainActivity.getContext().getString(R.string.package_searcher_cancel));
+                    dialog.setIndeterminate(true);
+                    isRunning = false;
+                }
+
+            });
         }
 
         @Override

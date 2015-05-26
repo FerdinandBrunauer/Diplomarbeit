@@ -8,5 +8,7 @@
     <string name="crawler_datapoint">Datenpunkt</string>
     <string name="crawler_unzip">Entpacke Paketinformationen</string>
     <string name="crawler_download">Lade Ressourcen</string>
-
+    <string name="crawler_cancel">Beende Ladevorgang - Bitte Warten</string>
+    <string name="crawler_no_connection">Keine Internetverbindung</string>
+    <string name="crawler_clicks_op">Durch mehrmaliges Drücken wird\'s nicht schneller</string>
 </resources>

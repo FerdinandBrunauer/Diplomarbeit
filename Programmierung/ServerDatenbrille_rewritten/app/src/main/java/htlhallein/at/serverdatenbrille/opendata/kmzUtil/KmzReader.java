@@ -6,6 +6,7 @@ import android.util.Log;
 import java.io.File;
 
 import htlhallein.at.serverdatenbrille.opendata.Decompress;
+import htlhallein.at.serverdatenbrille.opendata.PackageCrawler;
 
 public class KmzReader {
 
@@ -25,13 +26,14 @@ public class KmzReader {
 
             String kmlFilePath = null;
 
-            for (int i = 0; i < tempFolderFiles.length; i++) {
-                String extension = tempFolderFiles[i].getAbsolutePath().substring(tempFolderFiles[i].getAbsolutePath().lastIndexOf('.') + 1).toLowerCase();
+            for (File tempFolderFile : tempFolderFiles) {
+                if (!PackageCrawler.isRunning) break;
+                String extension = tempFolderFile.getAbsolutePath().substring(tempFolderFile.getAbsolutePath().lastIndexOf('.') + 1).toLowerCase();
                 if (extension.compareTo("kml") == 0) {
-                    kmlFilePath = tempFolderFiles[i].getAbsolutePath();
+                    kmlFilePath = tempFolderFile.getAbsolutePath();
                     break;
                 } else {
-                    tempFolderFiles[i].delete();
+                    tempFolderFile.delete();
                 }
             }
 
