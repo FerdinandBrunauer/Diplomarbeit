@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="htlhallein.at.serverdatenbrille">
+    package="htlhallein.at.serverdatenbrille"
+    android:versionCode="7"
+    android:versionName="1.3.3">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -19,8 +21,11 @@
 
     <uses-feature
         android:glEsVersion="0x00020000"
-        android:required="true"/>
+        android:required="true" />
 
+    <uses-sdk
+        android:maxSdkVersion="21"
+        android:minSdkVersion="17" />
 
     <application
         android:allowBackup="true"
@@ -39,7 +44,7 @@
         </activity>
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyBOLVwhAjFs9TRcdOPcl8J65SNsGDepAsI"/>
+            android:value="AIzaSyBOLVwhAjFs9TRcdOPcl8J65SNsGDepAsI" />
     </application>
 
 </manifest>

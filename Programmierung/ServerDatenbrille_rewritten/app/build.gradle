@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "htlhallein.at.serverdatenbrille_rewritten"
-        minSdkVersion 15
+        minSdkVersion 17
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -33,7 +33,6 @@ dependencies {
     compile 'com.google.android.gms:play-services:7.0.0'
     compile 'io.netty:netty-all:4.1.0.Beta3'
     compile 'org.jsoup:jsoup:1.8.1'
-
 
     // JSON Library from Google
     compile 'com.google.code.gson:gson:2.3'

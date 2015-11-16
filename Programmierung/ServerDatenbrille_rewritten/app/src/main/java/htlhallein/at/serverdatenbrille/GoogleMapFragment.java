@@ -22,7 +22,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -135,8 +134,10 @@ public class GoogleMapFragment extends Fragment implements LocationListener {
             view = inflater.inflate(R.layout.fragment_map, container, false);
         } catch (InflateException ignored) {
         }
-        final MapFragment mapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map);
-        map = mapFragment.getMap();
+
+        map =  ((MapFragment)getChildFragmentManager().findFragmentById(R.id.map)).getMap();
+
+
         map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         if(gpsEnabled){
             map.setMyLocationEnabled(true);

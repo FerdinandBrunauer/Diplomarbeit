@@ -316,8 +316,6 @@ public class DatapointFragment extends ListFragment {
                                                 }
                                             }
                                         }
-                                        if (dialog.isShowing())
-                                            dialog.dismiss();
 
                                         final long finalTimestamp = timestamp;
 
@@ -338,6 +336,8 @@ public class DatapointFragment extends ListFragment {
                                             }
                                         };
 
+                                        if (dialog.isShowing())
+                                            dialog.dismiss();
                                         AmbilWarnaDialog ambilWarnaDialog = new AmbilWarnaDialog(MainActivity.getContext(), 0xffffffff, listener);
                                         ambilWarnaDialog.show();
                                     } catch (Exception e) {
